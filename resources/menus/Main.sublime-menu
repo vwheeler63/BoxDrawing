@@ -1,0 +1,55 @@
+[
+	{
+		"id": "tools",
+		"children":
+		[
+			{
+				"caption": "Box Drawing Enabled",
+				"command": "box_drawing_toggle_active",
+				"checkbox": true
+			}
+		]
+	},
+
+	{
+		"id": "preferences",
+		"children": [
+			{
+				"caption": "Package Settings",
+				"mnemonic": "P",
+				"id": "package-settings",
+				"children": [
+					{
+						"caption": "BoxDrawing",
+						"children": [
+							{
+								"caption": "README",
+								"command": "open_file",
+								"args": {
+									"file": "${packages}/BoxDrawing/README.md"
+								}
+							},
+							{ "caption": "-" },
+							{
+								"caption": "Settings",
+								"command": "edit_settings",
+								"args": {
+									"base_file": "${packages}/BoxDrawing/resources/settings/BoxDrawing.sublime-settings",
+									"default": "{\n\t$0\n}\n"
+								}
+							},
+							{
+								"caption": "Key Bindings",
+								"command": "edit_settings",
+								"args": {
+									"base_file": "${packages}/BoxDrawing/resources/keymaps/Default ($platform).sublime-keymap",
+									"default": "[\n\t$0\n]\n"
+								}
+							},
+						]
+					}
+				]
+			}
+		]
+	}
+]

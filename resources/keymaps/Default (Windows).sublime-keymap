@@ -1,0 +1,149 @@
+[
+	// --------------------------------------------------------------------
+	// Up
+	// --------------------------------------------------------------------
+	{
+		"keys": ["alt+up"],
+		"command": "box_drawing_draw_box_character",
+		"args": {
+			"line_count": 1,
+			"direction": 0,
+		},
+		"context": [
+			{ "key": "box_drawing.ok_to_draw", "match_all": true },
+		]
+	},
+	{
+		"keys": ["alt+shift+up"],
+		"command": "box_drawing_draw_box_character",
+		"args": {
+			"line_count": 2,
+			"direction": 0,
+		},
+		"context": [
+			{ "key": "box_drawing.ok_to_draw", "match_all": true },
+		]
+	},
+	{
+		"keys": ["ctrl+alt+shift+up"],
+		"command": "box_drawing_draw_box_character",
+		"args": {
+			"line_count": 0,
+			"direction": 0,
+		},
+		"context": [
+			{ "key": "box_drawing.ok_to_draw", "match_all": true },
+		]
+	},
+
+	// --------------------------------------------------------------------
+	// Right
+	// --------------------------------------------------------------------
+	{
+		"keys": ["alt+right"],
+		"command": "box_drawing_draw_box_character",
+		"args": {
+			"line_count": 1,
+			"direction": 1,
+		},
+		"context": [
+			{ "key": "box_drawing.ok_to_draw", "match_all": true },
+		]
+	},
+	{
+		"keys": ["alt+shift+right"],
+		"command": "box_drawing_draw_box_character",
+		"args": {
+			"line_count": 2,
+			"direction": 1,
+		},
+		"context": [
+			{ "key": "box_drawing.ok_to_draw", "match_all": true },
+		]
+	},
+	{
+		"keys": ["ctrl+alt+shift+right"],
+		"command": "box_drawing_draw_box_character",
+		"args": {
+			"line_count": 0,
+			"direction": 1,
+		},
+		"context": [
+			{ "key": "box_drawing.ok_to_draw", "match_all": true },
+		]
+	},
+
+	// --------------------------------------------------------------------
+	// Down
+	// --------------------------------------------------------------------
+	{
+		"keys": ["alt+down"],
+		"command": "box_drawing_draw_box_character",
+		"args": {
+			"line_count": 1,
+			"direction": 2,
+		},
+		"context": [
+			{ "key": "box_drawing.ok_to_draw", "match_all": true },
+		]
+	},
+	{
+		"keys": ["alt+shift+down"],
+		"command": "box_drawing_draw_box_character",
+		"args": {
+			"line_count": 2,
+			"direction": 2,
+		},
+		"context": [
+			{ "key": "box_drawing.ok_to_draw", "match_all": true },
+		]
+	},
+	{
+		"keys": ["ctrl+alt+shift+down"],
+		"command": "box_drawing_draw_box_character",
+		"args": {
+			"line_count": 0,
+			"direction": 2,
+		},
+		"context": [
+			{ "key": "box_drawing.ok_to_draw", "match_all": true },
+		]
+	},
+
+	// --------------------------------------------------------------------
+	// Left
+	// --------------------------------------------------------------------
+	{
+		"keys": ["alt+left"],
+		"command": "box_drawing_draw_box_character",
+		"args": {
+			"line_count": 1,
+			"direction": 3,
+		},
+		"context": [
+			{ "key": "box_drawing.ok_to_draw", "match_all": true },
+		]
+	},
+	{
+		"keys": ["alt+shift+left"],
+		"command": "box_drawing_draw_box_character",
+		"args": {
+			"line_count": 2,
+			"direction": 3,
+		},
+		"context": [
+			{ "key": "box_drawing.ok_to_draw", "match_all": true },
+		]
+	},
+	{
+		"keys": ["ctrl+alt+shift+left"],
+		"command": "box_drawing_draw_box_character",
+		"args": {
+			"line_count": 0,
+			"direction": 3,
+		},
+		"context": [
+			{ "key": "box_drawing.ok_to_draw", "match_all": true },
+		]
+	},
+]

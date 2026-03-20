@@ -1,0 +1,134 @@
+[
+	// Items listed here become available in the Command Palette.
+	{
+		"caption": "BoxDrawing: Open Readme",
+		"command": "open_file",
+		"args": {
+			"file": "${packages}/BoxDrawing/README.md"
+		}
+	},
+	{
+		"caption": "BoxDrawing: Edit BoxDrawing Settings",
+		"command": "edit_settings",
+		"args": {
+			"base_file": "${packages}/BoxDrawing/resources/settings/BoxDrawing.sublime-settings",
+			"default": "{\n\t$0\n}\n"
+		}
+	},
+	{
+		"caption": "BoxDrawing: Edit BoxDrawing Key Bindings",
+		"command": "edit_settings",
+		"args": {
+			"base_file": "${packages}/BoxDrawing/resources/keymaps/Default ($platform).sublime-keymap",
+			"default": "[\n\t$0\n]\n"
+		}
+	},
+	{
+		"caption": "BoxDrawing: Toggle ON/OFF",
+		"command": "box_drawing_toggle_active"
+	},
+	{
+		"caption": "BoxDrawing: Turn Box Drawing ON",
+		"command": "box_drawing_turn_on_box_drawing"
+	},
+	{
+		"caption": "BoxDrawing: Turn Box Drawing OFF",
+		"command": "box_drawing_turn_off_box_drawing"
+	},
+	{
+		"caption": "BoxDrawing: Draw Box Character -- Up Single Line",
+		"command": "box_drawing_draw_box_character",
+		"args": {
+			"line_count": 1,
+			"direction": 0,
+		},
+	},
+	{
+		"caption": "BoxDrawing: Draw Box Character -- Up Double Line",
+		"command": "box_drawing_draw_box_character",
+		"args": {
+			"line_count": 2,
+			"direction": 0,
+		}
+	},
+	{
+		"caption": "BoxDrawing: Draw Box Character -- Up Erase",
+		"command": "box_drawing_draw_box_character",
+		"args": {
+			"line_count": 0,
+			"direction": 0,
+		}
+	},
+	{
+		"caption": "BoxDrawing: Draw Box Character -- Right Single Line",
+		"command": "box_drawing_draw_box_character",
+		"args": {
+			"line_count": 1,
+			"direction": 1,
+		}
+	},
+	{
+		"caption": "BoxDrawing: Draw Box Character -- Right Double Line",
+		"command": "box_drawing_draw_box_character",
+		"args": {
+			"line_count": 2,
+			"direction": 1,
+		}
+	},
+	{
+		"caption": "BoxDrawing: Draw Box Character -- Right Erase",
+		"command": "box_drawing_draw_box_character",
+		"args": {
+			"line_count": 0,
+			"direction": 1,
+		}
+	},
+	{
+		"caption": "BoxDrawing: Draw Box Character -- Down Single Line",
+		"command": "box_drawing_draw_box_character",
+		"args": {
+			"line_count": 1,
+			"direction": 2,
+		}
+	},
+	{
+		"caption": "BoxDrawing: Draw Box Character -- Down Double Line",
+		"command": "box_drawing_draw_box_character",
+		"args": {
+			"line_count": 2,
+			"direction": 2,
+		}
+	},
+	{
+		"caption": "BoxDrawing: Draw Box Character -- Down Erase",
+		"command": "box_drawing_draw_box_character",
+		"args": {
+			"line_count": 0,
+			"direction": 2,
+		}
+	},
+	{
+		"caption": "BoxDrawing: Draw Box Character -- Left Single Line",
+		"command": "box_drawing_draw_box_character",
+		"args": {
+			"line_count": 1,
+			"direction": 3,
+		}
+	},
+	{
+		"caption": "BoxDrawing: Draw Box Character -- Left Double Line",
+		"command": "box_drawing_draw_box_character",
+		"args": {
+			"line_count": 2,
+			"direction": 3,
+		}
+	},
+	{
+		"caption": "BoxDrawing: Draw Box Character -- Left Erase",
+		"command": "box_drawing_draw_box_character",
+		"args": {
+			"line_count": 0,
+			"direction": 3,
+		}
+	},
+]
