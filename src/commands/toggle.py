@@ -3,7 +3,12 @@ from ...lib.debug import IntFlag, DebugBit, is_debugging
 from .. import core
 
 
-class BoxDrawingToggleActiveCommand(sublime_plugin.TextCommand):
+class BoxDrawingToggleCommand(sublime_plugin.TextCommand):
+    def is_enabled(self):
+        """ Determine whether a checkmark appears next to menu item. """
+        return True
+
+
     def is_checked(self):
         """ Determine whether a checkmark appears next to menu item. """
         return core.is_state_active()
@@ -25,12 +30,12 @@ class BoxDrawingToggleActiveCommand(sublime_plugin.TextCommand):
         """
         Set BoxDrawing Package to ACTIVE mode.
 
-        :param self:        BoxDrawingTurnOnBoxDrawingCommand object connected to current View
+        :param self:        BoxDrawingTurnOnCommand object connected to current View
         :param edit:        sublime.Edit passed by Sublime Text connected to current View
         :return:  None
         """
         debugging = is_debugging(DebugBit.COMMANDS)
         if debugging:
-            print('In BoxDrawingTurnOffBoxDrawingCommand()...')
+            print('In BoxDrawingTurnOffCommand()...')
 
         core.toggle_state()

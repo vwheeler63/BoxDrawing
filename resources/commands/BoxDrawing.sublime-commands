@@ -25,107 +25,107 @@
 	},
 	{
 		"caption": "BoxDrawing: Toggle ON/OFF",
-		"command": "box_drawing_toggle_active"
+		"command": "box_drawing_toggle"
 	},
 	{
-		"caption": "BoxDrawing: Turn Box Drawing ON",
-		"command": "box_drawing_turn_on_box_drawing"
+		"caption": "BoxDrawing: Turn ON",
+		"command": "box_drawing_turn_on"
 	},
 	{
-		"caption": "BoxDrawing: Turn Box Drawing OFF",
-		"command": "box_drawing_turn_off_box_drawing"
+		"caption": "BoxDrawing: Turn OFF",
+		"command": "box_drawing_turn_off"
 	},
 	{
-		"caption": "BoxDrawing: Draw Box Character -- Up Single Line",
-		"command": "box_drawing_draw_box_character",
+		"caption": "BoxDrawing: Draw Single Line Up",
+		"command": "box_drawing_draw_one_character",
 		"args": {
 			"line_count": 1,
 			"direction": 0,
 		},
 	},
 	{
-		"caption": "BoxDrawing: Draw Box Character -- Up Double Line",
-		"command": "box_drawing_draw_box_character",
+		"caption": "BoxDrawing: Draw Double Line Up",
+		"command": "box_drawing_draw_one_character",
 		"args": {
 			"line_count": 2,
 			"direction": 0,
 		}
 	},
 	{
-		"caption": "BoxDrawing: Draw Box Character -- Up Erase",
-		"command": "box_drawing_draw_box_character",
+		"caption": "BoxDrawing: Erase Up",
+		"command": "box_drawing_draw_one_character",
 		"args": {
 			"line_count": 0,
 			"direction": 0,
 		}
 	},
 	{
-		"caption": "BoxDrawing: Draw Box Character -- Right Single Line",
-		"command": "box_drawing_draw_box_character",
+		"caption": "BoxDrawing: Draw Single Line Right",
+		"command": "box_drawing_draw_one_character",
 		"args": {
 			"line_count": 1,
 			"direction": 1,
 		}
 	},
 	{
-		"caption": "BoxDrawing: Draw Box Character -- Right Double Line",
-		"command": "box_drawing_draw_box_character",
+		"caption": "BoxDrawing: Draw Double Line Right",
+		"command": "box_drawing_draw_one_character",
 		"args": {
 			"line_count": 2,
 			"direction": 1,
 		}
 	},
 	{
-		"caption": "BoxDrawing: Draw Box Character -- Right Erase",
-		"command": "box_drawing_draw_box_character",
+		"caption": "BoxDrawing: Erase Right",
+		"command": "box_drawing_draw_one_character",
 		"args": {
 			"line_count": 0,
 			"direction": 1,
 		}
 	},
 	{
-		"caption": "BoxDrawing: Draw Box Character -- Down Single Line",
-		"command": "box_drawing_draw_box_character",
+		"caption": "BoxDrawing: Draw Single Line Down",
+		"command": "box_drawing_draw_one_character",
 		"args": {
 			"line_count": 1,
 			"direction": 2,
 		}
 	},
 	{
-		"caption": "BoxDrawing: Draw Box Character -- Down Double Line",
-		"command": "box_drawing_draw_box_character",
+		"caption": "BoxDrawing: Draw Double Line Down",
+		"command": "box_drawing_draw_one_character",
 		"args": {
 			"line_count": 2,
 			"direction": 2,
 		}
 	},
 	{
-		"caption": "BoxDrawing: Draw Box Character -- Down Erase",
-		"command": "box_drawing_draw_box_character",
+		"caption": "BoxDrawing: Erase Down",
+		"command": "box_drawing_draw_one_character",
 		"args": {
 			"line_count": 0,
 			"direction": 2,
 		}
 	},
 	{
-		"caption": "BoxDrawing: Draw Box Character -- Left Single Line",
-		"command": "box_drawing_draw_box_character",
+		"caption": "BoxDrawing: Draw Single Line Left",
+		"command": "box_drawing_draw_one_character",
 		"args": {
 			"line_count": 1,
 			"direction": 3,
 		}
 	},
 	{
-		"caption": "BoxDrawing: Draw Box Character -- Left Double Line",
-		"command": "box_drawing_draw_box_character",
+		"caption": "BoxDrawing: Draw Double Line Left",
+		"command": "box_drawing_draw_one_character",
 		"args": {
 			"line_count": 2,
 			"direction": 3,
 		}
 	},
 	{
-		"caption": "BoxDrawing: Draw Box Character -- Left Erase",
-		"command": "box_drawing_draw_box_character",
+		"caption": "BoxDrawing: Erase Left",
+		"command": "box_drawing_draw_one_character",
 		"args": {
 			"line_count": 0,
 			"direction": 3,

@@ -61,7 +61,7 @@ Usage
         # ...
         # This example illustrates calling ``is_debugging()``
         # just once per function for efficiency.
-        debugging = is_debugging(DebugBit.CONTEXT_QUERY_EVENT)
+        debugging = is_debugging(DebugBit.QUERY_CONTEXT_EVENT)
 
         # Later...
         if debugging:
@@ -137,7 +137,7 @@ class DebugBit(IntFlag):
         LOAD_UNLOAD            = 0x0002
         INITIALIZATION         = 0x0004
         SETTINGS_CHANGED_EVENT = 0x0008
-        CONTEXT_QUERY_EVENT    = 0x0010
+        QUERY_CONTEXT_EVENT    = 0x0010
         COMMENT_SPECIFIER      = 0x0020
         BASIC_COMMENT_BLOCKS   = 0x0040
         HEADER_COMMENT_BLOCKS  = 0x0080
@@ -188,7 +188,7 @@ class DebugBit(IntFlag):
     LOAD_UNLOAD            = 0x0002
     INITIALIZATION         = 0x0004
     SETTINGS_CHANGED_EVENT = 0x0008
-    CONTEXT_QUERY_EVENT    = 0x0010
+    QUERY_CONTEXT_EVENT    = 0x0010
     STATE                  = 0x0020
     COMMANDS               = 0x0040
     BOX_DRAWING            = 0x0080
@@ -237,7 +237,7 @@ def _debugging_string_validator_regex():
     r"""
     Only valid string expressions look like this:
     'DebugBit.INITIALIZATION' or
-    'DebugBit.INITIALIZATION | DebugBit.CONTEXT_QUERY_EVENT | ...'
+    'DebugBit.INITIALIZATION | DebugBit.QUERY_CONTEXT_EVENT | ...'
 
     Build this out of whatever is current in the DebugBit class:
 

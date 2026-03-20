@@ -12,7 +12,7 @@ class BoxDrawingDirection(IntEnum):
     LEFT = 3
 
 
-class BoxDrawingDrawBoxCharacterCommand(sublime_plugin.TextCommand):
+class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
     def is_enabled(self) -> bool:
         """ Determine whether associated menu item is enabled. """
         return core.ok_to_do_box_drawing(self.view)
@@ -29,6 +29,6 @@ class BoxDrawingDrawBoxCharacterCommand(sublime_plugin.TextCommand):
         """
         debugging = is_debugging(DebugBit.COMMANDS)
         if debugging:
-            print('In BoxDrawingDrawBoxCharacterCommand()...')
+            print('In BoxDrawingDrawOneCharacterCommand()...')
             print(f'  {line_count=}')
             print(f'  {direction=}')

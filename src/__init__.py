@@ -21,10 +21,10 @@ __all__ = [
     "BoxDrawingContextEventListener",
 
     # commands/*
-    "BoxDrawingDrawBoxCharacterCommand",
-    'BoxDrawingTurnOnBoxDrawingCommand',
-    'BoxDrawingTurnOffBoxDrawingCommand',
-    'BoxDrawingToggleActiveCommand',
+    "BoxDrawingDrawOneCharacterCommand",
+    'BoxDrawingTurnOnCommand',
+    'BoxDrawingTurnOffCommand',
+    'BoxDrawingToggleCommand',
 ]
 
 if debugging:
