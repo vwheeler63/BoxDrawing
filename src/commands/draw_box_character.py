@@ -2,6 +2,7 @@ import sublime_plugin
 from sublime import Region
 from enum import IntFlag, IntEnum
 from ...lib.debug import DebugBit, is_debugging
+from .. import core
 
 
 class BoxDrawingDirection(IntEnum):
@@ -12,6 +13,11 @@ class BoxDrawingDirection(IntEnum):
 
 
 class BoxDrawingDrawBoxCharacterCommand(sublime_plugin.TextCommand):
+    def is_enabled(self) -> bool:
+        """ Determine whether associated menu item is enabled. """
+        return core.ok_to_do_box_drawing(self.view)
+
+
     def run(self, edit, line_count: int, direction: BoxDrawingDirection):
         """
         Draw box character with specified line count in specified direction.

@@ -4,12 +4,8 @@ from .. import core
 
 
 class BoxDrawingToggleActiveCommand(sublime_plugin.TextCommand):
-    def is_enabled(self):
-        """ Determine whether associated menu item is enabled. """
-        return True
-
-
     def is_checked(self):
+        """ Determine whether a checkmark appears next to menu item. """
         return core.is_state_active()
 
 

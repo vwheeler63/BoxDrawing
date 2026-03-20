@@ -510,8 +510,19 @@ def toggle_state():
 
 
 # =========================================================================
-# Time Utilities
+# Utilities
 # =========================================================================
+
+def ok_to_do_box_drawing(view: sublime.View) -> bool:
+    live_sel_list = view.sel()
+
+    result = ((
+            is_state_active()
+            and ((len(live_sel_list) == 1))
+            ))
+
+    return result
+
 
 def timestamp() -> str:
     """ Configured timestamp; used in multiple parts of Plugin. """

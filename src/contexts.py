@@ -60,15 +60,11 @@ class BoxDrawingContextEventListener(sublime_plugin.ViewEventListener):
             # Is there only 1 selection (caret)?
             # And state = ACTIVE?
             # ---------------------------------------------------------------------
-            live_sel_list = self.view.sel()
             if debugging:
                 print(f'  {core.g_state=}')
                 print(f'  is_state_active()=>[{core.is_state_active()}]')
 
-            lhs = ((
-                    ((core.is_state_active()))
-                    and ((len(live_sel_list) == 1))
-                    ))
+            lhs = core.ok_to_do_box_drawing(self.view)
 
             if debugging:
                 print(f'  {lhs=}')

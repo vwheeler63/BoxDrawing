@@ -1,9 +1,14 @@
 import sublime_plugin
 from ...lib.debug import IntFlag, DebugBit, is_debugging
-from ..core import set_state_idle
+from .. import core
 
 
 class BoxDrawingTurnOffBoxDrawingCommand(sublime_plugin.TextCommand):
+    def is_enabled(self) -> bool:
+        """ Determine whether associated menu item is enabled. """
+        return core.is_state_active()
+
+
     def run(self, edit):
         """
         Set BoxDrawing Package to ACTIVE mode.
@@ -16,4 +21,4 @@ class BoxDrawingTurnOffBoxDrawingCommand(sublime_plugin.TextCommand):
         if debugging:
             print('In BoxDrawingTurnOffBoxDrawingCommand()...')
 
-        set_state_idle()
+        core.set_state_idle()

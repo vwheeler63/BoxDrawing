@@ -1,9 +1,13 @@
 import sublime_plugin
 from ...lib.debug import IntFlag, DebugBit, is_debugging
-from ..core import set_state_active
+from .. import core
 
 
 class BoxDrawingTurnOnBoxDrawingCommand(sublime_plugin.TextCommand):
+    def is_enabled(self) -> bool:
+        return not core.is_state_active()
+
+
     def run(self, edit):
         """
         Set BoxDrawing Package to ACTIVE mode.
@@ -16,4 +20,4 @@ class BoxDrawingTurnOnBoxDrawingCommand(sublime_plugin.TextCommand):
         if debugging:
             print('In BoxDrawingTurnOnBoxDrawingCommand()...')
 
-        set_state_active()
+        core.set_state_active()
