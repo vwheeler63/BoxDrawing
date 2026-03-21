@@ -478,6 +478,7 @@ def is_state_active() -> bool:
 def set_state_idle():
     global g_state
     g_state = State.IDLE
+    sublime.status_message('BoxDrawing OFF')
     debugging = is_debugging(DebugBit.COMMANDS | DebugBit.STATE)
     if debugging:
         print('In set_state_idle()...')
@@ -488,6 +489,7 @@ def set_state_idle():
 def set_state_active():
     global g_state
     g_state = State.ACTIVE
+    sublime.status_message('BoxDrawing ON')
     debugging = is_debugging(DebugBit.COMMANDS | DebugBit.STATE)
     if debugging:
         print('In set_state_active()...')
@@ -497,10 +499,10 @@ def set_state_active():
 
 def toggle_state():
     global g_state
-    if g_state == State.ACTIVE:
-        g_state = State.IDLE
+    if is_state_active():
+        set_state_idle()
     else:
-        g_state = State.ACTIVE
+        set_state_active()
 
     debugging = is_debugging(DebugBit.COMMANDS | DebugBit.STATE)
     if debugging:
