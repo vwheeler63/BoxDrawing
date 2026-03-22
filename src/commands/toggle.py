@@ -5,7 +5,18 @@ from .. import core
 
 class BoxDrawingToggleCommand(sublime_plugin.TextCommand):
     def is_enabled(self):
-        """ Determine whether a checkmark appears next to menu item. """
+        """
+        Determine whether associated menu item is enabled.
+
+        Returning `False` has a down side:  If this command is mapped to a
+        key combination, if this returns `False` Sublime Text will NOT
+        continue looking for other possible key bindings to use.  The answer
+        to this is to have this method return `True` and have
+        `on_query_context()` listener make the determination.
+
+        Since the inherited implementation of `is_enabled()` returns `True`,
+        this method could be removed without consequence.
+        """
         return True
 
 

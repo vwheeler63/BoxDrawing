@@ -14,8 +14,19 @@ class BoxDrawingDirection(IntEnum):
 
 class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
     def is_enabled(self) -> bool:
-        """ Determine whether associated menu item is enabled. """
-        return core.ok_to_do_box_drawing(self.view)
+        """
+        Determine whether associated menu item is enabled.
+
+        Returning `False` has a down side:  If this command is mapped to a
+        key combination, if this returns `False` Sublime Text will NOT
+        continue looking for other possible key bindings to use.  The answer
+        to this is to have this method return `True` and have
+        `on_query_context()` listener make the determination.
+
+        Since the inherited implementation of `is_enabled()` returns `True`,
+        this method could be removed without consequence.
+        """
+        return True
 
 
     def run(self, edit, line_count: int, direction: BoxDrawingDirection):

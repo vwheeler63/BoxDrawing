@@ -3,7 +3,14 @@ Box Drawing
 ===========================================================================
 
 Box Drawing is Sublime Text package enabling the user to use
-[Shift] or [Alt+Shift] combined with keypad arrow keys with
+
+- [Alt+Arrow]             (single line)
+- [Alt+Shift+Arrow]       (double line), or
+- [Ctrl+Alt+Shift+Arrow]  (erase)
+
+to draw lines and boxes in their text like these:
+
+
 [NumLock] ON to perform box drawing in the text.
 
 See `src/core.py` for details.

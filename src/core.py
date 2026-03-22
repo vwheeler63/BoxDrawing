@@ -107,6 +107,10 @@ Unicode:
     - ╲
     - ╳
 
+- shading:
+    - ░
+    - ▒
+    - ▓
 
 Examples:
 ~~~~~~~~~
