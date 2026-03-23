@@ -32,7 +32,7 @@ If you clone **BoxDrawing's** repository into your Sublime Text's `Packages/BoxD
 
 ### Key Bindings
 
-This Package remember what drawing mode it is in (``IDLE`` vs ``ACTIVE``)
+This Package remember what drawing mode it is in (``OFF`` vs ``ON``)
 through a command to turn box-drawing mode ON and OFF (which the user is free
 to map to any key combination he wishes, or simply execute the command via
 the Command Palette).  The Package would have a custom ``on_query_context``
@@ -57,9 +57,9 @@ key is held down.
 by 1 section", with a possible [Shift] modifier limiting the move to only
 the same level of section or higher.
 
-When the LineDrawing Package is in IDLE mode, ``linedrawing.on_query_context()``
+When the LineDrawing Package is in OFF mode, ``linedrawing.on_query_context()``
 returns ``False`` or ``None`` as appropriate, and Sublime Text would use the
-normal mappings for these keys.  When the Package is in ``ACTIVE``
+normal mappings for these keys.  When the Package is in ``ON``
 however, it will catch these keys and act on them with:
 
 - [Alt] = draw single-line, and

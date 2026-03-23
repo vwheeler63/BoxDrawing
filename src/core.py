@@ -250,7 +250,7 @@ character selection by combining bits from this classification list.
 Keys
 ====
 
-This Package remember what drawing mode it is in (``IDLE`` vs ``ACTIVE``)
+This Package remember what drawing mode it is in (``OFF`` vs ``ON``)
 through a command to turn box-drawing mode ON and OFF (which the user is free
 to map to any key combination he wishes, or simply execute the command via
 the Command Palette).  The Package would have a custom ``on_query_context``
@@ -275,9 +275,9 @@ key is held down.
 by 1 section", with a possible [Shift] modifier limiting the move to only
 the same level of section or higher.
 
-When the LineDrawing Package is in IDLE mode, ``linedrawing.on_query_context()``
+When the LineDrawing Package is in OFF mode, ``linedrawing.on_query_context()``
 returns ``False`` or ``None`` as appropriate, and Sublime Text would use the
-normal mappings for these keys.  When the Package is in ``ACTIVE``
+normal mappings for these keys.  When the Package is in ``ON``
 however, it will catch these keys and act on them with:
 
 - [Alt] = draw single-line, and
@@ -368,14 +368,6 @@ bd_setting.default = {
 # =========================================================================
 # Data
 # =========================================================================
-
-class State(IntEnum):
-    """
-    Whether this package is in LineDrawing Mode or not.
-    """
-    IDLE   = 0
-    ACTIVE = 1   # In box-drawing mode
-
 
 class ClassificationField(IntFlag):
     """
@@ -829,39 +821,55 @@ g_ascii_line_char_lookup_by_classification = {
 
 
 # =========================================================================
-# State (IDLE or ACTIVE)
+# State (OFF or ON)
 # =========================================================================
 
-g_state: State = State.IDLE
+class State(IntEnum):
+    """
+    Whether this package is in LineDrawing Mode or not.
+    """
+    OFF = 0
+    ON  = 1   # In box-drawing mode
+
+
+g_state: State = State.OFF
+
+
+def on_state_transition_to_off():
+    sublime.status_message('BoxDrawing OFF')
+
+
+def on_state_transition_to_on():
+    sublime.status_message('BoxDrawing ON')
 
 
 def is_state_active() -> bool:
     result = False
 
-    if g_state == State.ACTIVE:
+    if g_state == State.ON:
         result = True
 
     return result
 
 
-def set_state_idle():
+def set_state_off():
     global g_state
-    g_state = State.IDLE
-    sublime.status_message('BoxDrawing OFF')
+    g_state = State.OFF
+    on_state_transition_to_off()
     debugging = is_debugging(DebugBit.COMMANDS | DebugBit.STATE)
     if debugging:
-        print('In set_state_idle()...')
+        print('In set_state_off()...')
         print(f'  {g_state=}')
         print(f'  is_state_active()=>[{is_state_active()}]')
 
 
-def set_state_active():
+def set_state_on():
     global g_state
-    g_state = State.ACTIVE
-    sublime.status_message('BoxDrawing ON')
+    g_state = State.ON
+    on_state_transition_to_on()
     debugging = is_debugging(DebugBit.COMMANDS | DebugBit.STATE)
     if debugging:
-        print('In set_state_active()...')
+        print('In set_state_on()...')
         print(f'  {g_state=}')
         print(f'  is_state_active()=>[{is_state_active()}]')
 
@@ -869,9 +877,9 @@ def set_state_active():
 def toggle_state():
     global g_state
     if is_state_active():
-        set_state_idle()
+        set_state_off()
     else:
-        set_state_active()
+        set_state_on()
 
     debugging = is_debugging(DebugBit.COMMANDS | DebugBit.STATE)
     if debugging:

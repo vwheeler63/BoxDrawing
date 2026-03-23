@@ -18,7 +18,7 @@ class BoxDrawingTurnOnCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
         """
-        Set BoxDrawing Package to ACTIVE mode.
+        Set BoxDrawing Package to ON mode.
 
         :param self:        BoxDrawingTurnOnCommand object connected to current View
         :param edit:        sublime.Edit passed by Sublime Text connected to current View
@@ -28,4 +28,4 @@ class BoxDrawingTurnOnCommand(sublime_plugin.TextCommand):
         if debugging:
             print('In BoxDrawingTurnOnCommand()...')
 
-        core.set_state_active()
+        core.set_state_on()

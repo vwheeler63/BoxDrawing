@@ -58,7 +58,7 @@ class BoxDrawingContextEventListener(sublime_plugin.ViewEventListener):
 
             # ---------------------------------------------------------------------
             # Is there only 1 selection (caret)?
-            # And state = ACTIVE?
+            # And state = ON?
             # ---------------------------------------------------------------------
             if debugging:
                 print(f'  {core.g_state=}')
