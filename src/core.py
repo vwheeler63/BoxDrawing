@@ -3,39 +3,126 @@ Box Drawing
 ===========================================================================
 
 Box Drawing is Sublime Text package enabling the user to use
-[Shift] or [Alt+Shift] combined with keypad arrow keys with
-[NumLock] ON to perform box drawing in the text.
+
+- [Alt+Arrow]             (single line)
+- [Alt+Shift+Arrow]       (double line), or
+- [Ctrl+Alt+Shift+Arrow]  (erase)
+
+to draw lines and boxes in their text like these:
+
+┌─┬┐  ╔═╦╗  ╓─╥╖  ╒═╤╕
+│ ││  ║ ║║  ║ ║║  │ ││
+├─┼┤  ╠═╬╣  ╟─╫╢  ╞═╪╡
+└─┴┘  ╚═╩╝  ╙─╨╜  ╘═╧╛
+┌───────────────────┐
+│  ╔═══╗ Some Text  │
+│  ╚═╦═╝ in the box │
+╞═╤══╩══╤═══════════╡
+│ ├──┬──┤           │
+│ └──┴──┘           │
+└───────────────────┘
+
++-----+-+-+-+-----------------------------------------------------+
+|Key  |S|C|A| Command                                             |
++=====+=+=+=+=====================================================+
+|Up   | |x| | stop side-by-side editing                           |
++-----+-+-+-+-----------------------------------------------------+
+|Left | |x| | deselect Sheet to the left                          |
++-----+-+-+-+-----------------------------------------------------+
+|Left |x|x| | select Sheet to the left                            |
++-----+-+-+-+-----------------------------------------------------+
+|Right| |x| | deselect Sheet to the right,                        |
++-----+-+-+-+-----------------------------------------------------+
+|Right|x|x| | select Sheet to the right                           |
++-----+-+-+-+-----------------------------------------------------+
+|PgUp | |x| | move focus to selected Sheet to the left            |
++-----+-+-+-+-----------------------------------------------------+
+|PgDn | |x| | move focus to selected Sheet to the right           |
++-----+-+-+-+-----------------------------------------------------+
+|j    | |x| | open message box explaining `ctrl+j` mapping change |
++-----+-+-+-+-----------------------------------------------------+
 
 Wherever the user directs box drawing to go replaces any text that
 is already there, as if in "overwrite" mode.
 
 Box drawing can be directed into unused space after line endings and it
-appends enough spaces on each applicable line to replace the target space
-character with the appropriate "line" character where directed by the
-arrow keys mapped to the box-drawing operations.
-
+appends enough space characters at the end of the target line so as to
+accommodate the new line character.
 
 
 Vocabulary
 ==========
 
-- source character, the character at the position the cursor is moving FROM
-- destination character, the character at the position the cursor is moving TO
+- src character, the character at the position the cursor is moving FROM.
+- dest character, the character at the position the cursor is moving TO.
+
+
+Behavior
+========
+
+Box drawing is turned ON to draw lines, and turned OFF again to permit the
+mapped key combinations to be used for other things.
+
+Issuing a box-drawing command impacts both the src and dest characters.  It
+effects a "pull" on the src character, thus if 1 or 2 lines are being used,
+that character gets 1 or 2 lines on the side of the direction the caret is
+travelling.  As for the dest character, it effects a "push" the side the
+caret is coming FROM.  Thus if 1 or 2 lines are being used, that character
+gets 1 or 2 lines on the side of the "push".
+
+
+      src character   dest character
+    +---------------+---------------+
+    |               |               |
+    |               |               |
+    |               |               |
+    |               |               |
+    |               |               |
+    |         pull --> push         |
+    |               |               |
+    |               |               |
+    |               |               |
+    |               |               |
+    |               |               |
+    |               |               |
+    +---------------+---------------+
+
+Result if 1 line is being used:
+
+      src character   dest character
+    +---------------+---------------+
+    |               |               |
+    |               |               |
+    |               |               |
+    |               |               |
+    |               |               |
+    |        -------|-------        |
+    |               |               |
+    |               |               |
+    |               |               |
+    |               |               |
+    |               |               |
+    |               |               |
+    +---------------+---------------+
 
 
 
-Variables in Algorithm
-======================
+Variables in the Algorithm
+==========================
 
 The algorithm used to modify the source and destination characters involves
 a set of variables and character classifications.
 
 - number of lines to write (1 or 2; see line characters below);
 - direction of movement;
-- classification of source character;
-- classification of destination character;
+- classification of source character before and after the "pull";
+- classification of destination character before and after the "push";
 - classification of characters above, below, to the left and right of
-  the destination character.
+  the destination character.   (?)  (Box drawing can be without this,
+  but we may want to automate "connection" to neighboring characters.
+  It might be enough to examine the characters on the LEFT and RIGHT
+  of the direction of travel at the dest character.)
+- Box drawing in ASCII mode should be compatible with reStructuredText tables.
 
 
 
@@ -223,6 +310,7 @@ from typing import List
 import pprint  # For human-readable data dumps when debugging.
 import re
 import os
+import sys
 import sublime
 from sublime import View, Region
 import sublime_plugin
@@ -351,12 +439,21 @@ CF = ClassificationField
 # Columns are in bit order left-to-right:
 #       LEFT   BOTTOM   RIGHT   TOP
 # -------------------------------------------------------------------------
-g_classification_by_character = {
-    # Partial Lines
+glst_unicode_classification_by_character = {
+    # Half Lines
     '╵': CF.LINES_LEFT_0 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_0 | CF.LINES_TOP_1,  # 0x01
     '╶': CF.LINES_LEFT_0 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_1 | CF.LINES_TOP_0,  # 0x04
     '╷': CF.LINES_LEFT_0 | CF.LINES_BOTTOM_1 | CF.LINES_RIGHT_0 | CF.LINES_TOP_0,  # 0x10
     '╴': CF.LINES_LEFT_1 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_0 | CF.LINES_TOP_0,  # 0x40
+    # Since there are no half lines with double lines, the same characters will
+    # need to double duty as double-line half characters.  'D' is used as a prefix
+    # because dictionaries cannot have the same key used twice!  The loop generating
+    # the look-up array catches this prefix and uses the 2nd character as the
+    # character in the look-up array.
+    'D╵': CF.LINES_LEFT_0 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_0 | CF.LINES_TOP_2,  # 0x02
+    'D╶': CF.LINES_LEFT_0 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_2 | CF.LINES_TOP_0,  # 0x08
+    'D╷': CF.LINES_LEFT_0 | CF.LINES_BOTTOM_2 | CF.LINES_RIGHT_0 | CF.LINES_TOP_0,  # 0x20
+    'D╴': CF.LINES_LEFT_2 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_0 | CF.LINES_TOP_0,  # 0x80
 
     # Single Lines
     ' ': CF.LINES_LEFT_0 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_0 | CF.LINES_TOP_0,  # 0x00
@@ -406,12 +503,14 @@ g_classification_by_character = {
     '╪': CF.LINES_LEFT_2 | CF.LINES_BOTTOM_1 | CF.LINES_RIGHT_2 | CF.LINES_TOP_1,  # 0x99
 }
 
-g_classification_by_character_ordered = {
+glst_unicode_classification_by_character_ordered = {
     ' ': CF.LINES_LEFT_0 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_0 | CF.LINES_TOP_0,  # 0x00
     '╵': CF.LINES_LEFT_0 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_0 | CF.LINES_TOP_1,  # 0x01
+    'D╵': CF.LINES_LEFT_0 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_0 | CF.LINES_TOP_2,  # 0x02
     '╶': CF.LINES_LEFT_0 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_1 | CF.LINES_TOP_0,  # 0x04
     '└': CF.LINES_LEFT_0 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_1 | CF.LINES_TOP_1,  # 0x05
     '╙': CF.LINES_LEFT_0 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_1 | CF.LINES_TOP_2,  # 0x06
+    'D╶': CF.LINES_LEFT_0 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_2 | CF.LINES_TOP_0,  # 0x08
     '╘': CF.LINES_LEFT_0 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_2 | CF.LINES_TOP_1,  # 0x09
     '╚': CF.LINES_LEFT_0 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_2 | CF.LINES_TOP_2,  # 0x0A
     '╷': CF.LINES_LEFT_0 | CF.LINES_BOTTOM_1 | CF.LINES_RIGHT_0 | CF.LINES_TOP_0,  # 0x10
@@ -420,6 +519,7 @@ g_classification_by_character_ordered = {
     '├': CF.LINES_LEFT_0 | CF.LINES_BOTTOM_1 | CF.LINES_RIGHT_1 | CF.LINES_TOP_1,  # 0x15
     '╒': CF.LINES_LEFT_0 | CF.LINES_BOTTOM_1 | CF.LINES_RIGHT_2 | CF.LINES_TOP_0,  # 0x18
     '╞': CF.LINES_LEFT_0 | CF.LINES_BOTTOM_1 | CF.LINES_RIGHT_2 | CF.LINES_TOP_1,  # 0x19
+    'D╷': CF.LINES_LEFT_0 | CF.LINES_BOTTOM_2 | CF.LINES_RIGHT_0 | CF.LINES_TOP_0,  # 0x20
     '║': CF.LINES_LEFT_0 | CF.LINES_BOTTOM_2 | CF.LINES_RIGHT_0 | CF.LINES_TOP_2,  # 0x22
     '╓': CF.LINES_LEFT_0 | CF.LINES_BOTTOM_2 | CF.LINES_RIGHT_1 | CF.LINES_TOP_0,  # 0x24
     '╟': CF.LINES_LEFT_0 | CF.LINES_BOTTOM_2 | CF.LINES_RIGHT_1 | CF.LINES_TOP_2,  # 0x26
@@ -439,6 +539,7 @@ g_classification_by_character_ordered = {
     '╢': CF.LINES_LEFT_1 | CF.LINES_BOTTOM_2 | CF.LINES_RIGHT_0 | CF.LINES_TOP_2,  # 0x62
     '╥': CF.LINES_LEFT_1 | CF.LINES_BOTTOM_2 | CF.LINES_RIGHT_1 | CF.LINES_TOP_0,  # 0x64
     '╫': CF.LINES_LEFT_1 | CF.LINES_BOTTOM_2 | CF.LINES_RIGHT_1 | CF.LINES_TOP_2,  # 0x66
+    'D╴': CF.LINES_LEFT_2 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_0 | CF.LINES_TOP_0,  # 0x80
     '╛': CF.LINES_LEFT_2 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_0 | CF.LINES_TOP_1,  # 0x81
     '╝': CF.LINES_LEFT_2 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_0 | CF.LINES_TOP_2,  # 0x82
     '═': CF.LINES_LEFT_2 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_2 | CF.LINES_TOP_0,  # 0x88
@@ -455,12 +556,276 @@ g_classification_by_character_ordered = {
 }
 
 # Pre-allocate array with 256 elements with '·' (middle dot U+00B7) as placeholder.
-g_box_characters_by_classification = ['·'] * 256
+glst_unicode_line_char_lookup_by_classification = ['·'] * 256
 
-# Populate the array using `g_classification_by_character_ordered`.
-for c in g_classification_by_character_ordered:
-    val = g_classification_by_character_ordered[c]
-    g_box_characters_by_classification[val] = c
+# Populate Unicode look-up array using `glst_unicode_classification_by_character_ordered`.
+for c in glst_unicode_classification_by_character_ordered:
+    mc = c
+    if c[0] == 'D':
+        mc = c[1]
+    classif_idx = glst_unicode_classification_by_character_ordered[c]
+    glst_unicode_line_char_lookup_by_classification[classif_idx] = mc
+
+# The following used the above Unicode look-up array to generate this
+# ASCII look-up array for manual editing.  The finished array is here.
+g_ascii_line_char_lookup_by_classification = {
+    ' ',  # 0x00 = CF.LINES_LEFT_0 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_0 | CF.LINES_TOP_0
+    '|',  # 0x01 = CF.LINES_LEFT_0 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_0 | CF.LINES_TOP_1
+    '#',  # 0x02 = CF.LINES_LEFT_0 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_0 | CF.LINES_TOP_2
+    '·',  # 0x03
+    '-',  # 0x04 = CF.LINES_LEFT_0 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_1 | CF.LINES_TOP_0
+    '+',  # 0x05 = CF.LINES_LEFT_0 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_1 | CF.LINES_TOP_1
+    '#',  # 0x06 = CF.LINES_LEFT_0 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_1 | CF.LINES_TOP_2
+    '·',  # 0x07
+    '=',  # 0x08 = CF.LINES_LEFT_0 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_2 | CF.LINES_TOP_0
+    '+',  # 0x09 = CF.LINES_LEFT_0 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_2 | CF.LINES_TOP_1
+    '#',  # 0x0A = CF.LINES_LEFT_0 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_2 | CF.LINES_TOP_2
+    '·',  # 0x0B
+    '·',  # 0x0C
+    '·',  # 0x0D
+    '·',  # 0x0E
+    '·',  # 0x0F
+    '|',  # 0x10 = CF.LINES_LEFT_0 | CF.LINES_BOTTOM_1 | CF.LINES_RIGHT_0 | CF.LINES_TOP_0
+    '|',  # 0x11 = CF.LINES_LEFT_0 | CF.LINES_BOTTOM_1 | CF.LINES_RIGHT_0 | CF.LINES_TOP_1
+    '·',  # 0x12
+    '·',  # 0x13
+    '+',  # 0x14 = CF.LINES_LEFT_0 | CF.LINES_BOTTOM_1 | CF.LINES_RIGHT_1 | CF.LINES_TOP_0
+    '+',  # 0x15 = CF.LINES_LEFT_0 | CF.LINES_BOTTOM_1 | CF.LINES_RIGHT_1 | CF.LINES_TOP_1
+    '·',  # 0x16
+    '·',  # 0x17
+    '+',  # 0x18 = CF.LINES_LEFT_0 | CF.LINES_BOTTOM_1 | CF.LINES_RIGHT_2 | CF.LINES_TOP_0
+    '+',  # 0x19 = CF.LINES_LEFT_0 | CF.LINES_BOTTOM_1 | CF.LINES_RIGHT_2 | CF.LINES_TOP_1
+    '·',  # 0x1A
+    '·',  # 0x1B
+    '·',  # 0x1C
+    '·',  # 0x1D
+    '·',  # 0x1E
+    '·',  # 0x1F
+    '#',  # 0x20 = CF.LINES_LEFT_0 | CF.LINES_BOTTOM_2 | CF.LINES_RIGHT_0 | CF.LINES_TOP_0
+    '·',  # 0x21
+    '#',  # 0x22 = CF.LINES_LEFT_0 | CF.LINES_BOTTOM_2 | CF.LINES_RIGHT_0 | CF.LINES_TOP_2
+    '·',  # 0x23
+    '#',  # 0x24 = CF.LINES_LEFT_0 | CF.LINES_BOTTOM_2 | CF.LINES_RIGHT_1 | CF.LINES_TOP_0
+    '·',  # 0x25
+    '#',  # 0x26 = CF.LINES_LEFT_0 | CF.LINES_BOTTOM_2 | CF.LINES_RIGHT_1 | CF.LINES_TOP_2
+    '·',  # 0x27
+    '#',  # 0x28 = CF.LINES_LEFT_0 | CF.LINES_BOTTOM_2 | CF.LINES_RIGHT_2 | CF.LINES_TOP_0
+    '·',  # 0x29
+    '#',  # 0x2A = CF.LINES_LEFT_0 | CF.LINES_BOTTOM_2 | CF.LINES_RIGHT_2 | CF.LINES_TOP_2
+    '·',  # 0x2B
+    '·',  # 0x2C
+    '·',  # 0x2D
+    '·',  # 0x2E
+    '·',  # 0x2F
+    '·',  # 0x30
+    '·',  # 0x31
+    '·',  # 0x32
+    '·',  # 0x33
+    '·',  # 0x34
+    '·',  # 0x35
+    '·',  # 0x36
+    '·',  # 0x37
+    '·',  # 0x38
+    '·',  # 0x39
+    '·',  # 0x3A
+    '·',  # 0x3B
+    '·',  # 0x3C
+    '·',  # 0x3D
+    '·',  # 0x3E
+    '·',  # 0x3F
+    '-',  # 0x40 = CF.LINES_LEFT_1 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_0 | CF.LINES_TOP_0
+    '+',  # 0x41 = CF.LINES_LEFT_1 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_0 | CF.LINES_TOP_1
+    '#',  # 0x42 = CF.LINES_LEFT_1 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_0 | CF.LINES_TOP_2
+    '·',  # 0x43
+    '-',  # 0x44 = CF.LINES_LEFT_1 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_1 | CF.LINES_TOP_0
+    '+',  # 0x45 = CF.LINES_LEFT_1 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_1 | CF.LINES_TOP_1
+    '#',  # 0x46 = CF.LINES_LEFT_1 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_1 | CF.LINES_TOP_2
+    '·',  # 0x47
+    '·',  # 0x48
+    '·',  # 0x49
+    '·',  # 0x4A
+    '·',  # 0x4B
+    '·',  # 0x4C
+    '·',  # 0x4D
+    '·',  # 0x4E
+    '·',  # 0x4F
+    '+',  # 0x50 = CF.LINES_LEFT_1 | CF.LINES_BOTTOM_1 | CF.LINES_RIGHT_0 | CF.LINES_TOP_0
+    '+',  # 0x51 = CF.LINES_LEFT_1 | CF.LINES_BOTTOM_1 | CF.LINES_RIGHT_0 | CF.LINES_TOP_1
+    '·',  # 0x52
+    '·',  # 0x53
+    '+',  # 0x54 = CF.LINES_LEFT_1 | CF.LINES_BOTTOM_1 | CF.LINES_RIGHT_1 | CF.LINES_TOP_0
+    '+',  # 0x55 = CF.LINES_LEFT_1 | CF.LINES_BOTTOM_1 | CF.LINES_RIGHT_1 | CF.LINES_TOP_1
+    '·',  # 0x56
+    '·',  # 0x57
+    '·',  # 0x58
+    '·',  # 0x59
+    '·',  # 0x5A
+    '·',  # 0x5B
+    '·',  # 0x5C
+    '·',  # 0x5D
+    '·',  # 0x5E
+    '·',  # 0x5F
+    '#',  # 0x60 = CF.LINES_LEFT_1 | CF.LINES_BOTTOM_2 | CF.LINES_RIGHT_0 | CF.LINES_TOP_0
+    '·',  # 0x61
+    '#',  # 0x62 = CF.LINES_LEFT_1 | CF.LINES_BOTTOM_2 | CF.LINES_RIGHT_0 | CF.LINES_TOP_2
+    '·',  # 0x63
+    '#',  # 0x64 = CF.LINES_LEFT_1 | CF.LINES_BOTTOM_2 | CF.LINES_RIGHT_1 | CF.LINES_TOP_0
+    '·',  # 0x65
+    '#',  # 0x66 = CF.LINES_LEFT_1 | CF.LINES_BOTTOM_2 | CF.LINES_RIGHT_1 | CF.LINES_TOP_2
+    '·',  # 0x67
+    '·',  # 0x68
+    '·',  # 0x69
+    '·',  # 0x6A
+    '·',  # 0x6B
+    '·',  # 0x6C
+    '·',  # 0x6D
+    '·',  # 0x6E
+    '·',  # 0x6F
+    '·',  # 0x70
+    '·',  # 0x71
+    '·',  # 0x72
+    '·',  # 0x73
+    '·',  # 0x74
+    '·',  # 0x75
+    '·',  # 0x76
+    '·',  # 0x77
+    '·',  # 0x78
+    '·',  # 0x79
+    '·',  # 0x7A
+    '·',  # 0x7B
+    '·',  # 0x7C
+    '·',  # 0x7D
+    '·',  # 0x7E
+    '·',  # 0x7F
+    '=',  # 0x80 = CF.LINES_LEFT_2 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_0 | CF.LINES_TOP_0
+    '+',  # 0x81 = CF.LINES_LEFT_2 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_0 | CF.LINES_TOP_1
+    '#',  # 0x82 = CF.LINES_LEFT_2 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_0 | CF.LINES_TOP_2
+    '·',  # 0x83
+    '·',  # 0x84
+    '·',  # 0x85
+    '·',  # 0x86
+    '·',  # 0x87
+    '=',  # 0x88 = CF.LINES_LEFT_2 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_2 | CF.LINES_TOP_0
+    '+',  # 0x89 = CF.LINES_LEFT_2 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_2 | CF.LINES_TOP_1
+    '#',  # 0x8A = CF.LINES_LEFT_2 | CF.LINES_BOTTOM_0 | CF.LINES_RIGHT_2 | CF.LINES_TOP_2
+    '·',  # 0x8B
+    '·',  # 0x8C
+    '·',  # 0x8D
+    '·',  # 0x8E
+    '·',  # 0x8F
+    '+',  # 0x90 = CF.LINES_LEFT_2 | CF.LINES_BOTTOM_1 | CF.LINES_RIGHT_0 | CF.LINES_TOP_0
+    '+',  # 0x91 = CF.LINES_LEFT_2 | CF.LINES_BOTTOM_1 | CF.LINES_RIGHT_0 | CF.LINES_TOP_1
+    '·',  # 0x92
+    '·',  # 0x93
+    '·',  # 0x94
+    '·',  # 0x95
+    '·',  # 0x96
+    '·',  # 0x97
+    '+',  # 0x98 = CF.LINES_LEFT_2 | CF.LINES_BOTTOM_1 | CF.LINES_RIGHT_2 | CF.LINES_TOP_0
+    '+',  # 0x99 = CF.LINES_LEFT_2 | CF.LINES_BOTTOM_1 | CF.LINES_RIGHT_2 | CF.LINES_TOP_1
+    '·',  # 0x9A
+    '·',  # 0x9B
+    '·',  # 0x9C
+    '·',  # 0x9D
+    '·',  # 0x9E
+    '·',  # 0x9F
+    '#',  # 0xA0 = CF.LINES_LEFT_2 | CF.LINES_BOTTOM_2 | CF.LINES_RIGHT_0 | CF.LINES_TOP_0
+    '·',  # 0xA1
+    '#',  # 0xA2 = CF.LINES_LEFT_2 | CF.LINES_BOTTOM_2 | CF.LINES_RIGHT_0 | CF.LINES_TOP_2
+    '·',  # 0xA3
+    '·',  # 0xA4
+    '·',  # 0xA5
+    '·',  # 0xA6
+    '·',  # 0xA7
+    '#',  # 0xA8 = CF.LINES_LEFT_2 | CF.LINES_BOTTOM_2 | CF.LINES_RIGHT_2 | CF.LINES_TOP_0
+    '·',  # 0xA9
+    '#',  # 0xAA = CF.LINES_LEFT_2 | CF.LINES_BOTTOM_2 | CF.LINES_RIGHT_2 | CF.LINES_TOP_2
+    '·',  # 0xAB
+    '·',  # 0xAC
+    '·',  # 0xAD
+    '·',  # 0xAE
+    '·',  # 0xAF
+    '·',  # 0xB0
+    '·',  # 0xB1
+    '·',  # 0xB2
+    '·',  # 0xB3
+    '·',  # 0xB4
+    '·',  # 0xB5
+    '·',  # 0xB6
+    '·',  # 0xB7
+    '·',  # 0xB8
+    '·',  # 0xB9
+    '·',  # 0xBA
+    '·',  # 0xBB
+    '·',  # 0xBC
+    '·',  # 0xBD
+    '·',  # 0xBE
+    '·',  # 0xBF
+    '·',  # 0xC0
+    '·',  # 0xC1
+    '·',  # 0xC2
+    '·',  # 0xC3
+    '·',  # 0xC4
+    '·',  # 0xC5
+    '·',  # 0xC6
+    '·',  # 0xC7
+    '·',  # 0xC8
+    '·',  # 0xC9
+    '·',  # 0xCA
+    '·',  # 0xCB
+    '·',  # 0xCC
+    '·',  # 0xCD
+    '·',  # 0xCE
+    '·',  # 0xCF
+    '·',  # 0xD0
+    '·',  # 0xD1
+    '·',  # 0xD2
+    '·',  # 0xD3
+    '·',  # 0xD4
+    '·',  # 0xD5
+    '·',  # 0xD6
+    '·',  # 0xD7
+    '·',  # 0xD8
+    '·',  # 0xD9
+    '·',  # 0xDA
+    '·',  # 0xDB
+    '·',  # 0xDC
+    '·',  # 0xDD
+    '·',  # 0xDE
+    '·',  # 0xDF
+    '·',  # 0xE0
+    '·',  # 0xE1
+    '·',  # 0xE2
+    '·',  # 0xE3
+    '·',  # 0xE4
+    '·',  # 0xE5
+    '·',  # 0xE6
+    '·',  # 0xE7
+    '·',  # 0xE8
+    '·',  # 0xE9
+    '·',  # 0xEA
+    '·',  # 0xEB
+    '·',  # 0xEC
+    '·',  # 0xED
+    '·',  # 0xEE
+    '·',  # 0xEF
+    '·',  # 0xF0
+    '·',  # 0xF1
+    '·',  # 0xF2
+    '·',  # 0xF3
+    '·',  # 0xF4
+    '·',  # 0xF5
+    '·',  # 0xF6
+    '·',  # 0xF7
+    '·',  # 0xF8
+    '·',  # 0xF9
+    '·',  # 0xFA
+    '·',  # 0xFB
+    '·',  # 0xFC
+    '·',  # 0xFD
+    '·',  # 0xFE
+    '·',  # 0xFF
+}
 
 
 # =========================================================================
@@ -645,11 +1010,11 @@ global {
 --------( LineDraw.s )---------
 macro_file LineDraw;
 /******************************************************************************
-                                                         Multi-Edit Macro File
+                             Multi-Edit Macro File
 
-    Function: Macros to Generate linedrawing boxes in the text
+  Function: Macros to Generate linedrawing boxes in the text
 
-    $Header: /Me91/Src/Linedraw.s 20    10/23/03 7:10p Reids $
+  $Header: /Me91/Src/Linedraw.s 20    10/23/03 7:10p Reids $
 
              Copyright (C) 2002-2003 by Multi Edit Software, Inc.
  ******************************************************************************/
@@ -679,7 +1044,7 @@ macro_file LineDraw;
 
 void LineDraw( ) trans
 /*******************************************************************************
-                                                                MULTI-EDIT MACRO
+                                MULTI-EDIT MACRO
 
 Name: LINEDRAW
 
@@ -690,10 +1055,10 @@ characters using the arrow keys to create lines and boxes etc.
 *******************************************************************************/
 {
   if ( g_Ld_hDlg != 0 ) {
-        // don't allow multiple occurances, switch to currently active notebook
+    // don't allow multiple occurances, switch to currently active notebook
     SendMessage( g_Ld_Hdlg, wm_SysCommand, sc_Close, 0 );
     return ( );
-    }
+  }
 
 /*
 Here is a list of all of the linedrawing characters:
@@ -729,12 +1094,12 @@ Here is a list of all of the linedrawing characters:
   Auto_Size_Mew_Dlg (main_dlg, 100, 100);
   struct tpoint pt;
   if ( g_Ld_MovedPosX || g_Ld_MovedPosY )
-    {
+  {
     pt.x = g_Ld_MovedPosX;
     pt.y = g_Ld_MovedPosY;
-    }
-    else
-    {
+  }
+  else
+  {
     GetWindowRect (client_handle, &rect);
     pt.x = rect.right;
     pt.y = rect.top;
@@ -745,7 +1110,7 @@ Here is a list of all of the linedrawing characters:
     {
       pt.x -= GetSystemMetrics(SM_CXVSCROLL) - 1;
     }
-    }
+  }
   SetWindowPos ( main_dlg, 0, pt.x, pt.y, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
   ShowWindow( main_dlg, sw_shownormal );
   BringWindowToTop( main_dlg );
@@ -917,9 +1282,9 @@ void LineDrawKey( ) trans2 no_break
   liIsOemMode = Get_OEM_ANSI(Cur_Window);
 
   if (liIsOemMode) {
-    /*---------------------------------------------------------------------
-     * OEM Mode
-     *---------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------
+   * OEM Mode
+   *---------------------------------------------------------------------*/
     switch ( K1 ) {
 
       case vk_Down :
@@ -1006,7 +1371,7 @@ void LineDrawKey( ) trans2 no_break
 
         Ti = XPos( L_Char, "¿·¸»Ù¾½¼´¶¹µ", 1 );
         if ( Ti && Same_Direction ) {
-          /* We're going right.  If char to left is not connected, then we need to change it to be connected. */
+      /* We're going right.  If char to left is not connected, then we need to change it to be connected. */
           Left;
           Text( Copy( "ÂÒÂÒÁÁÐÐÅ××ÅËËÑËÊÏÊÊÎÎÎØ", ( ( g_Ld_Stat - 1 ) * 12 ) + Ti, 1 ) );
           Left;
@@ -1215,19 +1580,19 @@ void LineDrawKey( ) trans2 no_break
      * than the original (beautiful) OEM line-draw characters.  Thus, the policy is
      * set here:
      *
-     * 1.   Non-intersecting lines:
-     *      a.  Single vertical line replaced by '|'.
-     *      b.  Single horizontal line replaced by '-'.
-     *      c.  Clean double-vertical line replaced by '#'
-     *      d.  Clean double-horizontal line replaced by '='.
-     * 2.   Intersecting lines:
-     *      a.  Clean single-line intersection of all types replaced by '+'.
-     *      b.  All others (with at least one double-line in it) replaced by '#'.
-     *      c.  Exceptions to 2.b above:
-     *          1)  Double-horizontal-single-vertical (whether only up-side, down-side or both, and corners as well)
-     *                  |
-     *               ===+===
-     *                  |
+     * 1. Non-intersecting lines:
+     *    a.  Single vertical line replaced by '|'.
+     *    b.  Single horizontal line replaced by '-'.
+     *    c.  Clean double-vertical line replaced by '#'
+     *    d.  Clean double-horizontal line replaced by '='.
+     * 2. Intersecting lines:
+     *    a.  Clean single-line intersection of all types replaced by '+'.
+     *    b.  All others (with at least one double-line in it) replaced by '#'.
+     *    c.  Exceptions to 2.b above:
+     *      1)  Double-horizontal-single-vertical (whether only up-side, down-side or both, and corners as well)
+     *            |
+     *         ===+===
+     *            |
      *
      * OEM => ANSI
      * ³      |
@@ -1316,16 +1681,16 @@ void LineDrawKey( ) trans2 no_break
          * If we are drawing a SINGLE-vertical line, then we NEVER draw a '#', but only '|' except if either
          * a SINGLE- or DOUBLE-horizontal line is on either side, then we draw a '+'. */
         if (g_Ld_Stat == 2) {
-            Text( '#' );
+          Text( '#' );
+          Left;
+          break;
+        } else {
+          /* If any type of line-draw char is on left or right, then '+'. */
+          if ( (L_Mode > 0) || (R_Mode > 0) ) {
+            Text( '+' );
             Left;
             break;
-        } else {
-            /* If any type of line-draw char is on left or right, then '+'. */
-            if ( (L_Mode > 0) || (R_Mode > 0) ) {
-                Text( '+' );
-                Left;
-                break;
-            }
+          }
         }
         /* If no other condition exists... */
         Text( Copy( "|#", g_Ld_Stat, 1 ) );
@@ -1353,8 +1718,8 @@ void LineDrawKey( ) trans2 no_break
 
         Ti = XPos( L_Char, "|", 1 );
         if ( Ti && Same_Direction ) {
-          /* We're going right.  If char to left is not connected, then we need to change it to be connected.
-           * The sole choice here is a '+' since we assume L_Char is connected to a single-vertical line. */
+        /* We're going right.  If char to left is not connected, then we need to change it to be connected.
+         * The sole choice here is a '+' since we assume L_Char is connected to a single-vertical line. */
           Left;
           Text( '+' );
           Left;
@@ -1375,12 +1740,12 @@ void LineDrawKey( ) trans2 no_break
           Left;
           break;
         } else {
-            if ((D_Mode == 2) || (U_Mode == 2)) {
-                /* Double-vertical either above or below or both.  Meet it with a '#'. */
-                Text( '#' );
-                Left;
-                break;
-            }
+          if ((D_Mode == 2) || (U_Mode == 2)) {
+            /* Double-vertical either above or below or both.  Meet it with a '#'. */
+            Text( '#' );
+            Left;
+            break;
+          }
         }
         /* If no other condition exists... */
         Text( Copy( "-=", g_Ld_Stat, 1 ) );
@@ -1406,7 +1771,7 @@ void LineDrawKey( ) trans2 no_break
         g_Ld_Direction = A_Up;
         call LookAroundANSI;
 
-        /* List of chars we are using:  | - + = # */
+    /* List of chars we are using:  | - + = # */
 
         Ti = XPos( D_Char, "-=", 1 );
         if ( Ti && Same_Direction ) {
@@ -1429,16 +1794,16 @@ void LineDrawKey( ) trans2 no_break
          * If we are drawing a SINGLE-vertical line, then we NEVER draw a '#', but only '|' except if either
          * a SINGLE- or DOUBLE-horizontal line is on either side, then we draw a '+'. */
         if (g_Ld_Stat == 2) {
-            Text( '#' );
+          Text( '#' );
+          Left;
+          break;
+        } else {
+          /* If any type of line-draw char is on left or right, then '+'. */
+          if ( (L_Mode > 0) || (R_Mode > 0) ) {
+            Text( '+' );
             Left;
             break;
-        } else {
-            /* If any type of line-draw char is on left or right, then '+'. */
-            if ( (L_Mode > 0) || (R_Mode > 0) ) {
-                Text( '+' );
-                Left;
-                break;
-            }
+          }
         }
         /* If no other condition exists... */
         Text( Copy( "|#", g_Ld_Stat, 1 ) );
@@ -1490,12 +1855,12 @@ void LineDrawKey( ) trans2 no_break
           Left;
           break;
         } else {
-            if ( (D_Mode == 2) || (U_Mode == 2) ) {
-                /* Double-vertical either above or below or both.  Meet it with a '#'. */
-                Text( '#' );
-                Left;
-                break;
-            }
+          if ( (D_Mode == 2) || (U_Mode == 2) ) {
+            /* Double-vertical either above or below or both.  Meet it with a '#'. */
+            Text( '#' );
+            Left;
+            break;
+          }
         }
         /* If no other condition exists... */
         Text( Copy( "-=", g_Ld_Stat, 1 ) );
