@@ -26,7 +26,7 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
         Since the inherited implementation of `is_enabled()` returns `True`,
         this method could be removed without consequence.
         """
-        return True
+        return core.is_state_active()
 
 
     def run(self, edit, line_count: int, direction: BoxDrawingDirection):
