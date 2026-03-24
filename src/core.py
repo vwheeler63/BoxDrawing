@@ -525,7 +525,7 @@ gdict_unicode_classification_by_character_ordered = {
 }
 
 # Pre-allocate array with 256 elements with '·' (middle dot U+00B7) as placeholder.
-glst_unicode_line_char_lookup_by_classification = ['·'] * 256
+glst_unicode_box_char_lookup_by_classification = ['·'] * 256
 
 # Populate Unicode look-up array using `gdict_unicode_classification_by_character_ordered`.
 for c in gdict_unicode_classification_by_character_ordered:
@@ -533,11 +533,11 @@ for c in gdict_unicode_classification_by_character_ordered:
     if c[0] == 'D':
         mc = c[1]
     classif_idx = gdict_unicode_classification_by_character_ordered[c]
-    glst_unicode_line_char_lookup_by_classification[classif_idx] = mc
+    glst_unicode_box_char_lookup_by_classification[classif_idx] = mc
 
 # The following used the above Unicode look-up array to generate this
 # ASCII look-up array for manual editing.  The finished array is here.
-g_ascii_line_char_lookup_by_classification = {
+glst_ascii_box_char_lookup_by_classification = {
     ' ',  # 0x00 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_0
     '·',  # 0x01
     '·',  # 0x02
@@ -796,6 +796,34 @@ g_ascii_line_char_lookup_by_classification = {
     '·',  # 0xFF
 }
 
+box_char_dict = gdict_unicode_classification_by_character_ordered
+
+
+# =========================================================================
+# Direction
+# =========================================================================
+
+class Direction(IntEnum):
+    """
+    Direction Enumeration
+
+    Characterization mentioned in comments is from
+    `gdict_unicode_classification_by_character_ordered` dictionary values.
+    """
+    NONE  = -1  # Happens after Package load, turning box-drawing off, and an ERASE;
+                #   to detect "change of direction"
+    UP    = 0   # val * 2 = bit-shift right to isolate characterization in 2 LSbs
+    RIGHT = 1   # val * 2 = bit-shift right to isolate characterization in 2 LSbs
+    DOWN  = 2   # val * 2 = bit-shift right to isolate characterization in 2 LSbs
+    LEFT  = 3   # val * 2 = bit-shift right to isolate characterization in 2 LSbs
+
+
+g_direction = Direction.NONE
+
+
+def set_last_direction(dir: Direction):
+    g_direction = dir
+
 
 # =========================================================================
 # State (OFF or ON)
@@ -832,9 +860,9 @@ def is_state_active() -> bool:
 def set_state_off():
     global g_state
     g_state = State.OFF
+    g_direction = Direction.NONE
     on_state_transition_to_off()
-    debugging = is_debugging(DebugBit.COMMANDS | DebugBit.STATE)
-    if debugging:
+    if is_debugging(DebugBit.COMMANDS | DebugBit.STATE):
         print('In set_state_off()...')
         print(f'  {g_state=}')
         print(f'  is_state_active()=>[{is_state_active()}]')
@@ -844,25 +872,20 @@ def set_state_on():
     global g_state
     g_state = State.ON
     on_state_transition_to_on()
-    debugging = is_debugging(DebugBit.COMMANDS | DebugBit.STATE)
-    if debugging:
+    if is_debugging(DebugBit.COMMANDS | DebugBit.STATE):
         print('In set_state_on()...')
         print(f'  {g_state=}')
         print(f'  is_state_active()=>[{is_state_active()}]')
 
 
 def toggle_state():
-    global g_state
+    if is_debugging(DebugBit.COMMANDS | DebugBit.STATE):
+        print('In toggle_state()...')
+
     if is_state_active():
         set_state_off()
     else:
         set_state_on()
-
-    debugging = is_debugging(DebugBit.COMMANDS | DebugBit.STATE)
-    if debugging:
-        print('In toggle_state()...')
-        print(f'  {g_state=}')
-        print(f'  is_state_active()=>[{is_state_active()}]')
 
 
 # =========================================================================
@@ -871,17 +894,19 @@ def toggle_state():
 
 def ok_to_do_box_drawing(view: sublime.View) -> bool:
     live_sel_list = view.sel()
+    sel_rgn = live_sel_list[0]
 
     result = ((
-            is_state_active()
-            and ((len(live_sel_list) == 1))
+                is_state_active()
+            and (len(live_sel_list) == 1)
+            and (sel_rgn.b - sel_rgn.a == 0)
             ))
 
     return result
 
 
 def timestamp() -> str:
-    """ Configured timestamp; used in multiple parts of Plugin. """
+    """ Configured timestamp; used in some Package debug output. """
     now = datetime.now()
     fmt = '%Y-%m-%d %H:%M'
     return now.strftime(fmt)
