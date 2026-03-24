@@ -431,7 +431,7 @@ CF = ClassificationField
 # Columns are in bit order left-to-right:
 #       LEFT   BOTTOM   RIGHT   TOP
 # -------------------------------------------------------------------------
-glst_unicode_classification_by_character = {
+gdict_unicode_classification_by_character = {
     # Single Lines
     ' ': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_0,  # 0x00
     '└': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_1,  # 0x05
@@ -480,7 +480,7 @@ glst_unicode_classification_by_character = {
     '╪': CF.LINES_LEFT_2 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_2 | CF.LINES_UP_1,  # 0x99
 }
 
-glst_unicode_classification_by_character_ordered = {
+gdict_unicode_classification_by_character_ordered = {
     ' ': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_0,  # 0x00
     '└': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_1,  # 0x05
     '╙': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_2,  # 0x06
@@ -527,12 +527,12 @@ glst_unicode_classification_by_character_ordered = {
 # Pre-allocate array with 256 elements with '·' (middle dot U+00B7) as placeholder.
 glst_unicode_line_char_lookup_by_classification = ['·'] * 256
 
-# Populate Unicode look-up array using `glst_unicode_classification_by_character_ordered`.
-for c in glst_unicode_classification_by_character_ordered:
+# Populate Unicode look-up array using `gdict_unicode_classification_by_character_ordered`.
+for c in gdict_unicode_classification_by_character_ordered:
     mc = c
     if c[0] == 'D':
         mc = c[1]
-    classif_idx = glst_unicode_classification_by_character_ordered[c]
+    classif_idx = gdict_unicode_classification_by_character_ordered[c]
     glst_unicode_line_char_lookup_by_classification[classif_idx] = mc
 
 # The following used the above Unicode look-up array to generate this
