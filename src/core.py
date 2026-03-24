@@ -404,17 +404,17 @@ class ClassificationField(IntFlag):
     LINES_UP_1    = 0x01
     LINES_UP_2    = 0x02
 
-    LINES_RIGHT_0  = 0x00
-    LINES_RIGHT_1  = 0x04
-    LINES_RIGHT_2  = 0x08
+    LINES_RIGHT_0 = 0x00
+    LINES_RIGHT_1 = 0x04
+    LINES_RIGHT_2 = 0x08
 
-    LINES_DOWN_0 = 0x00
-    LINES_DOWN_1 = 0x10
-    LINES_DOWN_2 = 0x20
+    LINES_DOWN_0  = 0x00
+    LINES_DOWN_1  = 0x10
+    LINES_DOWN_2  = 0x20
 
-    LINES_LEFT_0   = 0x00
-    LINES_LEFT_1   = 0x40
-    LINES_LEFT_2   = 0x80
+    LINES_LEFT_0  = 0x00
+    LINES_LEFT_1  = 0x40
+    LINES_LEFT_2  = 0x80
 
 
 CF = ClassificationField
@@ -432,21 +432,6 @@ CF = ClassificationField
 #       LEFT   BOTTOM   RIGHT   TOP
 # -------------------------------------------------------------------------
 glst_unicode_classification_by_character = {
-    # Half Lines
-    '╵': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_1,  # 0x01
-    '╶': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_0,  # 0x04
-    '╷': CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_0,  # 0x10
-    '╴': CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_0,  # 0x40
-    # Since there are no half lines with double lines, the same characters will
-    # need to double duty as double-line half characters.  'D' is used as a prefix
-    # because dictionaries cannot have the same key used twice!  The loop generating
-    # the look-up array catches this prefix and uses the 2nd character as the
-    # character in the look-up array.
-    'D╵': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_2,  # 0x02
-    'D╶': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_0,  # 0x08
-    'D╷': CF.LINES_LEFT_0 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_0 | CF.LINES_UP_0,  # 0x20
-    'D╴': CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_0,  # 0x80
-
     # Single Lines
     ' ': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_0,  # 0x00
     '└': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_1,  # 0x05
@@ -496,55 +481,47 @@ glst_unicode_classification_by_character = {
 }
 
 glst_unicode_classification_by_character_ordered = {
-    ' ' : CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_0,  # 0x00
-    '╵' : CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_1,  # 0x01
-    'D╵': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_2,  # 0x02
-    '╶' : CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_0,  # 0x04
-    '└' : CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_1,  # 0x05
-    '╙' : CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_2,  # 0x06
-    'D╶': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_0,  # 0x08
-    '╘' : CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_1,  # 0x09
-    '╚' : CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_2,  # 0x0A
-    '╷' : CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_0,  # 0x10
-    '│' : CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_1,  # 0x11
-    '┌' : CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_1 | CF.LINES_UP_0,  # 0x14
-    '├' : CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_1 | CF.LINES_UP_1,  # 0x15
-    '╒' : CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_2 | CF.LINES_UP_0,  # 0x18
-    '╞' : CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_2 | CF.LINES_UP_1,  # 0x19
-    'D╷': CF.LINES_LEFT_0 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_0 | CF.LINES_UP_0,  # 0x20
-    '║' : CF.LINES_LEFT_0 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_0 | CF.LINES_UP_2,  # 0x22
-    '╓' : CF.LINES_LEFT_0 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_1 | CF.LINES_UP_0,  # 0x24
-    '╟' : CF.LINES_LEFT_0 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_1 | CF.LINES_UP_2,  # 0x26
-    '╔' : CF.LINES_LEFT_0 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_2 | CF.LINES_UP_0,  # 0x28
-    '╠' : CF.LINES_LEFT_0 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_2 | CF.LINES_UP_2,  # 0x2A
-    '╴' : CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_0,  # 0x40
-    '┘' : CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_1,  # 0x41
-    '╜' : CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_2,  # 0x42
-    '─' : CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_0,  # 0x44
-    '┴' : CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_1,  # 0x45
-    '╨' : CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_2,  # 0x46
-    '┐' : CF.LINES_LEFT_1 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_0,  # 0x50
-    '┤' : CF.LINES_LEFT_1 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_1,  # 0x51
-    '┬' : CF.LINES_LEFT_1 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_1 | CF.LINES_UP_0,  # 0x54
-    '┼' : CF.LINES_LEFT_1 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_1 | CF.LINES_UP_1,  # 0x55
-    '╖' : CF.LINES_LEFT_1 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_0 | CF.LINES_UP_0,  # 0x60
-    '╢' : CF.LINES_LEFT_1 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_0 | CF.LINES_UP_2,  # 0x62
-    '╥' : CF.LINES_LEFT_1 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_1 | CF.LINES_UP_0,  # 0x64
-    '╫' : CF.LINES_LEFT_1 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_1 | CF.LINES_UP_2,  # 0x66
-    'D╴': CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_0,  # 0x80
-    '╛' : CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_1,  # 0x81
-    '╝' : CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_2,  # 0x82
-    '═' : CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_0,  # 0x88
-    '╧' : CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_1,  # 0x89
-    '╩' : CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_2,  # 0x8A
-    '╕' : CF.LINES_LEFT_2 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_0,  # 0x90
-    '╡' : CF.LINES_LEFT_2 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_1,  # 0x91
-    '╤' : CF.LINES_LEFT_2 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_2 | CF.LINES_UP_0,  # 0x98
-    '╪' : CF.LINES_LEFT_2 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_2 | CF.LINES_UP_1,  # 0x99
-    '╗' : CF.LINES_LEFT_2 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_0 | CF.LINES_UP_0,  # 0xA0
-    '╣' : CF.LINES_LEFT_2 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_0 | CF.LINES_UP_2,  # 0xA2
-    '╦' : CF.LINES_LEFT_2 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_2 | CF.LINES_UP_0,  # 0xA8
-    '╬' : CF.LINES_LEFT_2 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_2 | CF.LINES_UP_2,  # 0xAA
+    ' ': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_0,  # 0x00
+    '└': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_1,  # 0x05
+    '╙': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_2,  # 0x06
+    '╘': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_1,  # 0x09
+    '╚': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_2,  # 0x0A
+    '│': CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_1,  # 0x11
+    '┌': CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_1 | CF.LINES_UP_0,  # 0x14
+    '├': CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_1 | CF.LINES_UP_1,  # 0x15
+    '╒': CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_2 | CF.LINES_UP_0,  # 0x18
+    '╞': CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_2 | CF.LINES_UP_1,  # 0x19
+    '║': CF.LINES_LEFT_0 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_0 | CF.LINES_UP_2,  # 0x22
+    '╓': CF.LINES_LEFT_0 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_1 | CF.LINES_UP_0,  # 0x24
+    '╟': CF.LINES_LEFT_0 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_1 | CF.LINES_UP_2,  # 0x26
+    '╔': CF.LINES_LEFT_0 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_2 | CF.LINES_UP_0,  # 0x28
+    '╠': CF.LINES_LEFT_0 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_2 | CF.LINES_UP_2,  # 0x2A
+    '┘': CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_1,  # 0x41
+    '╜': CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_2,  # 0x42
+    '─': CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_0,  # 0x44
+    '┴': CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_1,  # 0x45
+    '╨': CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_2,  # 0x46
+    '┐': CF.LINES_LEFT_1 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_0,  # 0x50
+    '┤': CF.LINES_LEFT_1 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_1,  # 0x51
+    '┬': CF.LINES_LEFT_1 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_1 | CF.LINES_UP_0,  # 0x54
+    '┼': CF.LINES_LEFT_1 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_1 | CF.LINES_UP_1,  # 0x55
+    '╖': CF.LINES_LEFT_1 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_0 | CF.LINES_UP_0,  # 0x60
+    '╢': CF.LINES_LEFT_1 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_0 | CF.LINES_UP_2,  # 0x62
+    '╥': CF.LINES_LEFT_1 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_1 | CF.LINES_UP_0,  # 0x64
+    '╫': CF.LINES_LEFT_1 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_1 | CF.LINES_UP_2,  # 0x66
+    '╛': CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_1,  # 0x81
+    '╝': CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_2,  # 0x82
+    '═': CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_0,  # 0x88
+    '╧': CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_1,  # 0x89
+    '╩': CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_2,  # 0x8A
+    '╕': CF.LINES_LEFT_2 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_0,  # 0x90
+    '╡': CF.LINES_LEFT_2 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_1,  # 0x91
+    '╤': CF.LINES_LEFT_2 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_2 | CF.LINES_UP_0,  # 0x98
+    '╪': CF.LINES_LEFT_2 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_2 | CF.LINES_UP_1,  # 0x99
+    '╗': CF.LINES_LEFT_2 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_0 | CF.LINES_UP_0,  # 0xA0
+    '╣': CF.LINES_LEFT_2 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_0 | CF.LINES_UP_2,  # 0xA2
+    '╦': CF.LINES_LEFT_2 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_2 | CF.LINES_UP_0,  # 0xA8
+    '╬': CF.LINES_LEFT_2 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_2 | CF.LINES_UP_2,  # 0xAA
 }
 
 # Pre-allocate array with 256 elements with '·' (middle dot U+00B7) as placeholder.
@@ -562,14 +539,14 @@ for c in glst_unicode_classification_by_character_ordered:
 # ASCII look-up array for manual editing.  The finished array is here.
 g_ascii_line_char_lookup_by_classification = {
     ' ',  # 0x00 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_0
-    '|',  # 0x01 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_1
-    '#',  # 0x02 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_2
+    '·',  # 0x01
+    '·',  # 0x02
     '·',  # 0x03
-    '-',  # 0x04 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_0
+    '·',  # 0x04
     '+',  # 0x05 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_1
     '#',  # 0x06 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_2
     '·',  # 0x07
-    '=',  # 0x08 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_0
+    '·',  # 0x08
     '+',  # 0x09 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_1
     '#',  # 0x0A = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_2
     '·',  # 0x0B
@@ -577,7 +554,7 @@ g_ascii_line_char_lookup_by_classification = {
     '·',  # 0x0D
     '·',  # 0x0E
     '·',  # 0x0F
-    '|',  # 0x10 = CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_0
+    '·',  # 0x10
     '|',  # 0x11 = CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_1
     '·',  # 0x12
     '·',  # 0x13
@@ -593,7 +570,7 @@ g_ascii_line_char_lookup_by_classification = {
     '·',  # 0x1D
     '·',  # 0x1E
     '·',  # 0x1F
-    '#',  # 0x20 = CF.LINES_LEFT_0 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_0 | CF.LINES_UP_0
+    '·',  # 0x20
     '·',  # 0x21
     '#',  # 0x22 = CF.LINES_LEFT_0 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_0 | CF.LINES_UP_2
     '·',  # 0x23
@@ -625,7 +602,7 @@ g_ascii_line_char_lookup_by_classification = {
     '·',  # 0x3D
     '·',  # 0x3E
     '·',  # 0x3F
-    '-',  # 0x40 = CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_0
+    '·',  # 0x40
     '+',  # 0x41 = CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_1
     '#',  # 0x42 = CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_2
     '·',  # 0x43
@@ -689,7 +666,7 @@ g_ascii_line_char_lookup_by_classification = {
     '·',  # 0x7D
     '·',  # 0x7E
     '·',  # 0x7F
-    '=',  # 0x80 = CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_0
+    '·',  # 0x80
     '+',  # 0x81 = CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_1
     '#',  # 0x82 = CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_2
     '·',  # 0x83
