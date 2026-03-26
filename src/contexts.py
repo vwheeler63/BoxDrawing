@@ -55,16 +55,7 @@ class BoxDrawingContextEventListener(sublime_plugin.ViewEventListener):
             result = False
 
             rhs = bool(operand)
-
-            # ---------------------------------------------------------------------
-            # Is there only 1 selection (caret)?
-            # And state = ON?
-            # ---------------------------------------------------------------------
-            if debugging:
-                print(f'  {core.g_state=}')
-                print(f'  is_state_active()=>[{core.is_state_active()}]')
-
-            lhs = core.ok_to_do_box_drawing(self.view)
+            lhs = core.ok_to_do_box_drawing(self.view, debugging)
 
             if debugging:
                 print(f'  {lhs=}')
@@ -75,6 +66,6 @@ class BoxDrawingContextEventListener(sublime_plugin.ViewEventListener):
                 result = ((lhs != rhs))
 
         if debugging:
-            print(f'  result[{result}]')
+            print(f'  on_query_context() result[{result}]')
 
         return result

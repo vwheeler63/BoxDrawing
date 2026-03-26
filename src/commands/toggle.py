@@ -8,11 +8,12 @@ class BoxDrawingToggleCommand(sublime_plugin.TextCommand):
         """
         Determine whether associated menu item is enabled.
 
-        Returning `False` has a down side:  If this command is mapped to a
-        key combination, if this returns `False` Sublime Text will NOT
-        continue looking for other possible key bindings to use.  The answer
-        to this is to have this method return `True` and have
-        `on_query_context()` listener make the determination.
+        Returning `False` from `is_enabled()` queries that were mapped to commands
+        apparently used to have a down side that it would block Sublime Text from
+        continuing to look for other possible key bindings to use.  However, testing
+        with build 4200 shows that this is no longer the case.  When BoxDrawing is
+        turned OFF for a particular View, [Alt+Left] and [Alt+Right] still perform
+        their default bindings:  move by sub-words.
 
         Since the inherited implementation of `is_enabled()` returns `True`,
         this method could be removed without consequence.
@@ -22,7 +23,7 @@ class BoxDrawingToggleCommand(sublime_plugin.TextCommand):
 
     def is_checked(self):
         """ Determine whether a checkmark appears next to menu item. """
-        return core.is_state_active()
+        return core.is_state_active(self.view)
 
 
     # def description(self):
@@ -31,7 +32,7 @@ class BoxDrawingToggleCommand(sublime_plugin.TextCommand):
     #     """
     #     result = 'Turn Box Drawing ON'
 
-    #     if core.is_state_active():
+    #     if core.is_state_active(self.view):
     #         result = 'Turn Box Drawing OFF'
 
     #     return result
@@ -49,4 +50,4 @@ class BoxDrawingToggleCommand(sublime_plugin.TextCommand):
         if debugging:
             print('In BoxDrawingTurnOffCommand()...')
 
-        core.toggle_state()
+        core.toggle_state(self.view)

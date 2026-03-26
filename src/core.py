@@ -219,7 +219,7 @@ Examples:
 Character Classification
 ========================
 
-Character Classification will consist of 1 byte:  four 2-bit fields containing:
+Character Classification consists of 1 byte:  four 2-bit fields containing:
 
 .. code-block:: text
 
@@ -230,10 +230,10 @@ Character Classification will consist of 1 byte:  four 2-bit fields containing:
       L   b   r   t
 
     where:
-        - t = top
-        - r = right
-        - b = bottom
-        - L = left
+        t = top side
+        r = right side
+        b = bottom side
+        L = left side
 
 The unsigned integer in each bit field contains:
 
@@ -241,7 +241,7 @@ The unsigned integer in each bit field contains:
 - 1 = 0b01 = 1 line
 - 2 = 0b10 = 2 lines
 
-The OR-ed combined value will index into a character array for fast
+The OR-ed combined value will index into a character-lookup array for fast
 character selection by combining bits from this classification list.
 (Bits are supplied by the ClassificationField class below.)
 
@@ -285,21 +285,31 @@ however, it will catch these keys and act on them with:
 
 
 
-Resources for Writing to Empty Space to Right of EOL
-====================================================
+Resources for Detecting Empty Space to Right of EOL
+===================================================
 
-Given a document with an empty line on zero-based line (row) 16:
+Given any document of any size, and arguments of `row` and `col`:
 
 .. code-block:: py
 
+    last_pt = view.size()
+    last_row, last_col = view.rowcol(last_pt)
+
+give us the boundaries we need to work with `row` and `col` and
+append spaces where needed.
+
     pt1 = view.text_point(16, 10, clamp_column=False)
     pt2 = view.text_point(16, 10, clamp_column=True)
+    last_pt = view.size()
 
-``pt1 > pt2`` when column 10 is past the end of line 16.
-``pt1 - pt2`` is the number of spaces that need to be appended
-to line 16 for the appropriate "line character" to be inserted
-at the end of the line so that it feels to the user like he can
-direct box drawing into "unused whitespace" after line endings.
+``pt1`` is row (16,0) + 10 clamped to EOF
+``pt2`` is row (16,0) + 10 clamped to EOF AND clamped to EOL.
+``pt1 > pt2`` when column 10 is past the end of row 16.
+But ``pt1 - pt2`` is not always the number of spaces that need to be
+appended to row 16 for (row,col) to be a valid position in Buffer.
+
+Because both ``pt1`` and ``pt2`` are clamped to EOF, neither will ever
+be larger than ``last_pt``.
 
 
 
@@ -336,7 +346,7 @@ _cfg_stg_name__debugging                             = 'debugging'
 
 
 # =========================================================================
-# Package-Settings
+# Package Settings
 # =========================================================================
 
 def bd_setting(setting_name: str):
@@ -366,25 +376,50 @@ bd_setting.default = {
 
 
 # =========================================================================
-# Data
+# Package-Wide Classes
 # =========================================================================
 
-class ClassificationField(IntFlag):
+class Direction(IntEnum):
     """
+    DrawingDirection Enumeration
+
+    Characterization mentioned in comments is from
+    `gdict_unicode_characterization_by_char_ordered` dictionary values.
+    """
+    NONE  = -1  # Happens after Package load, turning box-drawing off, and an ERASE;
+                #   to detect "change of direction"
+    UP    = 0   # val * 2 = bit-shift right to isolate characterization in 2 LSbs
+    RIGHT = 1   # val * 2 = bit-shift right to isolate characterization in 2 LSbs
+    DOWN  = 2   # val * 2 = bit-shift right to isolate characterization in 2 LSbs
+    LEFT  = 3   # val * 2 = bit-shift right to isolate characterization in 2 LSbs
+
+
+class State(IntEnum):
+    """
+    Whether a particular View is in Box-Drawing Mode or not.
+    """
+    OFF = 0
+    ON  = 1   # In box-drawing mode
+
+
+class ClassificationField(IntFlag):
+    r"""
     Character Classification
     ========================
 
-    Character Classification will consist of 1 byte:  four 2-bit fields
-    containing:
+    Character Classification consists of 1 byte containing four 2-bit fields:
 
     +-+-+-+-+-+-+-+-+
     |t|t|r|r|b|b|L|L|
     +-+-+-+-+-+-+-+-+
+     \_/ \_/ \_/ \_/
+      L   b   r   t
 
-    - t = top
-    - r = right
-    - b = bottom
-    - L = left
+    where:
+        t = top side
+        r = right side
+        b = bottom side
+        L = left side
 
     The unsigned integer in each bit field contains:
 
@@ -392,13 +427,8 @@ class ClassificationField(IntFlag):
     - 1 = 1 line
     - 2 = 2 lines
 
-    The OR-ed combined value will index into an array for fast character
-    selection by combining bits from this classification list.
-
-    Note that the values beginning with "ONE_" retain the next word
-    in plural (LINES), even thought it is not grammatically correct,
-    because it makes it easier to create the data structures this
-    Package uses.
+    The OR-ed combined value will index into a character-lookup array for fast
+    character selection by combining bits from this classification list.
     """
     LINES_UP_0    = 0x00
     LINES_UP_1    = 0x01
@@ -417,23 +447,30 @@ class ClassificationField(IntFlag):
     LINES_LEFT_2  = 0x80
 
 
+# Abbreviation for the box-drawing character characterization dictionaries
+# below, to make constants like ``gdict_unicode_characterization_by_char_ordered``
+# more readable.
 CF = ClassificationField
 
 
+# =========================================================================
+# Constants
+# =========================================================================
+
 # -------------------------------------------------------------------------
-# Classifications by Character
+# Classifications by Box-Drawing Character
 #
-# Note:  not all bit combinations are represented.  While there appears to
-# be a Unicode character for each bit-field combination, many fonts only
-# have a subset of this list of characters in them.  So this list will be
-# limited to those characters.
+# Note:  not all bit combinations are represented.  While there appears
+# to be a Unicode character for each bit-field combination, many fonts
+# (including the one(s) used by Sublime Text) only have a subset of
+# this list of characters in them.  So this list will be limited to
+# those characters.
 #
-# Columns are in bit order left-to-right:
+# Columns are in bit order left-to-right (most-significant to least):
 #       LEFT   BOTTOM   RIGHT   TOP
 # -------------------------------------------------------------------------
 gdict_unicode_classification_by_character = {
     # Single Lines
-    ' ': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_0,  # 0x00
     '└': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_1,  # 0x05
     '│': CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_1,  # 0x11
     '┌': CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_1 | CF.LINES_UP_0,  # 0x14
@@ -480,8 +517,7 @@ gdict_unicode_classification_by_character = {
     '╪': CF.LINES_LEFT_2 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_2 | CF.LINES_UP_1,  # 0x99
 }
 
-gdict_unicode_classification_by_character_ordered = {
-    ' ': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_0,  # 0x00
+gdict_unicode_characterization_by_char_ordered = {
     '└': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_1,  # 0x05
     '╙': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_2,  # 0x06
     '╘': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_1,  # 0x09
@@ -524,21 +560,16 @@ gdict_unicode_classification_by_character_ordered = {
     '╬': CF.LINES_LEFT_2 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_2 | CF.LINES_UP_2,  # 0xAA
 }
 
-# Pre-allocate array with 256 elements with '·' (middle dot U+00B7) as placeholder.
-glst_unicode_box_char_lookup_by_classification = ['·'] * 256
-
-# Populate Unicode look-up array using `gdict_unicode_classification_by_character_ordered`.
-for c in gdict_unicode_classification_by_character_ordered:
-    mc = c
-    if c[0] == 'D':
-        mc = c[1]
-    classif_idx = gdict_unicode_classification_by_character_ordered[c]
-    glst_unicode_box_char_lookup_by_classification[classif_idx] = mc
-
-# The following used the above Unicode look-up array to generate this
-# ASCII look-up array for manual editing.  The finished array is here.
-glst_ascii_box_char_lookup_by_classification = {
-    ' ',  # 0x00 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_0
+# -------------------------------------------------------------------------
+# The following used the above Unicode characterization dictionary
+# to generate this ASCII lookup array for manual editing.  The
+# finished arrayis here.  It is indexed by characterization as is
+# ``glst_unicode_box_char_lookup_by_characterization`` which is
+# populated programmatically below.  The result looks a great deal
+# like this lookup array.
+# -------------------------------------------------------------------------
+glst_ascii_box_char_lookup_by_characterization = {
+    '·',  # 0x00 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_0
     '·',  # 0x01
     '·',  # 0x02
     '·',  # 0x03
@@ -796,111 +827,59 @@ glst_ascii_box_char_lookup_by_classification = {
     '·',  # 0xFF
 }
 
-box_char_dict = gdict_unicode_classification_by_character_ordered
-
 
 # =========================================================================
-# Direction
+# Data
 # =========================================================================
 
-class Direction(IntEnum):
-    """
-    Direction Enumeration
+cfg_view_box_drawing_state_key = '_box_drawing_state'
+cfg_view_box_drawing_last_direction_key = '_box_drawing_last_direction'
 
-    Characterization mentioned in comments is from
-    `gdict_unicode_classification_by_character_ordered` dictionary values.
-    """
-    NONE  = -1  # Happens after Package load, turning box-drawing off, and an ERASE;
-                #   to detect "change of direction"
-    UP    = 0   # val * 2 = bit-shift right to isolate characterization in 2 LSbs
-    RIGHT = 1   # val * 2 = bit-shift right to isolate characterization in 2 LSbs
-    DOWN  = 2   # val * 2 = bit-shift right to isolate characterization in 2 LSbs
-    LEFT  = 3   # val * 2 = bit-shift right to isolate characterization in 2 LSbs
+# Pre-allocate array with 256 elements with '·' (middle dot U+00B7) as placeholder.
+glst_unicode_box_char_lookup_by_characterization = ['·'] * 256
 
+# Populate Unicode look-up array using `gdict_unicode_characterization_by_char_ordered`.
+for c in gdict_unicode_characterization_by_char_ordered:
+    mc = c
+    if c[0] == 'D':
+        mc = c[1]
+    classif_idx = gdict_unicode_characterization_by_char_ordered[c]
+    glst_unicode_box_char_lookup_by_characterization[classif_idx] = mc
 
-g_direction = Direction.NONE
-
-
-def set_last_direction(dir: Direction):
-    g_direction = dir
-
-
-# =========================================================================
-# State (OFF or ON)
-# =========================================================================
-
-class State(IntEnum):
-    """
-    Whether this package is in LineDrawing Mode or not.
-    """
-    OFF = 0
-    ON  = 1   # In box-drawing mode
-
-
-g_state: State = State.OFF
-
-
-def on_state_transition_to_off():
-    sublime.status_message('BoxDrawing OFF')
-
-
-def on_state_transition_to_on():
-    sublime.status_message('BoxDrawing ON')
-
-
-def is_state_active() -> bool:
-    result = False
-
-    if g_state == State.ON:
-        result = True
-
-    return result
-
-
-def set_state_off():
-    global g_state
-    g_state = State.OFF
-    g_direction = Direction.NONE
-    on_state_transition_to_off()
-    if is_debugging(DebugBit.COMMANDS | DebugBit.STATE):
-        print('In set_state_off()...')
-        print(f'  {g_state=}')
-        print(f'  is_state_active()=>[{is_state_active()}]')
-
-
-def set_state_on():
-    global g_state
-    g_state = State.ON
-    on_state_transition_to_on()
-    if is_debugging(DebugBit.COMMANDS | DebugBit.STATE):
-        print('In set_state_on()...')
-        print(f'  {g_state=}')
-        print(f'  is_state_active()=>[{is_state_active()}]')
-
-
-def toggle_state():
-    if is_debugging(DebugBit.COMMANDS | DebugBit.STATE):
-        print('In toggle_state()...')
-
-    if is_state_active():
-        set_state_off()
-    else:
-        set_state_on()
+# These will be arbitrarily assigned until we implement ASCII,
+# then the configured character set will determine which arrays get
+# assigned and this will get updated when Package settings change.
+gdict_characterization_by_char = gdict_unicode_characterization_by_char_ordered
+glst_box_char_lookup_by_characterization = glst_unicode_box_char_lookup_by_characterization
 
 
 # =========================================================================
 # Utilities
 # =========================================================================
 
-def ok_to_do_box_drawing(view: sublime.View) -> bool:
+def ok_to_do_box_drawing(view: sublime.View, debugging: bool) -> bool:
     live_sel_list = view.sel()
     sel_rgn = live_sel_list[0]
+    view_settings = view.settings()
+    drawing_state = view_settings.get(cfg_view_box_drawing_state_key)
 
+    # ---------------------------------------------------------------------
+    # - State = ON?
+    # - Only 1 selection (caret)?
+    # - No text selected?
+    # ---------------------------------------------------------------------
     result = ((
-                is_state_active()
+                (drawing_state == State.ON)
             and (len(live_sel_list) == 1)
             and (sel_rgn.b - sel_rgn.a == 0)
             ))
+
+    if debugging:
+        print('In ok_to_do_box_drawing()...')
+        print(f'  {drawing_state=}')
+        print(f'  {len(live_sel_list)=}')
+        print(f'  {sel_rgn=}')
+        print(f'  {result=}')
 
     return result
 
@@ -913,26 +892,52 @@ def timestamp() -> str:
 
 
 # =========================================================================
-# Debugging Utilities
+# State Utilities
+#
+# State (OFF or ON) -- per View
+#
+# Because ``BoxDrawingContextEventListener`` needs to know about this
+# state, and because it is a per-view state, and because it will not
+# have access to the ``BoxDrawingDrawOneCharacterCommand`` per-view
+# object, we keep this state in the View's settings rather than have it
+# be in 2 places, eliminating the error-proneness of redundant state
+# memory.  This gives access to these values for both the listener and
+# the Commands.
 # =========================================================================
 
-def debug_show_regions(view: View, regions: List[Region], cmt: str, pkg_name: str = ''):
-    """ Temporarily show region selected on screen. """
-    region_set_key = "pro_comment.test_key"
+def is_state_active(view: View) -> bool:
+    view_settings = view.settings()
+    drawing_state = view_settings.get(cfg_view_box_drawing_state_key)
+    return ((drawing_state == State.ON))
 
-    view.add_regions(
-        region_set_key,
-        regions,
-        "region.orangish",
-        "bookmark",
-        flags=sublime.RegionFlags.DRAW_EMPTY | sublime.RegionFlags.DRAW_NO_FILL
-    )
 
-    # Delay so user can look at regions highlighted in View before they are erased.
-    msg = f'{pkg_name}:\n\n{cmt}'
-    sublime.message_dialog(msg)
+def set_state_off(view: View):
+    view_settings = view.settings()
+    view_settings.set(cfg_view_box_drawing_state_key, State.OFF)
+    view_settings.set(cfg_view_box_drawing_last_direction_key, Direction.NONE)
+    sublime.status_message('BoxDrawing OFF')
+    if is_debugging(DebugBit.COMMANDS | DebugBit.STATE):
+        print('In set_state_off()...')
+        print(f'  {is_state_active(view)=}')
 
-    view.erase_regions(region_set_key)
+
+def set_state_on(view: View):
+    view_settings = view.settings()
+    view_settings.set(cfg_view_box_drawing_state_key, State.ON)
+    sublime.status_message('BoxDrawing ON')
+    if is_debugging(DebugBit.COMMANDS | DebugBit.STATE):
+        print('In set_state_on()...')
+        print(f'  {is_state_active(view)=}')
+
+
+def toggle_state(view: View):
+    if is_debugging(DebugBit.COMMANDS | DebugBit.STATE):
+        print('In toggle_state()...')
+
+    if is_state_active(view):
+        set_state_off(view)
+    else:
+        set_state_on(view)
 
 
 # =========================================================================
