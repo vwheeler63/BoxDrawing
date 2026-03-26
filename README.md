@@ -1,12 +1,52 @@
 # BoxDrawing
 
-**BoxDrawing** is a Sublime Text package that enables the user to use [Shift] or [Alt+Shift] combined with keypad arrow keys with [NumLock] ON to perform box drawing in the text.
+**BoxDrawing** is a Sublime Text package enabling the user to draw lines and boxes like these:
 
-Wherever the user directs box drawing to go replaces any text that is already there, as if in "overwrite" mode.
+```
+┌─┬┐  ╔═╦╗  ╓─╥╖  ╒═╤╕
+│ ││  ║ ║║  ║ ║║  │ ││
+├─┼┤  ╠═╬╣  ╟─╫╢  ╞═╪╡
+└─┴┘  ╚═╩╝  ╙─╨╜  ╘═╧╛
+┌───────────────────┐
+│  ╔═══╗ Some Text  │
+│  ╚═╦═╝ in the box │
+╞═╤══╩══╤═══════════╡
+│ ├──┬──┤           │
+│ └──┴──┘           │
+└───────────────────┘
 
-Box drawing can be directed into unused space after line endings and it appends enough spaces on each applicable line to replace the target space character with the appropriate "line" character where directed by the arrow keys mapped to the box-drawing operations.
++-----+-+-+-+-----------------------------------------------------+
+|Key  |S|C|A| Command                                             |
++=====+=+=+=+=====================================================+
+|Up   | |x| | stop side-by-side editing                           |
++-----+-+-+-+-----------------------------------------------------+
+|Left | |x| | deselect Sheet to the left                          |
++-----+-+-+-+-----------------------------------------------------+
+|Left |x|x| | select Sheet to the left                            |
++-----+-+-+-+-----------------------------------------------------+
+|Right| |x| | deselect Sheet to the right,                        |
++-----+-+-+-+-----------------------------------------------------+
+|Right|x|x| | select Sheet to the right                           |
++-----+-+-+-+-----------------------------------------------------+
+|PgUp | |x| | move focus to selected Sheet to the left            |
++-----+-+-+-+-----------------------------------------------------+
+|PgDn | |x| | move focus to selected Sheet to the right           |
++-----+-+-+-+-----------------------------------------------------+
+|j    | |x| | open message box explaining `ctrl+j` mapping change |
++-----+-+-+-+-----------------------------------------------------+
+```
+
+using:
+
+- `[Alt+Arrow]` (to draw with single lines)
+- `[Alt+Shift+Arrow]` (to draw with double lines), or
+- `[Ctrl+Alt+Shift+Arrow]` (erase)
+
+Wherever the user directs box drawing to go replaces any text that is already there, as if in "overwrite" mode, and extends text with spaces as needed to go there.
 
 The type of box characters used depend upon the `character_set` setting.  Valid options are:  "ASCII" (default), and "Unicode".
+
+Note:  re-binding the above key combinations in a `.sublime-keymap` file in your `User` package will interfere with this Package unless you re-bind the box-drawing keys to something else.
 
 
 

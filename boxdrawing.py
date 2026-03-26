@@ -42,11 +42,11 @@ to draw lines and boxes in their text like these:
 |j    | |x| | open message box explaining `ctrl+j` mapping change |
 +-----+-+-+-+-----------------------------------------------------+
 
-See `src/core.py` for details.
+See `README.md` and `src/core.py` for more details.
 
 
 
-@version  1.0  13-May-2025 19:59 vw  - Created
+@version  1.0  26-Mar-2026 12:15 vw  - Created
 *********************************************************************** """
 import importlib
 import sys
@@ -161,4 +161,3 @@ def plugin_unloaded():
 
 if debugging:
     print(f'{this_module_name}  <<<')
-
