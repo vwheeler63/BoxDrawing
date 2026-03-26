@@ -1,4 +1,5 @@
 import sublime_plugin
+import sublime
 from sublime import Region, View
 from sublime_types import Point
 from ...lib.debug import IntFlag, DebugBit, is_debugging
@@ -76,9 +77,9 @@ def _virtual_char_at(view: View, row: int, col: int) -> str:
     """
     Character at (row,col).
 
-    :param view:       View of interest
-    :param row:        View's row being examined
-    :param col:        View's column being examined
+    :param view:       current View
+    :param row:        row being examined
+    :param col:        column being examined
     :param debugging:  Are we debugging?
 
     :returns:
@@ -187,7 +188,15 @@ def _move_caret(view: View, edit, row: int, col: int, direction: Direction, debu
     return row, col
 
 
-def _computed_char_by_surrounding_chars(intended_line_count: int, direction: Direction):
+def _compute_and_place_drawing_char(
+        view          : View,
+        edit          : sublime.Edit,
+        row           : int,
+        col           : int,
+        new_line_count: int,
+        direction     : Direction,
+        debugging     : bool
+        ):
     """
     Compute character:
         - use surrounding chars to assemble a characterization
@@ -198,6 +207,7 @@ def _computed_char_by_surrounding_chars(intended_line_count: int, direction: Dir
                 - glst_ascii_box_char_lookup_by_characterization
 
     Uses globals:
+
         up_ln_cnt
         rt_ln_cnt
         dn_ln_cnt
@@ -211,11 +221,22 @@ def _computed_char_by_surrounding_chars(intended_line_count: int, direction: Dir
         RIGHT = 1   # << 1 = number of bits to shift
         DOWN  = 2   # << 1 = number of bits to shift
         LEFT  = 3   # << 1 = number of bits to shift
+
+    :param view:            current View
+    :param row:             target row
+    :param col:             target column
+    :param new_line_count:  number of lines indicated by user's key combination
+                              1, 2 or 0 = erase
+    :param direction:       direction indicated by user's key combination
+                              (one of the ``Direction`` enumerators)
+    :param debugging:       Are we debugging?
     """
     global up_ln_cnt
     global rt_ln_cnt
     global dn_ln_cnt
     global lf_ln_cnt
+
+    _look_around(view, row, col, debugging)
 
     up_shift_amt = Direction.UP    << 1
     rt_shift_amt = Direction.RIGHT << 1
@@ -225,22 +246,22 @@ def _computed_char_by_surrounding_chars(intended_line_count: int, direction: Dir
     if up_ln_cnt + rt_ln_cnt + dn_ln_cnt + lf_ln_cnt == 0:
         # We're starting fresh---no surrounding box-drawing characters.
         if direction == Direction.UP or direction == Direction.DOWN:
-            up_ln_cnt = intended_line_count
-            dn_ln_cnt = intended_line_count
+            up_ln_cnt = new_line_count
+            dn_ln_cnt = new_line_count
         elif direction == Direction.RIGHT or direction == Direction.LEFT:
-            rt_ln_cnt = intended_line_count
-            lf_ln_cnt = intended_line_count
+            rt_ln_cnt = new_line_count
+            lf_ln_cnt = new_line_count
     else:
         # There is at least one surrounding box-drawing character.  Now we
-        # compute how `direction` and `intended_line_count` are going to influence that.
+        # compute how `direction` and `new_line_count` are going to influence that.
         if direction == Direction.UP:
-            up_ln_cnt = intended_line_count
+            up_ln_cnt = new_line_count
         elif direction == Direction.RIGHT:
-            rt_ln_cnt = intended_line_count
+            rt_ln_cnt = new_line_count
         elif direction == Direction.DOWN:
-            dn_ln_cnt = intended_line_count
+            dn_ln_cnt = new_line_count
         elif direction == Direction.LEFT:
-            lf_ln_cnt = intended_line_count
+            lf_ln_cnt = new_line_count
 
     up_bit_field = up_ln_cnt << up_shift_amt
     rt_bit_field = rt_ln_cnt << rt_shift_amt
@@ -249,7 +270,23 @@ def _computed_char_by_surrounding_chars(intended_line_count: int, direction: Dir
 
     characterization = up_bit_field | rt_bit_field | dn_bit_field | lf_bit_field
 
-    return core.glst_box_char_lookup_by_characterization[characterization]
+    c = core.glst_box_char_lookup_by_characterization[characterization]
+
+    # Replace `cur_char` with computed character.
+    pt = view.text_point(row, col)
+    dest_char_rgn = Region(pt, pt + 1)
+    cur_char = view.substr(dest_char_rgn)
+
+    # Insert if at EOL, replace otherwise.
+    if cur_char == '\n':
+        view.insert(edit, pt, c)
+    else:
+        view.replace(edit, dest_char_rgn, c)
+
+    # Wipe out selection and set caret to `pt`.
+    sel_list = view.sel()
+    sel_list.clear()
+    sel_list.add(pt)
 
 
 class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
@@ -277,13 +314,13 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
         debugging = is_debugging(DebugBit.BOX_DRAWING)
         return core.ok_to_do_box_drawing(self.view, debugging)
 
-    def run(self, edit, intended_line_count: int, direction: Direction):
+    def run(self, edit, line_count: int, direction: Direction):
         """
         Draw box character with specified line count in specified direction.
 
-        :param edit:                 sublime.Edit object, needed for editing Buffer
-        :param direction:            Direction drawing will proceed (see Direction)
-        :param intended_line_count:  0 = erase, 1 = single, 2 = double
+        :param edit:        sublime.Edit object, needed for editing Buffer
+        :param direction:   Direction drawing will proceed (see Direction)
+        :param line_count:  0 = erase, 1 = single, 2 = double
         :return:  None
 
 
@@ -353,7 +390,7 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
         Pseudocode to carry out above algorithm:
         ========================================
 
-        if intended_line_count == 0:  # erase:
+        if line_count == 0:  # erase:
             write SPACE at current location
             move in `direction`
             last_drawing_direction = Direction.NONE
@@ -394,7 +431,7 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
         debugging = is_debugging(DebugBit.COMMANDS | DebugBit.BOX_DRAWING)
         if debugging:
             print('In BoxDrawingDrawOneCharacterCommand()...')
-            print(f'  {intended_line_count=}')
+            print(f'  {line_count=}')
             print(f'  {direction=}')
 
         view = self.view
@@ -406,11 +443,11 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
         src_char_pt   = src_caret_rgn.b
         src_char_rgn  = Region(src_char_pt, src_char_pt + 1)
 
-        # if intended_line_count == 0:  # erase:
+        # if line_count == 0:  # erase:
         #     write SPACE at current location
         #     move in `direction`
         #     last_drawing_direction = Direction.NONE
-        if intended_line_count == 0:
+        if line_count == 0:
             # Erase.
             if debugging:
                 print('Erase...')
@@ -422,11 +459,11 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
             # Draw something.
             row, col = view.rowcol(src_char_pt)
             if debugging:
-                if intended_line_count > 1:
+                if line_count > 1:
                     plural_suffix = 's'
                 else:
                     plural_suffix = ''
-                print(f'Draw {intended_line_count} line{plural_suffix}...')
+                print(f'Draw {line_count} line{plural_suffix}...')
                 print(f'  {row=}')
                 print(f'  {col=}')
             # if same_direction and `src_char` is a box-drawing character:
@@ -434,11 +471,11 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
                 if debugging:
                     print('  Same direction.')
                 # move in `direction`:
-                row, col = _move_caret(view, edit, row, col, direction, debugging)
                 #     - If char does not exist in that direction, add enough spaces to
                 #       end of line so that a space character exists there to support
                 #       a "view.replace()" on that character.
                 #     - Move selection to that character.
+                row, col = _move_caret(view, edit, row, col, direction, debugging)
 
             # last_drawing_direction = direction of keypress
             last_drawing_direction = direction
@@ -454,11 +491,10 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
             #         - dn_ln_cnt = 0=not a box char, 1=1 vert line involved, 2=2 vert lines involved.
             #         - lf_ln_cnt = 0=not a box char, 1=1 horiz line involved, 2=2 horiz lines involved.
             #         - rt_ln_cnt = 0=not a box char, 1=1 horiz line involved, 2=2 horiz lines involved.
-            _look_around(view, row, col, debugging)
-
+            #
             # If condition (L.2) above (same direction and disagreeing existing line):
             #     "back adjust" `src_char`.
-
+            #
             # Compute character:
             #     - use surrounding chars to assemble a characterization
             #     - use characterization to index into the appropriate lookup array:
@@ -466,21 +502,12 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
             #           `glst_box_char_lookup_by_characterization`:
             #             - glst_unicode_box_char_lookup_by_characterization
             #             - glst_ascii_box_char_lookup_by_characterization
-            c = _computed_char_by_surrounding_chars(intended_line_count, direction)
-
-            # Replace `cur_char` with computed character.
-            pt = view.text_point(row, col)
-            dest_char_rgn = Region(pt, pt + 1)
-            cur_char = view.substr(dest_char_rgn)
-
-            # Insert if at EOL, replace otherwise.
-            if cur_char == '\n':
-                view.insert(edit, pt, c)
-            else:
-                view.replace(edit, dest_char_rgn, c)
-
-            # Wipe out selection and set caret to `pt`.
-            sel_list = view.sel()
-            sel_list.clear()
-            sel_list.add(pt)
-
+            _compute_and_place_drawing_char(
+                    view,
+                    edit,
+                    row,
+                    col,
+                    line_count,
+                    direction,
+                    debugging
+                    )
