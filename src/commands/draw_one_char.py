@@ -116,7 +116,6 @@ def _look_around(view: View, row: int, col: int, debugging: bool):
     global dn_ln_cnt
     global lf_ln_cnt
 
-    debugging = is_debugging(DebugBit.BOX_DRAWING)
     if debugging:
         print('In _look_around()...')
         print(f'  {row=}')
