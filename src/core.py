@@ -219,31 +219,7 @@ Examples:
 Character Classification
 ========================
 
-Character Classification consists of 1 byte:  four 2-bit fields containing:
-
-.. code-block:: text
-
-    +-+-+-+-+-+-+-+-+
-    |L|L|b|b|r|r|t|t|
-    +-+-+-+-+-+-+-+-+
-     \_/ \_/ \_/ \_/
-      L   b   r   t
-
-    where:
-        t = top side
-        r = right side
-        b = bottom side
-        L = left side
-
-The unsigned integer in each bit field contains:
-
-- 0 = 0b00 = no lines
-- 1 = 0b01 = 1 line
-- 2 = 0b10 = 2 lines
-
-The OR-ed combined value will index into a character-lookup array for fast
-character selection by combining bits from this classification list.
-(Bits are supplied by the ClassificationField class below.)
+See docstring in line_count() function below.
 
 
 
@@ -851,6 +827,81 @@ for c in gdict_unicode_characterization_by_char_ordered:
 # assigned and this will get updated when Package settings change.
 gdict_characterization_by_char = gdict_unicode_characterization_by_char_ordered
 glst_box_char_lookup_by_characterization = glst_unicode_box_char_lookup_by_characterization
+
+
+# =========================================================================
+# Box-Drawing Character Characterization Utilities
+# =========================================================================
+
+def line_count(c: str, side: Direction, debugging: bool) -> int:
+    r"""
+    Compute and return the number of lines existing character `c` on side `side`.
+    Only box-drawing characters can have 1 or 2 lines, and most box-drawing
+    characters have 0 lines coming out of at least one of their sides.
+
+    All other characters will have 0 lines coming out of them because they
+    are not found in global `gdict_characterization_by_char`.
+
+    `gdict_characterization_by_char` references a dictionary with the
+    box-drawing characters as keys.  Which dictionary it references is
+    based on the `character_set` Package setting:  ASCII or Unicode.  The
+    integer values contain bit fields that tell us how many lines come out
+    of each side of that box-drawing character.  Here is how the bits are
+    arranged:
+
+    .. code-block:: text
+
+        +-+-+-+-+-+-+-+-+
+        |L|L|b|b|r|r|t|t|
+        +-+-+-+-+-+-+-+-+
+         \_/ \_/ \_/ \_/
+          L   b   r   t
+
+        where:
+            t = top side
+            r = right side
+            b = bottom side
+            L = left side
+
+    The unsigned integer in each bit field contains:
+
+    - 0 = 0b00 = no lines
+    - 1 = 0b01 = 1 line
+    - 2 = 0b10 = 2 lines
+
+    The OR-ed combined value will index into a character-lookup array for fast
+    character selection by combining bits from this classification list.
+
+    Note that the ``Direction`` IntEnum class is carefully ordered to so
+    that the ``side`` can be used to compute the number of bits to
+    right-shift this integer value to place the indicated field into the
+    least-significant 2 bits.
+
+        UP    = 0   # 0 << 1 == 0 == number of bits to shift
+        RIGHT = 1   # 1 << 1 == 2 == number of bits to shift
+        DOWN  = 2   # 2 << 1 == 4 == number of bits to shift
+        LEFT  = 3   # 3 << 1 == 6 == number of bits to shift
+
+    :param c:          Character to examine
+    :param side:       Which side of character to examine
+    :param debugging:  Are we debugging?
+    """
+    if debugging:
+        print('  In line_count()...')
+    result = 0
+
+    if c in gdict_characterization_by_char:
+        characterization = gdict_characterization_by_char[c]
+        right_shift_bit_count = side << 1
+        result = (characterization >> right_shift_bit_count) & 0x03
+        if debugging:
+            print(f'    characterization={characterization:02X}')
+            print(f'    {right_shift_bit_count=}')
+
+    if debugging:
+        print(f'    {result=}')
+
+    return result
 
 
 # =========================================================================

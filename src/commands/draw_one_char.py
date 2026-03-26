@@ -3,7 +3,7 @@ from sublime import Region, View
 from sublime_types import Point
 from ...lib.debug import IntFlag, DebugBit, is_debugging
 from .. import core
-from ..core import Direction, State, gdict_characterization_by_char
+from ..core import Direction, State
 
 
 up_char = ' '
@@ -14,6 +14,8 @@ up_ln_cnt = 0
 rt_ln_cnt = 0
 dn_ln_cnt = 0
 lf_ln_cnt = 0
+
+null_ch = chr(0)
 
 
 def _append_spaces_if_needed(view: View, edit, row: int, col: int, debugging: bool):
@@ -80,11 +82,16 @@ def _virtual_char_at(view: View, row: int, col: int) -> str:
     :param row:        View's row being examined
     :param col:        View's column being examined
     :param debugging:  Are we debugging?
-    :returns:  character at (row,col); space if is in "virtual space"
+
+    :returns:
+        - char at (row,col);
+        - ' ' if is in "virtual space" (to right or below), and
+        - '\x00' if above or to the left of Buffer boundaries.
     """
-    result = ' '
+    result = null_ch
 
     if row >= 0 and col >= 0:
+        result = ' '
         last_pt = view.size()
         real_pt = view.text_point(row, col, clamp_column=True)
 
@@ -93,73 +100,6 @@ def _virtual_char_at(view: View, row: int, col: int) -> str:
 
             if unk_pt == real_pt:
                 result = view.substr(real_pt)
-
-    return result
-
-
-def _line_count(c: str, side: Direction, debugging: bool) -> int:
-    r"""
-    Compute and return the number of lines existing character `c` on side `side`.
-    Only box-drawing characters can have 1 or 2 lines, and some box-drawing
-    characters have 0 lines coming out of a particular side.
-
-    All other characters will have 0 lines coming out of them because they
-    are not found in global `gdict_characterization_by_char`.
-
-    `gdict_characterization_by_char` is set a dictionary with the box-drawing characters as keys.
-    The integer values contain bit fields that tell us how many lines come out of
-    each side of that box-drawing character.  Here is how the bits are arranged:
-
-    .. code-block:: text
-
-        +-+-+-+-+-+-+-+-+
-        |L|L|b|b|r|r|t|t|
-        +-+-+-+-+-+-+-+-+
-         \_/ \_/ \_/ \_/
-          L   b   r   t
-
-        where:
-            t = top side
-            r = right side
-            b = bottom side
-            L = left side
-
-    The unsigned integer in each bit field contains:
-
-    - 0 = 0b00 = no lines
-    - 1 = 0b01 = 1 line
-    - 2 = 0b10 = 2 lines
-
-    The OR-ed combined value will index into a character-lookup array for fast
-    character selection by combining bits from this classification list.
-
-    Note that the ``Direction`` IntEnum class is carefully ordered to so that
-    the ``side`` can be used to compute the number of bits to shift to place
-    the indicated field into the least-significant 2 bits.
-
-        UP    = 0   # << 1 = number of bits to right-shift
-        RIGHT = 1   # << 1 = number of bits to right-shift
-        DOWN  = 2   # << 1 = number of bits to right-shift
-        LEFT  = 3   # << 1 = number of bits to right-shift
-
-    :param c:          Character to examine
-    :param side:       Which side of character to examine
-    :param debugging:  Are we debugging?
-    """
-    if debugging:
-        print('  In _line_count()...')
-    result = 0
-
-    if c in gdict_characterization_by_char:
-        characterization = gdict_characterization_by_char[c]
-        right_shift_count = side << 1
-        result = (characterization >> right_shift_count) & 0x03
-        if debugging:
-            print(f'    characterization={characterization:02X}')
-            print(f'    {right_shift_count=}')
-
-    if debugging:
-        print(f'    {result=}')
 
     return result
 
@@ -195,10 +135,10 @@ def _look_around(view: View, row: int, col: int, debugging: bool):
         print(f'  {dn_char=}')
         print(f'  {lf_char=}')
 
-    up_ln_cnt = _line_count(up_char, Direction.DOWN , debugging)
-    rt_ln_cnt = _line_count(rt_char, Direction.LEFT , debugging)
-    dn_ln_cnt = _line_count(dn_char, Direction.UP   , debugging)
-    lf_ln_cnt = _line_count(lf_char, Direction.RIGHT, debugging)
+    up_ln_cnt = core.line_count(up_char, Direction.DOWN , debugging)
+    rt_ln_cnt = core.line_count(rt_char, Direction.LEFT , debugging)
+    dn_ln_cnt = core.line_count(dn_char, Direction.UP   , debugging)
+    lf_ln_cnt = core.line_count(lf_char, Direction.RIGHT, debugging)
 
 
 def _move_caret(view: View, edit, row: int, col: int, direction: Direction, debugging: bool):
