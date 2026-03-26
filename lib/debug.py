@@ -108,9 +108,10 @@ Public API
 # Accept forward references as is done in the default assignment
 # to ``_debugging`` below.
 # from __future__ import annotations
-from enum import IntFlag
-from typing import Union
 import re
+from enum import IntFlag
+from typing import List, Union
+from sublime import View, Region, RegionFlags
 
 
 class DebugBit(IntFlag):
@@ -232,6 +233,28 @@ _cfg_debugging_print_format = '04X'
 # =========================================================================
 # Module Definitions
 # =========================================================================
+
+def debug_show_regions(
+        view    : View,
+        regions : List[Region],
+        key     : str,
+        comment : str,
+        pkg_name: str = ''
+        ):
+    """ Temporarily show `regions` on screen. """
+    view.add_regions(
+        key,
+        regions,
+        "region.orangish",
+        "bookmark",
+        flags=RegionFlags.DRAW_EMPTY | RegionFlags.DRAW_NO_FILL
+    )
+
+    # Delay so user can look at regions highlighted in View before they are erased.
+    msg = f'{pkg_name}:\n\n{comment}'
+    sublime.message_dialog(msg)
+    view.erase_regions(key)
+
 
 def _debugging_string_validator_regex():
     r"""
