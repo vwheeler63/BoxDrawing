@@ -94,10 +94,6 @@ def _virtual_char_at(view: View, row: int, col: int) -> str:
             if unk_pt == real_pt:
                 result = view.substr(real_pt)
 
-                if result == '\n':
-                    # EOL
-                    result = ' '
-
     return result
 
 
@@ -335,8 +331,9 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
         Returning `False` from `is_enabled()` queries that were mapped to commands
         apparently used to have a down side that it would block Sublime Text from
         continuing to look for other possible key bindings to use.  However, testing
-        with build 4200 shows that this is no longer the case.  When BoxDrawing is
-        turned OFF for a particular View, [Alt+Left] and [Alt+Right] still perform
+        with build 4200 shows that this is no longer the case when there is also an
+        ``on_query_context()`` also active and functioning properly.  When BoxDrawing
+        is turned OFF for a particular View, [Alt+Left] and [Alt+Right] still perform
         their default bindings:  move by sub-words.
         """
         debugging = is_debugging(DebugBit.BOX_DRAWING)
