@@ -280,13 +280,12 @@ def _compute_and_place_drawing_char(
     # Insert if at EOL, replace otherwise.
     if cur_char == '\n':
         view.insert(edit, pt, c)
+        # Move caret back to where it was.
+        sel_list = view.sel()
+        sel_list.clear()
+        sel_list.add(pt)
     else:
         view.replace(edit, dest_char_rgn, c)
-
-    # Wipe out selection and set caret to `pt`.
-    sel_list = view.sel()
-    sel_list.clear()
-    sel_list.add(pt)
 
 
 class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
