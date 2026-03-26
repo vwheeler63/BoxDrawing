@@ -187,7 +187,7 @@ def _move_caret(view: View, edit, row: int, col: int, direction: Direction, debu
     return row, col
 
 
-def _computed_char_by_surrounding_chars(line_count: int, direction: Direction):
+def _computed_char_by_surrounding_chars(intended_line_count: int, direction: Direction):
     """
     Compute character:
         - use surrounding chars to assemble a characterization
@@ -225,22 +225,22 @@ def _computed_char_by_surrounding_chars(line_count: int, direction: Direction):
     if up_ln_cnt + rt_ln_cnt + dn_ln_cnt + lf_ln_cnt == 0:
         # We're starting fresh---no surrounding box-drawing characters.
         if direction == Direction.UP or direction == Direction.DOWN:
-            up_ln_cnt = line_count
-            dn_ln_cnt = line_count
+            up_ln_cnt = intended_line_count
+            dn_ln_cnt = intended_line_count
         elif direction == Direction.RIGHT or direction == Direction.LEFT:
-            rt_ln_cnt = line_count
-            lf_ln_cnt = line_count
+            rt_ln_cnt = intended_line_count
+            lf_ln_cnt = intended_line_count
     else:
         # There is at least one surrounding box-drawing character.  Now we
-        # compute how `direction` and `line_count` are going to influence that.
+        # compute how `direction` and `intended_line_count` are going to influence that.
         if direction == Direction.UP:
-            up_ln_cnt = line_count
+            up_ln_cnt = intended_line_count
         elif direction == Direction.RIGHT:
-            rt_ln_cnt = line_count
+            rt_ln_cnt = intended_line_count
         elif direction == Direction.DOWN:
-            dn_ln_cnt = line_count
+            dn_ln_cnt = intended_line_count
         elif direction == Direction.LEFT:
-            lf_ln_cnt = line_count
+            lf_ln_cnt = intended_line_count
 
     up_bit_field = up_ln_cnt << up_shift_amt
     rt_bit_field = rt_ln_cnt << rt_shift_amt
@@ -277,13 +277,13 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
         debugging = is_debugging(DebugBit.BOX_DRAWING)
         return core.ok_to_do_box_drawing(self.view, debugging)
 
-    def run(self, edit, line_count: int, direction: Direction):
+    def run(self, edit, intended_line_count: int, direction: Direction):
         """
         Draw box character with specified line count in specified direction.
 
-        :param edit:        sublime.View.Edit
-        :param direction:   Direction drawing will proceed (see Direction)
-        :param line_count:  0 = erase, 1 = single, 2 = double
+        :param edit:                 sublime.Edit object, needed for editing Buffer
+        :param direction:            Direction drawing will proceed (see Direction)
+        :param intended_line_count:  0 = erase, 1 = single, 2 = double
         :return:  None
 
 
@@ -353,7 +353,7 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
         Pseudocode to carry out above algorithm:
         ========================================
 
-        if line_count == 0:  # erase:
+        if intended_line_count == 0:  # erase:
             write SPACE at current location
             move in `direction`
             last_drawing_direction = Direction.NONE
@@ -394,7 +394,7 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
         debugging = is_debugging(DebugBit.COMMANDS | DebugBit.BOX_DRAWING)
         if debugging:
             print('In BoxDrawingDrawOneCharacterCommand()...')
-            print(f'  {line_count=}')
+            print(f'  {intended_line_count=}')
             print(f'  {direction=}')
 
         view = self.view
@@ -406,11 +406,11 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
         src_char_pt   = src_caret_rgn.b
         src_char_rgn  = Region(src_char_pt, src_char_pt + 1)
 
-        # if line_count == 0:  # erase:
+        # if intended_line_count == 0:  # erase:
         #     write SPACE at current location
         #     move in `direction`
         #     last_drawing_direction = Direction.NONE
-        if line_count == 0:
+        if intended_line_count == 0:
             # Erase.
             if debugging:
                 print('Erase...')
@@ -422,11 +422,11 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
             # Draw something.
             row, col = view.rowcol(src_char_pt)
             if debugging:
-                if line_count > 1:
+                if intended_line_count > 1:
                     plural_suffix = 's'
                 else:
                     plural_suffix = ''
-                print(f'Draw {line_count} line{plural_suffix}...')
+                print(f'Draw {intended_line_count} line{plural_suffix}...')
                 print(f'  {row=}')
                 print(f'  {col=}')
             # if same_direction and `src_char` is a box-drawing character:
@@ -466,7 +466,7 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
             #           `glst_box_char_lookup_by_characterization`:
             #             - glst_unicode_box_char_lookup_by_characterization
             #             - glst_ascii_box_char_lookup_by_characterization
-            c = _computed_char_by_surrounding_chars(line_count, direction)
+            c = _computed_char_by_surrounding_chars(intended_line_count, direction)
 
             # Replace `cur_char` with computed character.
             pt = view.text_point(row, col)
