@@ -835,16 +835,17 @@ glst_box_char_lookup_by_characterization = glst_unicode_box_char_lookup_by_chara
 
 def line_count(c: str, side: Direction, debugging: bool) -> int:
     r"""
-    Compute and return the number of lines existing character `c` on side `side`.
+    Number of lines for character `c` on side `side`.
+
     Only box-drawing characters can have 1 or 2 lines, and most box-drawing
     characters have 0 lines coming out of at least one of their sides.
 
-    All other characters will have 0 lines coming out of them because they
-    are not found in global `gdict_characterization_by_char`.
+    All other characters will be considered to have 0 lines on all sides
+    because they are not found in global ``gdict_characterization_by_char``.
 
-    `gdict_characterization_by_char` references a dictionary with the
+    ``gdict_characterization_by_char`` references a dictionary with the
     box-drawing characters as keys.  Which dictionary it references is
-    based on the `character_set` Package setting:  ASCII or Unicode.  The
+    based on the "character_set" Package setting:  ASCII or Unicode.  The
     integer values contain bit fields that tell us how many lines come out
     of each side of that box-drawing character.  Here is how the bits are
     arranged:
