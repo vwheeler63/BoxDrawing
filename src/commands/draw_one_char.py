@@ -15,8 +15,6 @@ rt_ln_cnt = 0
 dn_ln_cnt = 0
 lf_ln_cnt = 0
 
-null_ch = chr(0)
-
 
 def _append_spaces_if_needed(view: View, edit, row: int, col: int, debugging: bool):
     """
@@ -84,11 +82,11 @@ def _virtual_char_at(view: View, row: int, col: int) -> str:
     :param debugging:  Are we debugging?
 
     :returns:
-        - char at (row,col);
-        - ' ' if is in "virtual space" (to right or below), and
+        - char at (row,col) (can be '\n' when (row,col) is at EOL and not EOF);
+        - ' ' if is in "virtual space" (to right of text in a line or beyond EOF), and
         - '\x00' if above or to the left of Buffer boundaries.
     """
-    result = null_ch
+    result = '\x00'
 
     if row >= 0 and col >= 0:
         result = ' '
