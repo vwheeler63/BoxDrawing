@@ -316,6 +316,9 @@ _cfg_pkg_settings_file = package_name + '.sublime-settings'
 # Track on-settings-changed listener.
 _cfg_on_settings_chgd_listener_id = '_bd_settings_changed_tag'
 
+# Neutral character in look-up arrays.
+_cfg_neutral_character = '·'
+
 # Package Settings Names (most are used multiple times throughout this Plugin)
 _cfg_stg_name__character_set                         = 'character_set'
 _cfg_stg_name__debugging                             = 'debugging'
@@ -544,275 +547,268 @@ gdict_unicode_characterization_by_char_ordered = {
 # populated programmatically below.  The result looks a great deal
 # like this lookup array.
 # -------------------------------------------------------------------------
+_nc = _cfg_neutral_character
 glst_ascii_box_char_lookup_by_characterization = {
-    '·',  # 0x00 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_0
-    '·',  # 0x01
-    '·',  # 0x02
-    '·',  # 0x03
-    '·',  # 0x04
+    _nc,  # 0x00 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_0
+    _nc,  # 0x01
+    _nc,  # 0x02
+    _nc,  # 0x03
+    _nc,  # 0x04
     '+',  # 0x05 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_1
     '#',  # 0x06 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_2
-    '·',  # 0x07
-    '·',  # 0x08
+    _nc,  # 0x07
+    _nc,  # 0x08
     '+',  # 0x09 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_1
     '#',  # 0x0A = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_2
-    '·',  # 0x0B
-    '·',  # 0x0C
-    '·',  # 0x0D
-    '·',  # 0x0E
-    '·',  # 0x0F
-    '·',  # 0x10
+    _nc,  # 0x0B
+    _nc,  # 0x0C
+    _nc,  # 0x0D
+    _nc,  # 0x0E
+    _nc,  # 0x0F
+    _nc,  # 0x10
     '|',  # 0x11 = CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_1
-    '·',  # 0x12
-    '·',  # 0x13
+    _nc,  # 0x12
+    _nc,  # 0x13
     '+',  # 0x14 = CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_1 | CF.LINES_UP_0
     '+',  # 0x15 = CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_1 | CF.LINES_UP_1
-    '·',  # 0x16
-    '·',  # 0x17
+    _nc,  # 0x16
+    _nc,  # 0x17
     '+',  # 0x18 = CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_2 | CF.LINES_UP_0
     '+',  # 0x19 = CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_2 | CF.LINES_UP_1
-    '·',  # 0x1A
-    '·',  # 0x1B
-    '·',  # 0x1C
-    '·',  # 0x1D
-    '·',  # 0x1E
-    '·',  # 0x1F
-    '·',  # 0x20
-    '·',  # 0x21
+    _nc,  # 0x1A
+    _nc,  # 0x1B
+    _nc,  # 0x1C
+    _nc,  # 0x1D
+    _nc,  # 0x1E
+    _nc,  # 0x1F
+    _nc,  # 0x20
+    _nc,  # 0x21
     '#',  # 0x22 = CF.LINES_LEFT_0 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_0 | CF.LINES_UP_2
-    '·',  # 0x23
+    _nc,  # 0x23
     '#',  # 0x24 = CF.LINES_LEFT_0 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_1 | CF.LINES_UP_0
-    '·',  # 0x25
+    _nc,  # 0x25
     '#',  # 0x26 = CF.LINES_LEFT_0 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_1 | CF.LINES_UP_2
-    '·',  # 0x27
+    _nc,  # 0x27
     '#',  # 0x28 = CF.LINES_LEFT_0 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_2 | CF.LINES_UP_0
-    '·',  # 0x29
+    _nc,  # 0x29
     '#',  # 0x2A = CF.LINES_LEFT_0 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_2 | CF.LINES_UP_2
-    '·',  # 0x2B
-    '·',  # 0x2C
-    '·',  # 0x2D
-    '·',  # 0x2E
-    '·',  # 0x2F
-    '·',  # 0x30
-    '·',  # 0x31
-    '·',  # 0x32
-    '·',  # 0x33
-    '·',  # 0x34
-    '·',  # 0x35
-    '·',  # 0x36
-    '·',  # 0x37
-    '·',  # 0x38
-    '·',  # 0x39
-    '·',  # 0x3A
-    '·',  # 0x3B
-    '·',  # 0x3C
-    '·',  # 0x3D
-    '·',  # 0x3E
-    '·',  # 0x3F
-    '·',  # 0x40
+    _nc,  # 0x2B
+    _nc,  # 0x2C
+    _nc,  # 0x2D
+    _nc,  # 0x2E
+    _nc,  # 0x2F
+    _nc,  # 0x30
+    _nc,  # 0x31
+    _nc,  # 0x32
+    _nc,  # 0x33
+    _nc,  # 0x34
+    _nc,  # 0x35
+    _nc,  # 0x36
+    _nc,  # 0x37
+    _nc,  # 0x38
+    _nc,  # 0x39
+    _nc,  # 0x3A
+    _nc,  # 0x3B
+    _nc,  # 0x3C
+    _nc,  # 0x3D
+    _nc,  # 0x3E
+    _nc,  # 0x3F
+    _nc,  # 0x40
     '+',  # 0x41 = CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_1
     '#',  # 0x42 = CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_2
-    '·',  # 0x43
+    _nc,  # 0x43
     '-',  # 0x44 = CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_0
     '+',  # 0x45 = CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_1
     '#',  # 0x46 = CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_2
-    '·',  # 0x47
-    '·',  # 0x48
-    '·',  # 0x49
-    '·',  # 0x4A
-    '·',  # 0x4B
-    '·',  # 0x4C
-    '·',  # 0x4D
-    '·',  # 0x4E
-    '·',  # 0x4F
+    _nc,  # 0x47
+    _nc,  # 0x48
+    _nc,  # 0x49
+    _nc,  # 0x4A
+    _nc,  # 0x4B
+    _nc,  # 0x4C
+    _nc,  # 0x4D
+    _nc,  # 0x4E
+    _nc,  # 0x4F
     '+',  # 0x50 = CF.LINES_LEFT_1 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_0
     '+',  # 0x51 = CF.LINES_LEFT_1 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_1
-    '·',  # 0x52
-    '·',  # 0x53
+    _nc,  # 0x52
+    _nc,  # 0x53
     '+',  # 0x54 = CF.LINES_LEFT_1 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_1 | CF.LINES_UP_0
     '+',  # 0x55 = CF.LINES_LEFT_1 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_1 | CF.LINES_UP_1
-    '·',  # 0x56
-    '·',  # 0x57
-    '·',  # 0x58
-    '·',  # 0x59
-    '·',  # 0x5A
-    '·',  # 0x5B
-    '·',  # 0x5C
-    '·',  # 0x5D
-    '·',  # 0x5E
-    '·',  # 0x5F
+    _nc,  # 0x56
+    _nc,  # 0x57
+    _nc,  # 0x58
+    _nc,  # 0x59
+    _nc,  # 0x5A
+    _nc,  # 0x5B
+    _nc,  # 0x5C
+    _nc,  # 0x5D
+    _nc,  # 0x5E
+    _nc,  # 0x5F
     '#',  # 0x60 = CF.LINES_LEFT_1 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_0 | CF.LINES_UP_0
-    '·',  # 0x61
+    _nc,  # 0x61
     '#',  # 0x62 = CF.LINES_LEFT_1 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_0 | CF.LINES_UP_2
-    '·',  # 0x63
+    _nc,  # 0x63
     '#',  # 0x64 = CF.LINES_LEFT_1 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_1 | CF.LINES_UP_0
-    '·',  # 0x65
+    _nc,  # 0x65
     '#',  # 0x66 = CF.LINES_LEFT_1 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_1 | CF.LINES_UP_2
-    '·',  # 0x67
-    '·',  # 0x68
-    '·',  # 0x69
-    '·',  # 0x6A
-    '·',  # 0x6B
-    '·',  # 0x6C
-    '·',  # 0x6D
-    '·',  # 0x6E
-    '·',  # 0x6F
-    '·',  # 0x70
-    '·',  # 0x71
-    '·',  # 0x72
-    '·',  # 0x73
-    '·',  # 0x74
-    '·',  # 0x75
-    '·',  # 0x76
-    '·',  # 0x77
-    '·',  # 0x78
-    '·',  # 0x79
-    '·',  # 0x7A
-    '·',  # 0x7B
-    '·',  # 0x7C
-    '·',  # 0x7D
-    '·',  # 0x7E
-    '·',  # 0x7F
-    '·',  # 0x80
+    _nc,  # 0x67
+    _nc,  # 0x68
+    _nc,  # 0x69
+    _nc,  # 0x6A
+    _nc,  # 0x6B
+    _nc,  # 0x6C
+    _nc,  # 0x6D
+    _nc,  # 0x6E
+    _nc,  # 0x6F
+    _nc,  # 0x70
+    _nc,  # 0x71
+    _nc,  # 0x72
+    _nc,  # 0x73
+    _nc,  # 0x74
+    _nc,  # 0x75
+    _nc,  # 0x76
+    _nc,  # 0x77
+    _nc,  # 0x78
+    _nc,  # 0x79
+    _nc,  # 0x7A
+    _nc,  # 0x7B
+    _nc,  # 0x7C
+    _nc,  # 0x7D
+    _nc,  # 0x7E
+    _nc,  # 0x7F
+    _nc,  # 0x80
     '+',  # 0x81 = CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_1
     '#',  # 0x82 = CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_2
-    '·',  # 0x83
-    '·',  # 0x84
-    '·',  # 0x85
-    '·',  # 0x86
-    '·',  # 0x87
+    _nc,  # 0x83
+    _nc,  # 0x84
+    _nc,  # 0x85
+    _nc,  # 0x86
+    _nc,  # 0x87
     '=',  # 0x88 = CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_0
     '+',  # 0x89 = CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_1
     '#',  # 0x8A = CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_2
-    '·',  # 0x8B
-    '·',  # 0x8C
-    '·',  # 0x8D
-    '·',  # 0x8E
-    '·',  # 0x8F
+    _nc,  # 0x8B
+    _nc,  # 0x8C
+    _nc,  # 0x8D
+    _nc,  # 0x8E
+    _nc,  # 0x8F
     '+',  # 0x90 = CF.LINES_LEFT_2 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_0
     '+',  # 0x91 = CF.LINES_LEFT_2 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_1
-    '·',  # 0x92
-    '·',  # 0x93
-    '·',  # 0x94
-    '·',  # 0x95
-    '·',  # 0x96
-    '·',  # 0x97
+    _nc,  # 0x92
+    _nc,  # 0x93
+    _nc,  # 0x94
+    _nc,  # 0x95
+    _nc,  # 0x96
+    _nc,  # 0x97
     '+',  # 0x98 = CF.LINES_LEFT_2 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_2 | CF.LINES_UP_0
     '+',  # 0x99 = CF.LINES_LEFT_2 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_2 | CF.LINES_UP_1
-    '·',  # 0x9A
-    '·',  # 0x9B
-    '·',  # 0x9C
-    '·',  # 0x9D
-    '·',  # 0x9E
-    '·',  # 0x9F
+    _nc,  # 0x9A
+    _nc,  # 0x9B
+    _nc,  # 0x9C
+    _nc,  # 0x9D
+    _nc,  # 0x9E
+    _nc,  # 0x9F
     '#',  # 0xA0 = CF.LINES_LEFT_2 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_0 | CF.LINES_UP_0
-    '·',  # 0xA1
+    _nc,  # 0xA1
     '#',  # 0xA2 = CF.LINES_LEFT_2 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_0 | CF.LINES_UP_2
-    '·',  # 0xA3
-    '·',  # 0xA4
-    '·',  # 0xA5
-    '·',  # 0xA6
-    '·',  # 0xA7
+    _nc,  # 0xA3
+    _nc,  # 0xA4
+    _nc,  # 0xA5
+    _nc,  # 0xA6
+    _nc,  # 0xA7
     '#',  # 0xA8 = CF.LINES_LEFT_2 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_2 | CF.LINES_UP_0
-    '·',  # 0xA9
+    _nc,  # 0xA9
     '#',  # 0xAA = CF.LINES_LEFT_2 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_2 | CF.LINES_UP_2
-    '·',  # 0xAB
-    '·',  # 0xAC
-    '·',  # 0xAD
-    '·',  # 0xAE
-    '·',  # 0xAF
-    '·',  # 0xB0
-    '·',  # 0xB1
-    '·',  # 0xB2
-    '·',  # 0xB3
-    '·',  # 0xB4
-    '·',  # 0xB5
-    '·',  # 0xB6
-    '·',  # 0xB7
-    '·',  # 0xB8
-    '·',  # 0xB9
-    '·',  # 0xBA
-    '·',  # 0xBB
-    '·',  # 0xBC
-    '·',  # 0xBD
-    '·',  # 0xBE
-    '·',  # 0xBF
-    '·',  # 0xC0
-    '·',  # 0xC1
-    '·',  # 0xC2
-    '·',  # 0xC3
-    '·',  # 0xC4
-    '·',  # 0xC5
-    '·',  # 0xC6
-    '·',  # 0xC7
-    '·',  # 0xC8
-    '·',  # 0xC9
-    '·',  # 0xCA
-    '·',  # 0xCB
-    '·',  # 0xCC
-    '·',  # 0xCD
-    '·',  # 0xCE
-    '·',  # 0xCF
-    '·',  # 0xD0
-    '·',  # 0xD1
-    '·',  # 0xD2
-    '·',  # 0xD3
-    '·',  # 0xD4
-    '·',  # 0xD5
-    '·',  # 0xD6
-    '·',  # 0xD7
-    '·',  # 0xD8
-    '·',  # 0xD9
-    '·',  # 0xDA
-    '·',  # 0xDB
-    '·',  # 0xDC
-    '·',  # 0xDD
-    '·',  # 0xDE
-    '·',  # 0xDF
-    '·',  # 0xE0
-    '·',  # 0xE1
-    '·',  # 0xE2
-    '·',  # 0xE3
-    '·',  # 0xE4
-    '·',  # 0xE5
-    '·',  # 0xE6
-    '·',  # 0xE7
-    '·',  # 0xE8
-    '·',  # 0xE9
-    '·',  # 0xEA
-    '·',  # 0xEB
-    '·',  # 0xEC
-    '·',  # 0xED
-    '·',  # 0xEE
-    '·',  # 0xEF
-    '·',  # 0xF0
-    '·',  # 0xF1
-    '·',  # 0xF2
-    '·',  # 0xF3
-    '·',  # 0xF4
-    '·',  # 0xF5
-    '·',  # 0xF6
-    '·',  # 0xF7
-    '·',  # 0xF8
-    '·',  # 0xF9
-    '·',  # 0xFA
-    '·',  # 0xFB
-    '·',  # 0xFC
-    '·',  # 0xFD
-    '·',  # 0xFE
-    '·',  # 0xFF
+    _nc,  # 0xAB
+    _nc,  # 0xAC
+    _nc,  # 0xAD
+    _nc,  # 0xAE
+    _nc,  # 0xAF
+    _nc,  # 0xB0
+    _nc,  # 0xB1
+    _nc,  # 0xB2
+    _nc,  # 0xB3
+    _nc,  # 0xB4
+    _nc,  # 0xB5
+    _nc,  # 0xB6
+    _nc,  # 0xB7
+    _nc,  # 0xB8
+    _nc,  # 0xB9
+    _nc,  # 0xBA
+    _nc,  # 0xBB
+    _nc,  # 0xBC
+    _nc,  # 0xBD
+    _nc,  # 0xBE
+    _nc,  # 0xBF
+    _nc,  # 0xC0
+    _nc,  # 0xC1
+    _nc,  # 0xC2
+    _nc,  # 0xC3
+    _nc,  # 0xC4
+    _nc,  # 0xC5
+    _nc,  # 0xC6
+    _nc,  # 0xC7
+    _nc,  # 0xC8
+    _nc,  # 0xC9
+    _nc,  # 0xCA
+    _nc,  # 0xCB
+    _nc,  # 0xCC
+    _nc,  # 0xCD
+    _nc,  # 0xCE
+    _nc,  # 0xCF
+    _nc,  # 0xD0
+    _nc,  # 0xD1
+    _nc,  # 0xD2
+    _nc,  # 0xD3
+    _nc,  # 0xD4
+    _nc,  # 0xD5
+    _nc,  # 0xD6
+    _nc,  # 0xD7
+    _nc,  # 0xD8
+    _nc,  # 0xD9
+    _nc,  # 0xDA
+    _nc,  # 0xDB
+    _nc,  # 0xDC
+    _nc,  # 0xDD
+    _nc,  # 0xDE
+    _nc,  # 0xDF
+    _nc,  # 0xE0
+    _nc,  # 0xE1
+    _nc,  # 0xE2
+    _nc,  # 0xE3
+    _nc,  # 0xE4
+    _nc,  # 0xE5
+    _nc,  # 0xE6
+    _nc,  # 0xE7
+    _nc,  # 0xE8
+    _nc,  # 0xE9
+    _nc,  # 0xEA
+    _nc,  # 0xEB
+    _nc,  # 0xEC
+    _nc,  # 0xED
+    _nc,  # 0xEE
+    _nc,  # 0xEF
+    _nc,  # 0xF0
+    _nc,  # 0xF1
+    _nc,  # 0xF2
+    _nc,  # 0xF3
+    _nc,  # 0xF4
+    _nc,  # 0xF5
+    _nc,  # 0xF6
+    _nc,  # 0xF7
+    _nc,  # 0xF8
+    _nc,  # 0xF9
+    _nc,  # 0xFA
+    _nc,  # 0xFB
+    _nc,  # 0xFC
+    _nc,  # 0xFD
+    _nc,  # 0xFE
+    _nc,  # 0xFF
 }
 
-
-# =========================================================================
-# Data
-# =========================================================================
-
-cfg_view_box_drawing_state_key = '_box_drawing_state'
-cfg_view_box_drawing_last_direction_key = '_box_drawing_last_direction'
-
-# Pre-allocate array with 256 elements with '·' (middle dot U+00B7) as placeholder.
-glst_unicode_box_char_lookup_by_characterization = ['·'] * 256
+# Pre-allocate array with 256 elements with _nc (middle dot U+00B7) as placeholder.
+glst_unicode_box_char_lookup_by_characterization = [_nc] * 256
 
 # Populate Unicode look-up array using `gdict_unicode_characterization_by_char_ordered`.
 for c in gdict_unicode_characterization_by_char_ordered:
@@ -821,6 +817,19 @@ for c in gdict_unicode_characterization_by_char_ordered:
         mc = c[1]
     classif_idx = gdict_unicode_characterization_by_char_ordered[c]
     glst_unicode_box_char_lookup_by_characterization[classif_idx] = mc
+
+up_bit_shift_count = Direction.UP    << 1
+rt_bit_shift_count = Direction.RIGHT << 1
+dn_bit_shift_count = Direction.DOWN  << 1
+lf_bit_shift_count = Direction.LEFT  << 1
+
+cfg_view_box_drawing_state_key = '_box_drawing_state'
+cfg_view_box_drawing_last_direction_key = '_box_drawing_last_direction'
+
+
+# =========================================================================
+# Data
+# =========================================================================
 
 # These will be arbitrarily assigned until we implement ASCII,
 # then the configured character set will determine which arrays get
@@ -896,7 +905,7 @@ def line_count(c: str, side: Direction, debugging: bool) -> int:
         right_shift_bit_count = side << 1
         result = (characterization >> right_shift_bit_count) & 0x03
         if debugging:
-            print(f'    characterization={characterization:02X}')
+            print(f'    characterization=0x{characterization:02X}')
             print(f'    {right_shift_bit_count=}')
 
     if debugging:
