@@ -915,9 +915,10 @@ def line_count(c: str, side: Direction, debugging: bool) -> int:
 
 
 def adjusted_characterization(c: str, side: Direction, new_line_count: int, debugging: bool):
-    """ Adjusted characterization to connect on side ``side`` with ``new_line_count``. """
+    """ Adjusted characterization to connect on ``side`` with ``new_line_count``. """
     characterization = gdict_characterization_by_char[c]
     shift_bit_count = side << 1
+
     # Remove any old bits.
     mask_out_bits_mask = 0x03 << shift_bit_count
     if debugging:
@@ -925,18 +926,19 @@ def adjusted_characterization(c: str, side: Direction, new_line_count: int, debu
         print(f'  {c=}')
         print(f'  {side=}')
         print(f'  {new_line_count=}')
-        print(f'  Characterization: 0x{characterization:02X}')
+        print(f'  Characterization     : 0x{characterization:02X}')
         print(f'  {shift_bit_count=}')
-        print(f'  Mask-out bits   : 0x{mask_out_bits_mask:02X}')
+        print(f'  Mask-out bits        : 0x{mask_out_bits_mask:02X}')
     characterization &= ~mask_out_bits_mask
     if debugging:
-        print(f'   Chct masked out: 0x{characterization:02X}')
+        print(f'   Bits masked out     : 0x{characterization:02X}')
+
     # Add new bits.
     new_bit_mask = new_line_count << shift_bit_count
     characterization |= new_bit_mask
     if debugging:
-        print(f'   New bit field  : 0x{new_bit_mask:02X}')
-        print(f'   Adjusted chct  : 0x{characterization:02X}')
+        print(f'   New bit field       : 0x{new_bit_mask:02X}')
+        print(f'   Adj characterization: 0x{characterization:02X}')
 
     return characterization
 
@@ -946,27 +948,35 @@ def adjusted_characterization(c: str, side: Direction, new_line_count: int, debu
 # =========================================================================
 
 def ok_to_do_box_drawing(view: sublime.View, debugging: bool) -> bool:
-    live_sel_list = view.sel()
-    sel_rgn = live_sel_list[0]
-    view_settings = view.settings()
-    drawing_state = view_settings.get(cfg_view_box_drawing_state_key)
-
-    # ---------------------------------------------------------------------
-    # - State = ON?
-    # - Only 1 selection (caret)?
-    # - No text selected?
-    # ---------------------------------------------------------------------
-    result = ((
-                (drawing_state == State.ON)
-            and (len(live_sel_list) == 1)
-            and (sel_rgn.b - sel_rgn.a == 0)
-            ))
-
     if debugging:
         print('In ok_to_do_box_drawing()...')
-        print(f'  {drawing_state=}')
-        print(f'  {len(live_sel_list)=}')
-        print(f'  {sel_rgn=}')
+
+    result = False
+
+    if view.sheet_id() != 0:
+        live_sel_list = view.sel()
+        sel_rgn = live_sel_list[0]
+        view_settings = view.settings()
+        drawing_state = view_settings.get(cfg_view_box_drawing_state_key)
+
+        # ---------------------------------------------------------------------
+        # - View is attached to a Sheet, not a Panel or Overlay.
+        # - State = ON?
+        # - Only 1 selection (caret)?
+        # - No text selected?
+        # ---------------------------------------------------------------------
+        result = ((
+                    (drawing_state == State.ON)
+                and (len(live_sel_list) == 1)
+                and (sel_rgn.b - sel_rgn.a == 0)
+                ))
+
+        if debugging:
+            print(f'  {drawing_state=}')
+            print(f'  {len(live_sel_list)=}')
+            print(f'  {sel_rgn=}')
+
+    if debugging:
         print(f'  {result=}')
 
     return result
@@ -1056,10 +1066,11 @@ def toggle_state(view: View):
 
 def _on_pkg_settings_chgd():
     """
-    Build and compile configurable ``bd_setting.comment_spec_pat``.
+    Take action after Package settings have changed.
     """
-    # Set up overridable Package settings.
-    # `bd_setting()` cannot be called until this is done.
+    # Load overridable Package settings.
+    # `bd_setting()` cannot be called until this is done, and
+    # `is_debugging()` will return an incorrect value until this is done.
     bd_setting.obj = sublime.load_settings(_cfg_pkg_settings_file)
     temp = bd_setting(_cfg_stg_name__debugging)
     set_debugging_bits(temp)
@@ -1100,10 +1111,8 @@ def on_plugin_unloaded():
         if bd_setting.obj:
             bd_setting.obj.clear_on_change(_cfg_on_settings_chgd_listener_id)
 
-        if is_debugging(DebugBit.LOAD_UNLOAD):
-            print(f'{package_name}:  Plugin unloaded at {timestamp()}')
-
-
+    if is_debugging(DebugBit.LOAD_UNLOAD):
+        print(f'{package_name}:  Plugin unloaded at {timestamp()}')
 
 
 """
