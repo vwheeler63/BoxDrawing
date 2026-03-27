@@ -322,16 +322,16 @@ def _compute_and_place_drawing_char(
         if same_direction and (zero_line_count == 1 or zero_line_count == 2):
             # We MAY be approaching a box to finish.  But we need more data:
             if direction == Direction.UP:
-                if up_ln_cnt == 0 and (rt_ln_cnt == new_line_count or lf_ln_cnt == new_line_count):
+                if up_ln_cnt == 0 and (rt_ln_cnt == new_line_count or lf_ln_cnt == new_line_count or rt_ln_cnt == lf_ln_cnt):
                     finishes_box = True
             elif direction == Direction.RIGHT:
-                if rt_ln_cnt == 0 and (up_ln_cnt == new_line_count or dn_ln_cnt == new_line_count):
+                if rt_ln_cnt == 0 and (up_ln_cnt == new_line_count or dn_ln_cnt == new_line_count or up_ln_cnt == dn_ln_cnt):
                     finishes_box = True
             elif direction == Direction.DOWN:
-                if dn_ln_cnt == 0 and (rt_ln_cnt == new_line_count or lf_ln_cnt == new_line_count):
+                if dn_ln_cnt == 0 and (rt_ln_cnt == new_line_count or lf_ln_cnt == new_line_count or rt_ln_cnt == lf_ln_cnt):
                     finishes_box = True
             elif direction == Direction.LEFT:
-                if lf_ln_cnt == 0 and (up_ln_cnt == new_line_count or dn_ln_cnt == new_line_count):
+                if lf_ln_cnt == 0 and (up_ln_cnt == new_line_count or dn_ln_cnt == new_line_count or up_ln_cnt == dn_ln_cnt):
                     finishes_box = True
 
         if finishes_box:
