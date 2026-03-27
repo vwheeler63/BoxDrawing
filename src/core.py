@@ -914,6 +914,33 @@ def line_count(c: str, side: Direction, debugging: bool) -> int:
     return result
 
 
+def adjusted_characterization(c: str, side: Direction, new_line_count: int, debugging: bool):
+    """ Adjusted characterization to connect on side ``side`` with ``new_line_count``. """
+    characterization = gdict_characterization_by_char[c]
+    shift_bit_count = side << 1
+    # Remove any old bits.
+    mask_out_bits_mask = 0x03 << shift_bit_count
+    if debugging:
+        print('In adjusted_characterization()...')
+        print(f'  {c=}')
+        print(f'  {side=}')
+        print(f'  {new_line_count=}')
+        print(f'  Characterization: 0x{characterization:02X}')
+        print(f'  {shift_bit_count=}')
+        print(f'  Mask-out bits   : 0x{mask_out_bits_mask:02X}')
+    characterization &= ~mask_out_bits_mask
+    if debugging:
+        print(f'   Chct masked out: 0x{characterization:02X}')
+    # Add new bits.
+    new_bit_mask = new_line_count << shift_bit_count
+    characterization |= new_bit_mask
+    if debugging:
+        print(f'   New bit field  : 0x{new_bit_mask:02X}')
+        print(f'   Adjusted chct  : 0x{characterization:02X}')
+
+    return characterization
+
+
 # =========================================================================
 # Utilities
 # =========================================================================
@@ -955,7 +982,7 @@ def timestamp() -> str:
 # =========================================================================
 # State Utilities
 #
-# State (OFF or ON) -- per View
+# State (OFF or ON)---per View
 #
 # Because ``BoxDrawingContextEventListener`` needs to know about this
 # state, and because it is a per-view state, and because it will not
@@ -973,22 +1000,44 @@ def is_state_active(view: View) -> bool:
 
 
 def set_state_off(view: View):
-    view_settings = view.settings()
-    view_settings.set(cfg_view_box_drawing_state_key, State.OFF)
-    view_settings.set(cfg_view_box_drawing_last_direction_key, Direction.NONE)
-    sublime.status_message('BoxDrawing OFF')
-    if is_debugging(DebugBit.COMMANDS | DebugBit.STATE):
-        print('In set_state_off()...')
-        print(f'  {is_state_active(view)=}')
+    """
+    Set box-drawing state OFF in ``view``, but only if View is connected to a Sheet,
+    i.e. not part of a Panel or Overlay.
+    """
+    debugging = is_debugging(DebugBit.COMMANDS | DebugBit.STATE)
+    if debugging:
+        print('In set_state_on()...')
+
+    if view.sheet_id() != 0:
+        view_settings = view.settings()
+        view_settings.set(cfg_view_box_drawing_state_key, State.OFF)
+        view_settings.set(cfg_view_box_drawing_last_direction_key, Direction.NONE)
+        sublime.status_message('BoxDrawing OFF')
+        if debugging:
+            print(f'  {is_state_active(view)=}')
+    else:
+        if debugging:
+            print('  View is not part of Sheet.  Not setting.')
 
 
 def set_state_on(view: View):
-    view_settings = view.settings()
-    view_settings.set(cfg_view_box_drawing_state_key, State.ON)
-    sublime.status_message('BoxDrawing ON')
-    if is_debugging(DebugBit.COMMANDS | DebugBit.STATE):
+    """
+    Set box-drawing state ON in ``view``, but only if View is connected to a Sheet,
+    i.e. not part of a Panel or Overlay.
+    """
+    debugging = is_debugging(DebugBit.COMMANDS | DebugBit.STATE)
+    if debugging:
         print('In set_state_on()...')
-        print(f'  {is_state_active(view)=}')
+
+    if view.sheet_id() != 0:
+        view_settings = view.settings()
+        view_settings.set(cfg_view_box_drawing_state_key, State.ON)
+        sublime.status_message('BoxDrawing ON')
+        if debugging:
+            print(f'  {is_state_active(view)=}')
+    else:
+        if debugging:
+            print('  View is not part of Sheet.  Not setting.')
 
 
 def toggle_state(view: View):
