@@ -1,20 +1,11 @@
+from typing import List
 import sublime_plugin
 import sublime
 from sublime import Region, View
 from sublime_types import Point
 from ...lib.debug import IntFlag, DebugBit, is_debugging
 from .. import core
-from ..core import Direction, State
-
-
-up_char = ' '
-rt_char = ' '
-dn_char = ' '
-lf_char = ' '
-up_ln_cnt = 0
-rt_ln_cnt = 0
-dn_ln_cnt = 0
-lf_ln_cnt = 0
+from ..core import Direction, State, gdict_characterization_by_char
 
 
 def _append_spaces_if_needed(view: View, edit, row: int, col: int, debugging: bool):
@@ -103,42 +94,6 @@ def _virtual_char_at(view: View, row: int, col: int) -> str:
     return result
 
 
-def _look_around(view: View, row: int, col: int, debugging: bool):
-    """
-    Populate `XX_char` and `XX_ln_cnt` based on chars around `row` and `col`.
-    """
-    global up_char
-    global rt_char
-    global dn_char
-    global lf_char
-    global up_ln_cnt
-    global rt_ln_cnt
-    global dn_ln_cnt
-    global lf_ln_cnt
-
-    if debugging:
-        print('In _look_around()...')
-        print(f'  {row=}')
-        print(f'  {col=}')
-
-    up_char = _virtual_char_at(view, row - 1, col    )
-    rt_char = _virtual_char_at(view, row    , col + 1)
-    dn_char = _virtual_char_at(view, row + 1, col    )
-    lf_char = _virtual_char_at(view, row    , col - 1)
-
-    if debugging:
-        print('  _look_around() results')
-        print(f'  {up_char=}')
-        print(f'  {rt_char=}')
-        print(f'  {dn_char=}')
-        print(f'  {lf_char=}')
-
-    up_ln_cnt = core.line_count(up_char, Direction.DOWN , debugging)
-    rt_ln_cnt = core.line_count(rt_char, Direction.LEFT , debugging)
-    dn_ln_cnt = core.line_count(dn_char, Direction.UP   , debugging)
-    lf_ln_cnt = core.line_count(lf_char, Direction.RIGHT, debugging)
-
-
 def _move_caret(view: View, edit, row: int, col: int, direction: Direction, debugging: bool):
     """
     Move caret from (`row`,`col`) in `direction`; add spaces as needed.
@@ -187,6 +142,52 @@ def _move_caret(view: View, edit, row: int, col: int, direction: Direction, debu
     return row, col
 
 
+def _back_adjust(
+        view          : View,
+        edit          : sublime.Edit,
+        row           : int,
+        col           : int,
+        existing_char : str,
+        new_line_count: int,
+        side          : Direction,
+        debugging     : bool
+        ):
+    """
+    Take ``existing_char``, add ``new_line_count`` lines to it on side ``side``,
+    then write it back to (row,col) without moving the caret.
+
+    Do not change anything if that character is not a box-drawing character.
+    :param view:            current View
+    :param row:             target row
+    :param col:             target column
+    :param new_line_count:  number of lines indicated by user's key combination
+                              1, 2 or 0 = erase
+    :param side:            side indicated by user's key combination
+                              (one of the ``Direction`` enumerators)
+    :param debugging:       Are we debugging?
+
+    @pre  Character are (row,col) must already exist.
+    """
+    if debugging:
+        print(f'In _back_adjust()...')
+
+    if existing_char in gdict_characterization_by_char:
+        if debugging:
+            print(f'  Characterization: 0x{gdict_characterization_by_char[existing_char]:02X}.')
+        characterization = core.adjusted_characterization(existing_char, side, new_line_count, debugging)
+        c = core.glst_box_char_lookup_by_characterization[characterization]
+        if debugging:
+            print(f'  Adjusted charact: 0x{characterization:02X}.')
+            print(f'  New character   : {c=}.')
+        # Now place ``c`` at (row,col) without moving caret.
+        pt = view.text_point(row, col)
+        dest_char_rgn = Region(pt, pt + 1)
+        view.replace(edit, dest_char_rgn, c)
+    else:
+        if debugging:
+            print(f'  Char {existing_char} not found in dictionary.')
+
+
 def _compute_and_place_drawing_char(
         view          : View,
         edit          : sublime.Edit,
@@ -194,6 +195,7 @@ def _compute_and_place_drawing_char(
         col           : int,
         new_line_count: int,
         direction     : Direction,
+        same_direction: bool,
         debugging     : bool
         ):
     """
@@ -204,13 +206,6 @@ def _compute_and_place_drawing_char(
               glst_box_char_lookup_by_characterization:
                 - glst_unicode_box_char_lookup_by_characterization
                 - glst_ascii_box_char_lookup_by_characterization
-
-    Uses globals:
-
-        up_ln_cnt
-        rt_ln_cnt
-        dn_ln_cnt
-        lf_ln_cnt
 
     Note that the ``Direction`` IntEnum class is carefully ordered to so that
     each ``side`` can be used to compute the number of bits to shift to place
@@ -228,62 +223,293 @@ def _compute_and_place_drawing_char(
                               1, 2 or 0 = erase
     :param direction:       direction indicated by user's key combination
                               (one of the ``Direction`` enumerators)
+    :param same_direction:  Is drawing going in the same direction as previous char?
     :param debugging:       Are we debugging?
     """
-    global up_ln_cnt
-    global rt_ln_cnt
-    global dn_ln_cnt
-    global lf_ln_cnt
+    assert (Direction.UP <= direction <= Direction.LEFT), f'`Direction` {direction} not recognized.'
 
-    _look_around(view, row, col, debugging)
+    # ---------------------------------------------------------------------
+    # Look around row and col.
+    # ---------------------------------------------------------------------
+    if debugging:
+        print('In _compute_and_place_drawing_char()...')
+        print(f'  {row=}')
+        print(f'  {col=}')
+        print(f'  {new_line_count=}')
+        print(f'  {direction=}')
+        print(f'  {same_direction=}')
 
-    up_shift_amt = Direction.UP    << 1
-    rt_shift_amt = Direction.RIGHT << 1
-    dn_shift_amt = Direction.DOWN  << 1
-    lf_shift_amt = Direction.LEFT  << 1
+    up_char = _virtual_char_at(view, row - 1, col    )
+    rt_char = _virtual_char_at(view, row    , col + 1)
+    dn_char = _virtual_char_at(view, row + 1, col    )
+    lf_char = _virtual_char_at(view, row    , col - 1)
 
+    up_ln_cnt = core.line_count(up_char, Direction.DOWN , debugging)
+    rt_ln_cnt = core.line_count(rt_char, Direction.LEFT , debugging)
+    dn_ln_cnt = core.line_count(dn_char, Direction.UP   , debugging)
+    lf_ln_cnt = core.line_count(lf_char, Direction.RIGHT, debugging)
+
+    if debugging:
+        print('  Surrounding chars:')
+        print(f'  {up_char=} {up_ln_cnt=}')
+        print(f'  {rt_char=} {rt_ln_cnt=}')
+        print(f'  {dn_char=} {dn_ln_cnt=}')
+        print(f'  {lf_char=} {lf_ln_cnt=}')
+
+    # ---------------------------------------------------------------------
+    # Compute needed character based on surrounding characters.
+    # ---------------------------------------------------------------------
     if up_ln_cnt + rt_ln_cnt + dn_ln_cnt + lf_ln_cnt == 0:
-        # We're starting fresh---no surrounding box-drawing characters.
+        # We're starting fresh---no surrounding lines to connect to.
+        if debugging:
+            print('  No surrounding lines to connect to.')
         if direction == Direction.UP or direction == Direction.DOWN:
             up_ln_cnt = new_line_count
             dn_ln_cnt = new_line_count
         elif direction == Direction.RIGHT or direction == Direction.LEFT:
             rt_ln_cnt = new_line_count
             lf_ln_cnt = new_line_count
+
+        # Are we going in the same direction and previous character not connected?
+        # If so, we want to "back adjust" it to be connected.
+        if same_direction:
+            adj_row = row
+            adj_col = col
+
+            if direction == Direction.UP:
+                adj_row = row + 1
+            elif direction == Direction.RIGHT:
+                adj_col = col - 1
+            elif direction == Direction.DOWN:
+                adj_row = row - 1
+            elif direction == Direction.LEFT:
+                adj_col = col + 1
+
+            if debugging:
+                print(f'  {adj_row=}')
+                print(f'  {adj_col=}')
+
+            prev_c = _virtual_char_at(view, adj_row, adj_col)
+            ln_cnt = core.line_count(prev_c, direction, debugging)
+            if debugging:
+                print('  Same direction:  examining our side of previous char:')
+                print(f'  {prev_c=}')
+                print(f'  {ln_cnt=}')
+            if ln_cnt == 0:
+                # "Back adjustment" needed:  previous character is not connected.
+                _back_adjust(view, edit, adj_row, adj_col, prev_c, new_line_count, direction, debugging)
+                if debugging:
+                    print(f'  Back-adjustment made {direction=}.')
+            else:
+                if debugging:
+                    print(f'  No back-adjustment needed {direction=}.')
+
     else:
-        # There is at least one surrounding box-drawing character.  Now we
-        # compute how `direction` and `new_line_count` are going to influence that.
-        if direction == Direction.UP:
-            up_ln_cnt = new_line_count
-        elif direction == Direction.RIGHT:
-            rt_ln_cnt = new_line_count
-        elif direction == Direction.DOWN:
+        # There is at least one surrounding box-drawing character. If we are
+        # approaching finishing a box, then we avoid causing the current
+        # line direction to influence the current character, so the
+        # resulting character just connects to the surrounding box-drawing
+        # characters.
+        finishes_box = False
+
+        zero_line_count = (
+                  (up_ln_cnt == 0)
+                + (rt_ln_cnt == 0)
+                + (dn_ln_cnt == 0)
+                + (lf_ln_cnt == 0)
+                )
+
+        if same_direction and (zero_line_count == 1 or zero_line_count == 2):
+            # We MAY be approaching a box to finish.  But we need more data:
+            if direction == Direction.UP:
+                if up_ln_cnt == 0 and (rt_ln_cnt == new_line_count or lf_ln_cnt == new_line_count):
+                    finishes_box = True
+            elif direction == Direction.RIGHT:
+                if rt_ln_cnt == 0 and (up_ln_cnt == new_line_count or dn_ln_cnt == new_line_count):
+                    finishes_box = True
+            elif direction == Direction.DOWN:
+                if dn_ln_cnt == 0 and (rt_ln_cnt == new_line_count or lf_ln_cnt == new_line_count):
+                    finishes_box = True
+            elif direction == Direction.LEFT:
+                if lf_ln_cnt == 0 and (up_ln_cnt == new_line_count or dn_ln_cnt == new_line_count):
+                    finishes_box = True
+
+        if finishes_box:
+            # Character about to be placed is going to finish a box.  The
+            # user intuitively expects the character not to go "past" the
+            # finished box, so in this case we do not add the arrow direction
+            # to the characterization of the character we are going to place.
+            # This means we have to "back adjust" the previous character if
+            # the user continues in the same direction.  While more complex,
+            # this improves the user experience noticeably.
+            #
+            # We also need to set last direction to NONE to avoid
+            # ``same_direction`` on the next keystroke if user is trying to
+            # continue a line in the same direction.  Reason:  execution
+            # would arrive here 2 times in a row will cause certain
+            # box-drawing characters to be difficult to draw, requiring
+            # extra keystrokes and user frustration.
+            view_settings = view.settings()
+            view_settings.set(core.cfg_view_box_drawing_last_direction_key, Direction.NONE)
+            if debugging:
+                print('  NOT influencing computed character in order to finish a box.')
+                print(f'    Reason 1:  {same_direction=} and {zero_line_count=}.')
+                print(f'    Reason 2:  saw an intersection ahead.')
+        else:
+            if debugging:
+                print(f'  Influencing computed character with {direction=}.')
+
+            # Are we going in the same direction and previous character not connected?
+            # If so, we want to "back adjust" it to be connected.
+            if same_direction:
+                adj_row = row
+                adj_col = col
+
+                if direction == Direction.UP:
+                    adj_row = row + 1
+                elif direction == Direction.RIGHT:
+                    adj_col = col - 1
+                elif direction == Direction.DOWN:
+                    adj_row = row - 1
+                elif direction == Direction.LEFT:
+                    adj_col = col + 1
+
+                prev_c = _virtual_char_at(view, adj_row, adj_col)
+                ln_cnt = core.line_count(prev_c, direction, debugging)
+                if debugging:
+                    print('  Same direction:  examining our side of previous char:')
+                    print(f'  {prev_c=}')
+                    print(f'  {ln_cnt=}')
+                if ln_cnt != new_line_count:
+                    # "Back adjustment" needed:  previous character is not connected.
+                    _back_adjust(view, edit, adj_row, adj_col, prev_c, ln_cnt, direction, debugging)
+                    if debugging:
+                        print(f'  Back-adjustment made {direction=}.')
+                else:
+                    if debugging:
+                        print(f'  No back-adjustment needed {direction=}.')
+
+            # We want the current direction to influence (i.e. add line(s) to)
+            # the character we are computing.  So we arrange that here.
+            if direction == Direction.UP:
+                up_ln_cnt = new_line_count
+            elif direction == Direction.RIGHT:
+                rt_ln_cnt = new_line_count
+            elif direction == Direction.DOWN:
+                dn_ln_cnt = new_line_count
+            elif direction == Direction.LEFT:
+                lf_ln_cnt = new_line_count
+
+    if debugging:
+        print(f'  {up_ln_cnt=}')
+        print(f'  {rt_ln_cnt=}')
+        print(f'  {dn_ln_cnt=}')
+        print(f'  {lf_ln_cnt=}')
+
+    # ---------------------------------------------------------------------
+    # Detect character line combinations that don't exist.
+    # ---------------------------------------------------------------------
+    # Check for lines "ahead" and "behind" that disagree.
+    corrected_bad_combination = False
+    if direction == Direction.UP:
+        if dn_ln_cnt and dn_ln_cnt != new_line_count:
+            # Line(s) behind to connect to, but line count doesn't match.
+            # Line count being drawn wins.
             dn_ln_cnt = new_line_count
-        elif direction == Direction.LEFT:
+            corrected_bad_combination = True
+        if up_ln_cnt and up_ln_cnt != new_line_count:
+            # Line(s) ahead to connect to, but line count doesn't match.
+            # Line count being drawn wins.
+            up_ln_cnt = new_line_count
+            corrected_bad_combination = True
+    elif direction == Direction.RIGHT:
+        if lf_ln_cnt and lf_ln_cnt != new_line_count:
+            # Line(s) behind to connect to, but line count doesn't match.
+            # Line count being drawn wins.
             lf_ln_cnt = new_line_count
+            corrected_bad_combination = True
+        if rt_ln_cnt and rt_ln_cnt != new_line_count:
+            # Line(s) ahead to connect to, but line count doesn't match.
+            # Line count being drawn wins.
+            rt_ln_cnt = new_line_count
+            corrected_bad_combination = True
+    elif direction == Direction.DOWN:
+        if up_ln_cnt and up_ln_cnt != new_line_count:
+            # Line(s) behind to connect to, but line count doesn't match.
+            # Line count being drawn wins.
+            up_ln_cnt = new_line_count
+            corrected_bad_combination = True
+        if dn_ln_cnt and dn_ln_cnt != new_line_count:
+            # Line(s) ahead to connect to, but line count doesn't match.
+            # Line count being drawn wins.
+            dn_ln_cnt = new_line_count
+            corrected_bad_combination = True
+    elif direction == Direction.LEFT:
+        if rt_ln_cnt and rt_ln_cnt != new_line_count:
+            # Line(s) behind to connect to, but line count doesn't match.
+            # Line count being drawn wins.
+            rt_ln_cnt = new_line_count
+            corrected_bad_combination = True
+        if lf_ln_cnt and lf_ln_cnt != new_line_count:
+            # Line(s) ahead to connect to, but line count doesn't match.
+            # Line count being drawn wins.
+            lf_ln_cnt = new_line_count
+            corrected_bad_combination = True
 
-    up_bit_field = up_ln_cnt << up_shift_amt
-    rt_bit_field = rt_ln_cnt << rt_shift_amt
-    dn_bit_field = dn_ln_cnt << dn_shift_amt
-    lf_bit_field = lf_ln_cnt << lf_shift_amt
+    # Check for lines on both "left" and "right" that disagree in count.
+    # These characters do not exist in box-drawing characters.
+    if direction == Direction.UP or direction == Direction.DOWN:
+        if lf_ln_cnt and rt_ln_cnt and lf_ln_cnt != rt_ln_cnt:
+            # Character with differing side line counts does not exist.
+            # Line count being drawn wins.
+            lf_ln_cnt = new_line_count
+            rt_ln_cnt = new_line_count
+            corrected_bad_combination = True
+    elif direction == Direction.LEFT or direction == Direction.RIGHT:
+        if up_ln_cnt and dn_ln_cnt and up_ln_cnt != dn_ln_cnt:
+            # Character with differing side line counts does not exist.
+            # Line count being drawn wins.
+            up_ln_cnt = new_line_count
+            dn_ln_cnt = new_line_count
+            corrected_bad_combination = True
 
+    # Report if a bad character combination was corrected above.
+    if debugging and corrected_bad_combination:
+        print('  After correcting bad combinations:')
+        print(f'  {up_ln_cnt=}')
+        print(f'  {rt_ln_cnt=}')
+        print(f'  {dn_ln_cnt=}')
+        print(f'  {lf_ln_cnt=}')
+
+    # ---------------------------------------------------------------------
+    # Fetch and place box-drawing draw character.
+    # ---------------------------------------------------------------------
+    up_bit_field = up_ln_cnt << core.up_bit_shift_count
+    rt_bit_field = rt_ln_cnt << core.rt_bit_shift_count
+    dn_bit_field = dn_ln_cnt << core.dn_bit_shift_count
+    lf_bit_field = lf_ln_cnt << core.lf_bit_shift_count
     characterization = up_bit_field | rt_bit_field | dn_bit_field | lf_bit_field
-
     c = core.glst_box_char_lookup_by_characterization[characterization]
 
     # Replace `cur_char` with computed character.
     pt = view.text_point(row, col)
     dest_char_rgn = Region(pt, pt + 1)
     cur_char = view.substr(dest_char_rgn)
+    last_pt = view.size()
+    at_eof = ((pt == last_pt))
 
     # Insert if at EOL, replace otherwise.
-    if cur_char == '\n':
+    if cur_char == '\n' or at_eof:
+        if debugging:
+            print(f'  Inserting [{c}].')
         view.insert(edit, pt, c)
         # Move caret back to where it was.
         sel_list = view.sel()
         sel_list.clear()
         sel_list.add(pt)
     else:
+        if debugging:
+            print(f'  Replacing [{cur_char}] with [{c}].')
         view.replace(edit, dest_char_rgn, c)
 
 
@@ -309,7 +535,7 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
         is turned OFF for a particular View, [Alt+Left] and [Alt+Right] still perform
         their default bindings:  move by sub-words.
         """
-        debugging = is_debugging(DebugBit.BOX_DRAWING)
+        debugging = is_debugging(DebugBit.COMMANDS)
         return core.ok_to_do_box_drawing(self.view, debugging)
 
     def run(self, edit, line_count: int, direction: Direction):
@@ -338,11 +564,11 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
 
             - `dest_char` is `cur_char` after optional movement.
 
-        C.  last_drawing_direction == Direction.NONE after:
+        C.  last_direction == Direction.NONE after:
             - BoxDrawing Package is loaded, and
             - box drawing is turned OFF.
 
-        D.  last_drawing_direction = direction of previous box-draw operation, (UP|RIGHT|DOWN|LEFT)
+        D.  last_direction = direction of previous box-draw operation, (UP|RIGHT|DOWN|LEFT)
             or NONE if op = ERASE.
 
         E.  If no movement takes place, `src_char` and `dest_char` point to
@@ -391,7 +617,7 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
         if line_count == 0:  # erase:
             write SPACE at current location
             move in `direction`
-            last_drawing_direction = Direction.NONE
+            last_direction = Direction.NONE
         else:
             if same_direction and `src_char` is a box-drawing character:
                 move in `direction`:
@@ -400,7 +626,7 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
                       a "view.replace()" on that character.
                     - Move selection to that character.
 
-            last_drawing_direction = direction of keypress
+            last_direction = direction of keypress
 
             look_around()  # "involved" means "on side of cur_char".
                 - populate:
@@ -435,7 +661,6 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
         view = self.view
         view_settings = view.settings()
         view_settings.get(core.cfg_view_box_drawing_state_key)
-        last_drawing_direction = view_settings.get(core.cfg_view_box_drawing_last_direction_key)
         live_sel_list = view.sel()
         src_caret_rgn = live_sel_list[0]
         src_char_pt   = src_caret_rgn.b
@@ -444,15 +669,14 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
         # if line_count == 0:  # erase:
         #     write SPACE at current location
         #     move in `direction`
-        #     last_drawing_direction = Direction.NONE
+        #     last_direction = Direction.NONE
         if line_count == 0:
             # Erase.
             if debugging:
                 print('Erase...')
             view.replace(edit, src_char_rgn, ' ')
             _move_caret(direction)
-            last_drawing_direction = Direction.NONE
-            view_settings.set(core.cfg_view_box_drawing_last_direction_key, last_drawing_direction)
+            view_settings.set(core.cfg_view_box_drawing_last_direction_key, Direction.NONE)
         else:
             # Draw something.
             row, col = view.rowcol(src_char_pt)
@@ -465,7 +689,12 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
                 print(f'  {row=}')
                 print(f'  {col=}')
             # if same_direction and `src_char` is a box-drawing character:
-            if last_drawing_direction == direction:
+            last_direction = view_settings.get(core.cfg_view_box_drawing_last_direction_key)
+            same_direction = ((last_direction == direction))
+            # last_direction = direction of keypress
+            view_settings.set(core.cfg_view_box_drawing_last_direction_key, direction)
+
+            if same_direction:
                 if debugging:
                     print('  Same direction.')
                 # move in `direction`:
@@ -474,10 +703,6 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
                 #       a "view.replace()" on that character.
                 #     - Move selection to that character.
                 row, col = _move_caret(view, edit, row, col, direction, debugging)
-
-            # last_drawing_direction = direction of keypress
-            last_drawing_direction = direction
-            view_settings.set(core.cfg_view_box_drawing_last_direction_key, last_drawing_direction)
 
             # look_around()  # "involved" means "on side of cur_char".
             #     - populates:
@@ -507,5 +732,6 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
                     col,
                     line_count,
                     direction,
+                    same_direction,
                     debugging
                     )
