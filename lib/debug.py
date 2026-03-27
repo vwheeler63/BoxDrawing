@@ -302,7 +302,7 @@ def _securely_computed_bits_from_setting_input(
         result = selection_bits
 
     # ---------------------------------------------------------------------
-    # String -- only use if valid.
+    # String---only use if valid.
     # ---------------------------------------------------------------------
     elif isinstance(selection_bits, str):
         # Only use if validated.
