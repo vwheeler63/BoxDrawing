@@ -28,14 +28,6 @@
 		"command": "box_drawing_toggle"
 	},
 	{
-		"caption": "BoxDrawing: Turn ON",
-		"command": "box_drawing_turn_on"
-	},
-	{
-		"caption": "BoxDrawing: Turn OFF",
-		"command": "box_drawing_turn_off"
-	},
-	{
 		"caption": "BoxDrawing: Draw Single Line Up",
 		"command": "box_drawing_draw_one_character",
 		"args": {
