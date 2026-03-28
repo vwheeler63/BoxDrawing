@@ -153,6 +153,8 @@ def _back_adjust(
         debugging     : bool
         ):
     """
+    TODO:  this can go away as it is not currently being called.
+
     Take ``existing_char``, add ``new_line_count`` lines to it on side ``side``,
     then write it back to (row,col) without moving the caret.
 
@@ -185,7 +187,7 @@ def _back_adjust(
         view.replace(edit, dest_char_rgn, c)
     else:
         if debugging:
-            print(f'  Char {existing_char} not found in dictionary.')
+            print(f'  Char {repr(existing_char)} not found in dictionary.')
 
 
 def _compute_and_place_drawing_char(
@@ -229,7 +231,7 @@ def _compute_and_place_drawing_char(
     assert (Direction.UP <= direction <= Direction.LEFT), f'`Direction` {direction} not recognized.'
 
     # ---------------------------------------------------------------------
-    # Look around row and col.
+    # Gather information about surrounding characters.
     # ---------------------------------------------------------------------
     if debugging:
         print('In _compute_and_place_drawing_char()...')
@@ -260,7 +262,9 @@ def _compute_and_place_drawing_char(
     # Compute needed character based on surrounding characters.
     # ---------------------------------------------------------------------
     if up_ln_cnt + rt_ln_cnt + dn_ln_cnt + lf_ln_cnt == 0:
+        # -----------------------------------------------------------------
         # We're starting fresh---no surrounding lines to connect to.
+        # -----------------------------------------------------------------
         if debugging:
             print('  No surrounding lines to connect to.')
         if direction == Direction.UP or direction == Direction.DOWN:
@@ -270,46 +274,52 @@ def _compute_and_place_drawing_char(
             rt_ln_cnt = new_line_count
             lf_ln_cnt = new_line_count
 
-        # Are we going in the same direction and previous character not connected?
-        # If so, we want to "back adjust" it to be connected.
-        if same_direction:
-            adj_row = row
-            adj_col = col
+        # TODO:  this can go away as it is not currently being called.
+        # # Are we going in the same direction and previous character not connected?
+        # # If so, we want to "back adjust" it to be connected.
+        # if same_direction:
+        #     adj_row = row
+        #     adj_col = col
 
-            if direction == Direction.UP:
-                adj_row = row + 1
-            elif direction == Direction.RIGHT:
-                adj_col = col - 1
-            elif direction == Direction.DOWN:
-                adj_row = row - 1
-            elif direction == Direction.LEFT:
-                adj_col = col + 1
+        #     if direction == Direction.UP:
+        #         adj_row = row + 1
+        #     elif direction == Direction.RIGHT:
+        #         adj_col = col - 1
+        #     elif direction == Direction.DOWN:
+        #         adj_row = row - 1
+        #     elif direction == Direction.LEFT:
+        #         adj_col = col + 1
 
-            if debugging:
-                print(f'  {adj_row=}')
-                print(f'  {adj_col=}')
+        #     if debugging:
+        #         print(f'  {adj_row=}')
+        #         print(f'  {adj_col=}')
 
-            prev_c = _virtual_char_at(view, adj_row, adj_col)
-            ln_cnt = core.line_count(prev_c, direction, debugging)
-            if debugging:
-                print('  Same direction:  examining our side of previous char:')
-                print(f'  {prev_c=}')
-                print(f'  {ln_cnt=}')
-            if ln_cnt == 0:
-                # "Back adjustment" needed:  previous character is not connected.
-                _back_adjust(view, edit, adj_row, adj_col, prev_c, new_line_count, direction, debugging)
-                if debugging:
-                    print(f'  Back-adjustment made {direction=}.')
-            else:
-                if debugging:
-                    print(f'  No back-adjustment needed {direction=}.')
+        #     prev_c = _virtual_char_at(view, adj_row, adj_col)
+        #     back_ln_cnt = core.line_count(prev_c, direction, debugging)
+        #     if debugging:
+        #         print('  Same direction:  examining our side of previous char:')
+        #         print(f'  {prev_c=}')
+        #         print(f'  {back_ln_cnt=}')
+        #     if back_ln_cnt == 0:
+        #         # "Back adjustment" needed:  previous character is not connected.
+        #         _back_adjust(view, edit, adj_row, adj_col, prev_c, new_line_count, direction, debugging)
+        #         if debugging:
+        #             print(f'  Back-adjustment made {direction=}.')
+        #     else:
+        #         if debugging:
+        #             print(f'  No back-adjustment needed {direction=}.')
 
     else:
-        # There is at least one surrounding box-drawing character. If we are
-        # approaching finishing a box, then we avoid causing the current
-        # line direction to influence the current character, so the
-        # resulting character just connects to the surrounding box-drawing
-        # characters.
+        # -----------------------------------------------------------------
+        # There is at least one surrounding box-drawing character with
+        # lines we will need to connect with.
+        # -----------------------------------------------------------------
+
+        # If we are approaching finishing a box, then we want to avoid
+        # extending the current character with the current direction of
+        # drawing.  This is so that the resulting character just connects
+        # to the surrounding box-drawing characters without extending them
+        # in the direction of drawing.
         finishes_box = False
 
         zero_line_count = (
@@ -322,16 +332,16 @@ def _compute_and_place_drawing_char(
         if same_direction and (zero_line_count == 1 or zero_line_count == 2):
             # We MAY be approaching a box to finish.  But we need more data:
             if direction == Direction.UP:
-                if up_ln_cnt == 0 and (rt_ln_cnt == new_line_count or lf_ln_cnt == new_line_count or rt_ln_cnt == lf_ln_cnt):
+                if up_ln_cnt == 0 and (rt_ln_cnt or lf_ln_cnt):
                     finishes_box = True
             elif direction == Direction.RIGHT:
-                if rt_ln_cnt == 0 and (up_ln_cnt == new_line_count or dn_ln_cnt == new_line_count or up_ln_cnt == dn_ln_cnt):
+                if rt_ln_cnt == 0 and (up_ln_cnt or dn_ln_cnt):
                     finishes_box = True
             elif direction == Direction.DOWN:
-                if dn_ln_cnt == 0 and (rt_ln_cnt == new_line_count or lf_ln_cnt == new_line_count or rt_ln_cnt == lf_ln_cnt):
+                if dn_ln_cnt == 0 and (rt_ln_cnt or lf_ln_cnt):
                     finishes_box = True
             elif direction == Direction.LEFT:
-                if lf_ln_cnt == 0 and (up_ln_cnt == new_line_count or dn_ln_cnt == new_line_count or up_ln_cnt == dn_ln_cnt):
+                if lf_ln_cnt == 0 and (up_ln_cnt or dn_ln_cnt):
                     finishes_box = True
 
         if finishes_box:
@@ -359,35 +369,36 @@ def _compute_and_place_drawing_char(
             if debugging:
                 print(f'  Influencing computed character with {direction=}.')
 
-            # Are we going in the same direction and previous character not connected?
-            # If so, we want to "back adjust" it to be connected.
-            if same_direction:
-                adj_row = row
-                adj_col = col
+            # TODO:  this can go away as it is not currently being called.
+            # # Are we going in the same direction and previous character not connected?
+            # # If so, we want to "back adjust" it to be connected.
+            # if same_direction:
+            #     adj_row = row
+            #     adj_col = col
 
-                if direction == Direction.UP:
-                    adj_row = row + 1
-                elif direction == Direction.RIGHT:
-                    adj_col = col - 1
-                elif direction == Direction.DOWN:
-                    adj_row = row - 1
-                elif direction == Direction.LEFT:
-                    adj_col = col + 1
+            #     if direction == Direction.UP:
+            #         adj_row = row + 1
+            #     elif direction == Direction.RIGHT:
+            #         adj_col = col - 1
+            #     elif direction == Direction.DOWN:
+            #         adj_row = row - 1
+            #     elif direction == Direction.LEFT:
+            #         adj_col = col + 1
 
-                prev_c = _virtual_char_at(view, adj_row, adj_col)
-                ln_cnt = core.line_count(prev_c, direction, debugging)
-                if debugging:
-                    print('  Same direction:  examining our side of previous char:')
-                    print(f'  {prev_c=}')
-                    print(f'  {ln_cnt=}')
-                if ln_cnt != new_line_count:
-                    # "Back adjustment" needed:  previous character is not connected.
-                    _back_adjust(view, edit, adj_row, adj_col, prev_c, ln_cnt, direction, debugging)
-                    if debugging:
-                        print(f'  Back-adjustment made {direction=}.')
-                else:
-                    if debugging:
-                        print(f'  No back-adjustment needed {direction=}.')
+            #     prev_c = _virtual_char_at(view, adj_row, adj_col)
+            #     back_ln_cnt = core.line_count(prev_c, direction, debugging)
+            #     if debugging:
+            #         print('  yyyySame direction:  examining our side of previous char:')
+            #         print(f'  {prev_c=}')
+            #         print(f'  {back_ln_cnt=}')
+            #     if back_ln_cnt != new_line_count:
+            #         # "Back adjustment" needed:  previous character is not connected.
+            #         _back_adjust(view, edit, adj_row, adj_col, prev_c, back_ln_cnt, direction, debugging)
+            #         if debugging:
+            #             print(f'  Back-adjustment made {direction=}.')
+            #     else:
+            #         if debugging:
+            #             print(f'  No back-adjustment needed {direction=}.')
 
             # We want the current direction to influence (i.e. add line(s) to)
             # the character we are computing.  So we arrange that here.
@@ -498,7 +509,7 @@ def _compute_and_place_drawing_char(
     last_pt = view.size()
     at_eof = ((pt == last_pt))
 
-    # Insert if at EOL, replace otherwise.
+    # Insert if at EOL or EOF, replace otherwise.
     if cur_char == '\n' or at_eof:
         if debugging:
             print(f'  Inserting [{c}].')
