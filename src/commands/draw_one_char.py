@@ -5,7 +5,9 @@ from sublime import Region, View
 from sublime_types import Point
 from ...lib.debug import IntFlag, DebugBit, is_debugging
 from .. import core
-from ..core import Direction, State
+from ..core import State
+from .. import box_character
+from ..box_character import Direction
 
 
 def _append_spaces_if_needed(view: View, edit, row: int, col: int, debugging: bool):
@@ -202,10 +204,10 @@ def _compute_and_place_drawing_char(
     dn_char = _virtual_char_at(view, row + 1, col    )
     lf_char = _virtual_char_at(view, row    , col - 1)
 
-    up_ln_cnt = core.line_count(up_char, Direction.DOWN , debugging)
-    rt_ln_cnt = core.line_count(rt_char, Direction.LEFT , debugging)
-    dn_ln_cnt = core.line_count(dn_char, Direction.UP   , debugging)
-    lf_ln_cnt = core.line_count(lf_char, Direction.RIGHT, debugging)
+    up_ln_cnt = box_character.line_count(up_char, Direction.DOWN , debugging)
+    rt_ln_cnt = box_character.line_count(rt_char, Direction.LEFT , debugging)
+    dn_ln_cnt = box_character.line_count(dn_char, Direction.UP   , debugging)
+    lf_ln_cnt = box_character.line_count(lf_char, Direction.RIGHT, debugging)
 
     if debugging:
         print('  Surrounding chars:')
@@ -384,12 +386,12 @@ def _compute_and_place_drawing_char(
     # ---------------------------------------------------------------------
     # Compute box-drawing draw character.
     # ---------------------------------------------------------------------
-    up_bit_field = up_ln_cnt << core.up_bit_shift_count
-    rt_bit_field = rt_ln_cnt << core.rt_bit_shift_count
-    dn_bit_field = dn_ln_cnt << core.dn_bit_shift_count
-    lf_bit_field = lf_ln_cnt << core.lf_bit_shift_count
+    up_bit_field = up_ln_cnt << box_character.up_bit_shift_count
+    rt_bit_field = rt_ln_cnt << box_character.rt_bit_shift_count
+    dn_bit_field = dn_ln_cnt << box_character.dn_bit_shift_count
+    lf_bit_field = lf_ln_cnt << box_character.lf_bit_shift_count
     classification = up_bit_field | rt_bit_field | dn_bit_field | lf_bit_field
-    c = core.glst_box_char_lookup_by_classification[classification]
+    c = box_character.glst_box_char_lookup_by_classification[classification]
     if debugging:
         print(f'  {classification=} ({classification:#02X})')
 
