@@ -514,15 +514,15 @@ def _compute_and_place_drawing_char(
     # Insert if at EOL or EOF, replace otherwise.
     if cur_char == '\n' or at_eof:
         if debugging:
-            print(f'  Inserting [{c}].')
+            print(f'  Inserting [{repr(c)}].')
         view.insert(edit, pt, c)
-        # Move caret back to where it was.
+        # This moved the caret, so move it back to where it was.
         sel_list = view.sel()
         sel_list.clear()
         sel_list.add(pt)
     else:
         if debugging:
-            print(f'  Replacing [{cur_char}] with [{c}].')
+            print(f'  Replacing [{repr(cur_char)}] with [{repr(c)}].')
         view.replace(edit, dest_char_rgn, c)
 
 
@@ -679,6 +679,7 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
         src_caret_rgn = live_sel_list[0]
         src_char_pt   = src_caret_rgn.b
         src_char_rgn  = Region(src_char_pt, src_char_pt + 1)
+        row, col      = view.rowcol(src_char_pt)
 
         # if line_count == 0:  # erase:
         #     write SPACE at current location
@@ -688,12 +689,32 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
             # Erase.
             if debugging:
                 print('Erase...')
-            view.replace(edit, src_char_rgn, ' ')
-            _move_caret(direction)
+            dest_char_rgn = Region(src_char_pt, src_char_pt + 1)
+            cur_char = view.substr(dest_char_rgn)
+            last_pt = view.size()
+            at_eof = ((src_char_pt == last_pt))
+            c = ' '
+
+            # Insert if at EOL or EOF, replace otherwise.
+            if cur_char == '\n' or at_eof:
+                if debugging:
+                    print(f'  Inserting [{repr(c)}].')
+                view.insert(edit, src_char_pt, c)
+                # This moved the caret, so move it back to where it was.
+                sel_list = view.sel()
+                sel_list.clear()
+                sel_list.add(src_char_pt)
+            else:
+                if debugging:
+                    print(f'  Replacing [{repr(cur_char)}] with [{repr(c)}].')
+                view.replace(edit, dest_char_rgn, c)
+
+            # Move caret to new location, inserting spaces as needed...
+            _move_caret(view, edit, row, col, direction, debugging)
+            # ...and record last-direction as NONE.
             view_settings.set(core.cfg_view_box_drawing_last_direction_key, Direction.NONE)
         else:
             # Draw something.
-            row, col = view.rowcol(src_char_pt)
             if debugging:
                 if line_count > 1:
                     plural_suffix = 's'
