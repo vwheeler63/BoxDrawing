@@ -5,7 +5,7 @@ from sublime import Region, View
 from sublime_types import Point
 from ...lib.debug import IntFlag, DebugBit, is_debugging
 from .. import core
-from ..core import Direction, State, gdict_characterization_by_char
+from ..core import Direction, State, gdict_classification_by_char
 
 
 def _append_spaces_if_needed(view: View, edit, row: int, col: int, debugging: bool):
@@ -173,13 +173,13 @@ def _back_adjust(
     if debugging:
         print(f'In _back_adjust()...')
 
-    if existing_char in gdict_characterization_by_char:
+    if existing_char in gdict_classification_by_char:
         if debugging:
-            print(f'  Characterization: 0x{gdict_characterization_by_char[existing_char]:02X}.')
-        characterization = core.adjusted_characterization(existing_char, side, new_line_count, debugging)
-        c = core.glst_box_char_lookup_by_characterization[characterization]
+            print(f'  Characterization: 0x{gdict_classification_by_char[existing_char]:02X}.')
+        classification = core.adjusted_classification(existing_char, side, new_line_count, debugging)
+        c = core.glst_box_char_lookup_by_classification[classification]
         if debugging:
-            print(f'  Adjusted charact: 0x{characterization:02X}.')
+            print(f'  Adjusted charact: 0x{classification:02X}.')
             print(f'  New character   : {c=}.')
         # Now place ``c`` at (row,col) without moving caret.
         pt = view.text_point(row, col)
@@ -202,12 +202,12 @@ def _compute_and_place_drawing_char(
         ):
     """
     Compute character:
-        - use surrounding chars to assemble a characterization
-        - use characterization to index into the appropriate lookup array:
+        - use surrounding chars to assemble a classification
+        - use classification to index into the appropriate lookup array:
             - One of these 2 arrays will be referenced by
-              glst_box_char_lookup_by_characterization:
-                - glst_unicode_box_char_lookup_by_characterization
-                - glst_ascii_box_char_lookup_by_characterization
+              glst_box_char_lookup_by_classification:
+                - glst_unicode_box_char_lookup_by_classification
+                - glst_ascii_box_char_lookup_by_classification
 
     Note that the ``Direction`` IntEnum class is carefully ordered to so that
     each ``side`` can be used to compute the number of bits to shift to place
@@ -348,7 +348,7 @@ def _compute_and_place_drawing_char(
             # Character about to be placed is going to finish a box.  The
             # user intuitively expects the character not to go "past" the
             # finished box, so in this case we do not add the arrow direction
-            # to the characterization of the character we are going to place.
+            # to the classification of the character we are going to place.
             # This means we have to "back adjust" the previous character if
             # the user continues in the same direction.  While more complex,
             # this improves the user experience noticeably.
@@ -493,16 +493,18 @@ def _compute_and_place_drawing_char(
         print(f'  {lf_ln_cnt=}')
 
     # ---------------------------------------------------------------------
-    # Fetch and place box-drawing draw character.
+    # Compute box-drawing draw character.
     # ---------------------------------------------------------------------
     up_bit_field = up_ln_cnt << core.up_bit_shift_count
     rt_bit_field = rt_ln_cnt << core.rt_bit_shift_count
     dn_bit_field = dn_ln_cnt << core.dn_bit_shift_count
     lf_bit_field = lf_ln_cnt << core.lf_bit_shift_count
-    characterization = up_bit_field | rt_bit_field | dn_bit_field | lf_bit_field
-    c = core.glst_box_char_lookup_by_characterization[characterization]
+    classification = up_bit_field | rt_bit_field | dn_bit_field | lf_bit_field
+    c = core.glst_box_char_lookup_by_classification[classification]
 
+    # ---------------------------------------------------------------------
     # Replace `cur_char` with computed character.
+    # ---------------------------------------------------------------------
     pt = view.text_point(row, col)
     dest_char_rgn = Region(pt, pt + 1)
     cur_char = view.substr(dest_char_rgn)
@@ -597,7 +599,7 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
             The cursor stays in place to write the single box-drawing character
             indicated by the key combination.
 
-        H.  If direction changes, no movement takes place.
+        H.  If direction changes or was previously NONE, no movement takes place.
             The cursor stays in place to write the single box-drawing character
             indicated by the key combination.
 
@@ -612,17 +614,15 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
         K.  `dest_char` is made to "fit in" (i.e. connect with) the box-drawing
             characters around it, taking into account the indicated direction.
 
-        L.  Enhancement to save keystrokes, as well as gracefully finishing box corners:
+        L.  When `dest_char` will be finishing (completing) a box:
 
-            L.1.  When arriving at a box corner that will be finished, compute
-                  character to just finish the box corner, but not extend it.
+            L.1.  When arriving at a box corner that will be finished (completed),
+                  compute character to just finish the box corner, but not extend it.
+                  Recorded direction = NONE.
 
-            L.2.  When the last op caused a box-drawing character to be created
-                  (e.g. which closed the corner of a box) such that proceeding in the
-                  same direction does not find an "agreeing" line count on the side
-                  of the character in the indicated direction, then movement DOES
-                  occur and the `src_char` is "back adjusted" to add the exiting
-                  line to the box-drawing character already there.
+            L.2.  When the last op was L.1 above, since last direction == NONE,
+                  whatever direction user then chooses, only THEN extend a line out
+                  from the current character.
 
 
         Pseudocode to carry out above algorithm:
@@ -657,12 +657,12 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
                 "back adjust" `src_char`.
 
             Compute character based on surrounding characters:
-                - use surrounding chars to assemble a characterization
-                - use characterization to index into the appropriate lookup array:
+                - use surrounding chars to assemble a classification
+                - use classification to index into the appropriate lookup array:
                     - One of these 2 arrays will be referenced by
-                      glst_box_char_lookup_by_characterization:
-                        - glst_unicode_box_char_lookup_by_characterization
-                        - glst_ascii_box_char_lookup_by_characterization
+                      glst_box_char_lookup_by_classification:
+                        - glst_unicode_box_char_lookup_by_classification
+                        - glst_ascii_box_char_lookup_by_classification
 
             Replace `cur_char` with computed character.
         """
@@ -733,12 +733,12 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
             #     "back adjust" `src_char`.
             #
             # Compute character:
-            #     - use surrounding chars to assemble a characterization
-            #     - use characterization to index into the appropriate lookup array:
+            #     - use surrounding chars to assemble a classification
+            #     - use classification to index into the appropriate lookup array:
             #         - One of these 2 arrays will be referenced by
-            #           `glst_box_char_lookup_by_characterization`:
-            #             - glst_unicode_box_char_lookup_by_characterization
-            #             - glst_ascii_box_char_lookup_by_characterization
+            #           `glst_box_char_lookup_by_classification`:
+            #             - glst_unicode_box_char_lookup_by_classification
+            #             - glst_ascii_box_char_lookup_by_classification
             _compute_and_place_drawing_char(
                     view,
                     edit,

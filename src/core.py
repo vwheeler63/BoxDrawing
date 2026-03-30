@@ -363,14 +363,14 @@ class Direction(IntEnum):
     DrawingDirection Enumeration
 
     Characterization mentioned in comments is from
-    `gdict_unicode_characterization_by_char_ordered` dictionary values.
+    `gdict_unicode_classification_by_char_ordered` dictionary values.
     """
     NONE  = -1  # Happens after Package load, turning box-drawing off, and an ERASE;
                 #   to detect "change of direction"
-    UP    = 0   # val * 2 = bit-shift right to isolate characterization in 2 LSbs
-    RIGHT = 1   # val * 2 = bit-shift right to isolate characterization in 2 LSbs
-    DOWN  = 2   # val * 2 = bit-shift right to isolate characterization in 2 LSbs
-    LEFT  = 3   # val * 2 = bit-shift right to isolate characterization in 2 LSbs
+    UP    = 0   # val * 2 = bit-shift right to isolate classification in 2 LSbs
+    RIGHT = 1   # val * 2 = bit-shift right to isolate classification in 2 LSbs
+    DOWN  = 2   # val * 2 = bit-shift right to isolate classification in 2 LSbs
+    LEFT  = 3   # val * 2 = bit-shift right to isolate classification in 2 LSbs
 
 
 class State(IntEnum):
@@ -426,8 +426,8 @@ class ClassificationField(IntFlag):
     LINES_LEFT_2  = 0x80
 
 
-# Abbreviation for the box-drawing character characterization dictionaries
-# below, to make constants like ``gdict_unicode_characterization_by_char_ordered``
+# Abbreviation for the box-drawing character classification dictionaries
+# below, to make constants like ``gdict_unicode_classification_by_char_ordered``
 # more readable.
 CF = ClassificationField
 
@@ -496,7 +496,7 @@ gdict_unicode_classification_by_character = {
     '╪': CF.LINES_LEFT_2 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_2 | CF.LINES_UP_1,  # 0x99
 }
 
-gdict_unicode_characterization_by_char_ordered = {
+gdict_unicode_classification_by_char_ordered = {
     '└': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_1,  # 0x05
     '╙': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_2,  # 0x06
     '╘': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_1,  # 0x09
@@ -540,15 +540,15 @@ gdict_unicode_characterization_by_char_ordered = {
 }
 
 # -------------------------------------------------------------------------
-# The following used the above Unicode characterization dictionary
+# The following used the above Unicode classification dictionary
 # to generate this ASCII lookup array for manual editing.  The
-# finished arrayis here.  It is indexed by characterization as is
-# ``glst_unicode_box_char_lookup_by_characterization`` which is
+# finished arrayis here.  It is indexed by classification as is
+# ``glst_unicode_box_char_lookup_by_classification`` which is
 # populated programmatically below.  The result looks a great deal
 # like this lookup array.
 # -------------------------------------------------------------------------
 _nc = _cfg_neutral_character
-glst_ascii_box_char_lookup_by_characterization = {
+glst_ascii_box_char_lookup_by_classification = {
     _nc,  # 0x00 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_0
     _nc,  # 0x01
     _nc,  # 0x02
@@ -808,15 +808,15 @@ glst_ascii_box_char_lookup_by_characterization = {
 }
 
 # Pre-allocate array with 256 elements with _nc (middle dot U+00B7) as placeholder.
-glst_unicode_box_char_lookup_by_characterization = [_nc] * 256
+glst_unicode_box_char_lookup_by_classification = [_nc] * 256
 
-# Populate Unicode look-up array using `gdict_unicode_characterization_by_char_ordered`.
-for c in gdict_unicode_characterization_by_char_ordered:
+# Populate Unicode look-up array using `gdict_unicode_classification_by_char_ordered`.
+for c in gdict_unicode_classification_by_char_ordered:
     mc = c
     if c[0] == 'D':
         mc = c[1]
-    classif_idx = gdict_unicode_characterization_by_char_ordered[c]
-    glst_unicode_box_char_lookup_by_characterization[classif_idx] = mc
+    classif_idx = gdict_unicode_classification_by_char_ordered[c]
+    glst_unicode_box_char_lookup_by_classification[classif_idx] = mc
 
 up_bit_shift_count = Direction.UP    << 1
 rt_bit_shift_count = Direction.RIGHT << 1
@@ -834,8 +834,8 @@ cfg_view_box_drawing_last_direction_key = '_box_drawing_last_direction'
 # These will be arbitrarily assigned until we implement ASCII,
 # then the configured character set will determine which arrays get
 # assigned and this will get updated when Package settings change.
-gdict_characterization_by_char = gdict_unicode_characterization_by_char_ordered
-glst_box_char_lookup_by_characterization = glst_unicode_box_char_lookup_by_characterization
+gdict_classification_by_char = gdict_unicode_classification_by_char_ordered
+glst_box_char_lookup_by_classification = glst_unicode_box_char_lookup_by_classification
 
 
 # =========================================================================
@@ -850,9 +850,9 @@ def line_count(c: str, side: Direction, debugging: bool) -> int:
     characters have 0 lines coming out of at least one of their sides.
 
     All other characters will be considered to have 0 lines on all sides
-    because they are not found in global ``gdict_characterization_by_char``.
+    because they are not found in global ``gdict_classification_by_char``.
 
-    ``gdict_characterization_by_char`` references a dictionary with the
+    ``gdict_classification_by_char`` references a dictionary with the
     box-drawing characters as keys.  Which dictionary it references is
     based on the "character_set" Package setting:  ASCII or Unicode.  The
     integer values contain bit fields that tell us how many lines come out
@@ -900,12 +900,12 @@ def line_count(c: str, side: Direction, debugging: bool) -> int:
         print('  In line_count()...')
     result = 0
 
-    if c in gdict_characterization_by_char:
-        characterization = gdict_characterization_by_char[c]
+    if c in gdict_classification_by_char:
+        classification = gdict_classification_by_char[c]
         right_shift_bit_count = side << 1
-        result = (characterization >> right_shift_bit_count) & 0x03
+        result = (classification >> right_shift_bit_count) & 0x03
         if debugging:
-            print(f'    characterization=0x{characterization:02X}')
+            print(f'    classification=0x{classification:02X}')
             print(f'    {right_shift_bit_count=}')
 
     if debugging:
@@ -914,33 +914,33 @@ def line_count(c: str, side: Direction, debugging: bool) -> int:
     return result
 
 
-def adjusted_characterization(c: str, side: Direction, new_line_count: int, debugging: bool):
-    """ Adjusted characterization to connect on ``side`` with ``new_line_count``. """
-    characterization = gdict_characterization_by_char[c]
+def adjusted_classification(c: str, side: Direction, new_line_count: int, debugging: bool):
+    """ Adjusted classification to connect on ``side`` with ``new_line_count``. """
+    classification = gdict_classification_by_char[c]
     shift_bit_count = side << 1
 
     # Remove any old bits.
     mask_out_bits_mask = 0x03 << shift_bit_count
     if debugging:
-        print('In adjusted_characterization()...')
+        print('In adjusted_classification()...')
         print(f'  {c=}')
         print(f'  {side=}')
         print(f'  {new_line_count=}')
-        print(f'  Characterization     : 0x{characterization:02X}')
+        print(f'  Characterization   : 0x{classification:02X}')
         print(f'  {shift_bit_count=}')
-        print(f'  Mask-out bits        : 0x{mask_out_bits_mask:02X}')
-    characterization &= ~mask_out_bits_mask
+        print(f'  Mask-out bits      : 0x{mask_out_bits_mask:02X}')
+    classification &= ~mask_out_bits_mask
     if debugging:
-        print(f'   Bits masked out     : 0x{characterization:02X}')
+        print(f'   Bits masked out   : 0x{classification:02X}')
 
     # Add new bits.
     new_bit_mask = new_line_count << shift_bit_count
-    characterization |= new_bit_mask
+    classification |= new_bit_mask
     if debugging:
-        print(f'   New bit field       : 0x{new_bit_mask:02X}')
-        print(f'   Adj characterization: 0x{characterization:02X}')
+        print(f'   New bit field     : 0x{new_bit_mask:02X}')
+        print(f'   Adj classification: 0x{classification:02X}')
 
-    return characterization
+    return classification
 
 
 # =========================================================================
