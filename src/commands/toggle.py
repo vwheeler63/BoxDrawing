@@ -49,6 +49,6 @@ class BoxDrawingToggleCommand(sublime_plugin.TextCommand):
         """
         debugging = is_debugging(DebugBit.COMMANDS)
         if debugging:
-            print('In BoxDrawingTurnOffCommand()...')
+            print('In BoxDrawingToggleCommand()...')
 
         core.toggle_state(self.view)

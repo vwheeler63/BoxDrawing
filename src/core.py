@@ -448,54 +448,6 @@ CF = ClassificationField
 # Columns are in bit order left-to-right (most-significant to least):
 #       LEFT   BOTTOM   RIGHT   TOP
 # -------------------------------------------------------------------------
-gdict_unicode_classification_by_character = {
-    # Single Lines
-    '└': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_1,  # 0x05
-    '│': CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_1,  # 0x11
-    '┌': CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_1 | CF.LINES_UP_0,  # 0x14
-    '├': CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_1 | CF.LINES_UP_1,  # 0x15
-    '┘': CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_1,  # 0x41
-    '─': CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_0,  # 0x44
-    '┴': CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_1,  # 0x45
-    '┐': CF.LINES_LEFT_1 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_0,  # 0x50
-    '┤': CF.LINES_LEFT_1 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_1,  # 0x51
-    '┬': CF.LINES_LEFT_1 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_1 | CF.LINES_UP_0,  # 0x54
-    '┼': CF.LINES_LEFT_1 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_1 | CF.LINES_UP_1,  # 0x55
-
-    # Double Lines
-    '╚': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_2,  # 0x0A
-    '║': CF.LINES_LEFT_0 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_0 | CF.LINES_UP_2,  # 0x22
-    '╔': CF.LINES_LEFT_0 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_2 | CF.LINES_UP_0,  # 0x28
-    '╠': CF.LINES_LEFT_0 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_2 | CF.LINES_UP_2,  # 0x2A
-    '╝': CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_2,  # 0x82
-    '═': CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_0,  # 0x88
-    '╩': CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_2,  # 0x8A
-    '╗': CF.LINES_LEFT_2 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_0 | CF.LINES_UP_0,  # 0xA0
-    '╣': CF.LINES_LEFT_2 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_0 | CF.LINES_UP_2,  # 0xA2
-    '╦': CF.LINES_LEFT_2 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_2 | CF.LINES_UP_0,  # 0xA8
-    '╬': CF.LINES_LEFT_2 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_2 | CF.LINES_UP_2,  # 0xAA
-
-    # Combined Single and Double Lines
-    '╙': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_2,  # 0x06
-    '╘': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_1,  # 0x09
-    '╒': CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_2 | CF.LINES_UP_0,  # 0x18
-    '╞': CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_2 | CF.LINES_UP_1,  # 0x19
-    '╓': CF.LINES_LEFT_0 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_1 | CF.LINES_UP_0,  # 0x24
-    '╟': CF.LINES_LEFT_0 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_1 | CF.LINES_UP_2,  # 0x26
-    '╜': CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_2,  # 0x42
-    '╨': CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_2,  # 0x46
-    '╖': CF.LINES_LEFT_1 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_0 | CF.LINES_UP_0,  # 0x60
-    '╢': CF.LINES_LEFT_1 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_0 | CF.LINES_UP_2,  # 0x62
-    '╥': CF.LINES_LEFT_1 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_1 | CF.LINES_UP_0,  # 0x64
-    '╫': CF.LINES_LEFT_1 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_1 | CF.LINES_UP_2,  # 0x66
-    '╛': CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_1,  # 0x81
-    '╧': CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_1,  # 0x89
-    '╕': CF.LINES_LEFT_2 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_0,  # 0x90
-    '╡': CF.LINES_LEFT_2 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_1,  # 0x91
-    '╤': CF.LINES_LEFT_2 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_2 | CF.LINES_UP_0,  # 0x98
-    '╪': CF.LINES_LEFT_2 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_2 | CF.LINES_UP_1,  # 0x99
-}
-
 gdict_unicode_classification_by_char_ordered = {
     '└': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_1,  # 0x05
     '╙': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_2,  # 0x06
@@ -539,6 +491,14 @@ gdict_unicode_classification_by_char_ordered = {
     '╬': CF.LINES_LEFT_2 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_2 | CF.LINES_UP_2,  # 0xAA
 }
 
+gdict_ascii_classification_by_char_ordered = {
+    '|': CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_1,  # 0x11
+    '-': CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_0,  # 0x44
+    '+': CF.LINES_LEFT_1 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_1 | CF.LINES_UP_1,  # 0x55
+    '=': CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_0,  # 0x88
+    '#': CF.LINES_LEFT_2 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_2 | CF.LINES_UP_2,  # 0xAA
+}
+
 # -------------------------------------------------------------------------
 # The following used the above Unicode classification dictionary
 # to generate this ASCII lookup array for manual editing.  The
@@ -548,16 +508,16 @@ gdict_unicode_classification_by_char_ordered = {
 # like this lookup array.
 # -------------------------------------------------------------------------
 _nc = _cfg_neutral_character
-glst_ascii_box_char_lookup_by_classification = {
+glst_ascii_box_char_lookup_by_classification = [
     _nc,  # 0x00 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_0
-    _nc,  # 0x01
-    _nc,  # 0x02
+    '|',  # 0x01 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_1
+    '#',  # 0x02 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_2
     _nc,  # 0x03
-    _nc,  # 0x04
+    '-',  # 0x04 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_0
     '+',  # 0x05 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_1
     '#',  # 0x06 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_2
     _nc,  # 0x07
-    _nc,  # 0x08
+    '=',  # 0x08 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_0
     '+',  # 0x09 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_1
     '#',  # 0x0A = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_2
     _nc,  # 0x0B
@@ -565,7 +525,7 @@ glst_ascii_box_char_lookup_by_classification = {
     _nc,  # 0x0D
     _nc,  # 0x0E
     _nc,  # 0x0F
-    _nc,  # 0x10
+    '|',  # 0x10 = CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_0
     '|',  # 0x11 = CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_1
     _nc,  # 0x12
     _nc,  # 0x13
@@ -581,7 +541,7 @@ glst_ascii_box_char_lookup_by_classification = {
     _nc,  # 0x1D
     _nc,  # 0x1E
     _nc,  # 0x1F
-    _nc,  # 0x20
+    '#',  # 0x20 = CF.LINES_LEFT_0 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_0 | CF.LINES_UP_0
     _nc,  # 0x21
     '#',  # 0x22 = CF.LINES_LEFT_0 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_0 | CF.LINES_UP_2
     _nc,  # 0x23
@@ -613,7 +573,7 @@ glst_ascii_box_char_lookup_by_classification = {
     _nc,  # 0x3D
     _nc,  # 0x3E
     _nc,  # 0x3F
-    _nc,  # 0x40
+    '-',  # 0x40 = CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_0
     '+',  # 0x41 = CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_1
     '#',  # 0x42 = CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_2
     _nc,  # 0x43
@@ -677,7 +637,7 @@ glst_ascii_box_char_lookup_by_classification = {
     _nc,  # 0x7D
     _nc,  # 0x7E
     _nc,  # 0x7F
-    _nc,  # 0x80
+    '=',  # 0x80 = CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_0
     '+',  # 0x81 = CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_1
     '#',  # 0x82 = CF.LINES_LEFT_2 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_2
     _nc,  # 0x83
@@ -805,7 +765,7 @@ glst_ascii_box_char_lookup_by_classification = {
     _nc,  # 0xFD
     _nc,  # 0xFE
     _nc,  # 0xFF
-}
+]
 
 # Pre-allocate array with 256 elements with _nc (middle dot U+00B7) as placeholder.
 glst_unicode_box_char_lookup_by_classification = [_nc] * 256
@@ -834,8 +794,8 @@ cfg_view_box_drawing_last_direction_key = '_box_drawing_last_direction'
 # These will be arbitrarily assigned until we implement ASCII,
 # then the configured character set will determine which arrays get
 # assigned and this will get updated when Package settings change.
-gdict_classification_by_char = gdict_unicode_classification_by_char_ordered
-glst_box_char_lookup_by_classification = glst_unicode_box_char_lookup_by_classification
+gdict_classification_by_char = gdict_ascii_classification_by_char_ordered
+glst_box_char_lookup_by_classification = glst_ascii_box_char_lookup_by_classification
 
 
 # =========================================================================
@@ -1072,11 +1032,28 @@ def _on_pkg_settings_chgd():
     # `bd_setting()` cannot be called until this is done, and
     # `is_debugging()` will return an incorrect value until this is done.
     bd_setting.obj = sublime.load_settings(_cfg_pkg_settings_file)
+
+    # Initialize debugging subsystem.
     temp = bd_setting(_cfg_stg_name__debugging)
     set_debugging_bits(temp)
     debugging = is_debugging(DebugBit.SETTINGS_CHANGED_EVENT)
     if debugging:
         print(f'In _on_pkg_settings_chgd()')
+
+    # Initialize character set data.
+    global gdict_classification_by_char
+    global glst_box_char_lookup_by_classification
+    is_ascii = ((bd_setting(_cfg_stg_name__character_set) == 'ASCII'))
+    if is_ascii:
+        gdict_classification_by_char = gdict_ascii_classification_by_char_ordered
+        glst_box_char_lookup_by_classification = glst_ascii_box_char_lookup_by_classification
+        if debugging:
+            print('  ASCII mode initialized.')
+    else:
+        gdict_classification_by_char = gdict_unicode_classification_by_char_ordered
+        glst_box_char_lookup_by_classification = glst_unicode_box_char_lookup_by_classification
+        if debugging:
+            print('  Unicode mode initialized.')
 
 
 def on_plugin_loaded():

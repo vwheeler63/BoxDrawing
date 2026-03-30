@@ -5,7 +5,7 @@ from sublime import Region, View
 from sublime_types import Point
 from ...lib.debug import IntFlag, DebugBit, is_debugging
 from .. import core
-from ..core import Direction, State, gdict_classification_by_char
+from ..core import Direction, State
 
 
 def _append_spaces_if_needed(view: View, edit, row: int, col: int, debugging: bool):
@@ -142,54 +142,6 @@ def _move_caret(view: View, edit, row: int, col: int, direction: Direction, debu
     return row, col
 
 
-def _back_adjust(
-        view          : View,
-        edit          : sublime.Edit,
-        row           : int,
-        col           : int,
-        existing_char : str,
-        new_line_count: int,
-        side          : Direction,
-        debugging     : bool
-        ):
-    """
-    TODO:  this can go away as it is not currently being called.
-
-    Take ``existing_char``, add ``new_line_count`` lines to it on side ``side``,
-    then write it back to (row,col) without moving the caret.
-
-    Do not change anything if that character is not a box-drawing character.
-    :param view:            current View
-    :param row:             target row
-    :param col:             target column
-    :param new_line_count:  number of lines indicated by user's key combination
-                              1, 2 or 0 = erase
-    :param side:            side indicated by user's key combination
-                              (one of the ``Direction`` enumerators)
-    :param debugging:       Are we debugging?
-
-    @pre  Character are (row,col) must already exist.
-    """
-    if debugging:
-        print(f'In _back_adjust()...')
-
-    if existing_char in gdict_classification_by_char:
-        if debugging:
-            print(f'  Characterization: 0x{gdict_classification_by_char[existing_char]:02X}.')
-        classification = core.adjusted_classification(existing_char, side, new_line_count, debugging)
-        c = core.glst_box_char_lookup_by_classification[classification]
-        if debugging:
-            print(f'  Adjusted charact: 0x{classification:02X}.')
-            print(f'  New character   : {c=}.')
-        # Now place ``c`` at (row,col) without moving caret.
-        pt = view.text_point(row, col)
-        dest_char_rgn = Region(pt, pt + 1)
-        view.replace(edit, dest_char_rgn, c)
-    else:
-        if debugging:
-            print(f'  Char {repr(existing_char)} not found in dictionary.')
-
-
 def _compute_and_place_drawing_char(
         view          : View,
         edit          : sublime.Edit,
@@ -217,6 +169,10 @@ def _compute_and_place_drawing_char(
         RIGHT = 1   # << 1 = number of bits to shift
         DOWN  = 2   # << 1 = number of bits to shift
         LEFT  = 3   # << 1 = number of bits to shift
+
+    Note:  This logic works with both ASCII and Unicode characterization dictionaries
+    and look-up arrays.  The magic is in dictionaries and look-up arrays.  Which one
+    is used is determined in ``core._on_pkg_settings_chgd()``.
 
     :param view:            current View
     :param row:             target row
@@ -273,42 +229,6 @@ def _compute_and_place_drawing_char(
         elif direction == Direction.RIGHT or direction == Direction.LEFT:
             rt_ln_cnt = new_line_count
             lf_ln_cnt = new_line_count
-
-        # TODO:  this can go away as it is not currently being called.
-        # # Are we going in the same direction and previous character not connected?
-        # # If so, we want to "back adjust" it to be connected.
-        # if same_direction:
-        #     adj_row = row
-        #     adj_col = col
-
-        #     if direction == Direction.UP:
-        #         adj_row = row + 1
-        #     elif direction == Direction.RIGHT:
-        #         adj_col = col - 1
-        #     elif direction == Direction.DOWN:
-        #         adj_row = row - 1
-        #     elif direction == Direction.LEFT:
-        #         adj_col = col + 1
-
-        #     if debugging:
-        #         print(f'  {adj_row=}')
-        #         print(f'  {adj_col=}')
-
-        #     prev_c = _virtual_char_at(view, adj_row, adj_col)
-        #     back_ln_cnt = core.line_count(prev_c, direction, debugging)
-        #     if debugging:
-        #         print('  Same direction:  examining our side of previous char:')
-        #         print(f'  {prev_c=}')
-        #         print(f'  {back_ln_cnt=}')
-        #     if back_ln_cnt == 0:
-        #         # "Back adjustment" needed:  previous character is not connected.
-        #         _back_adjust(view, edit, adj_row, adj_col, prev_c, new_line_count, direction, debugging)
-        #         if debugging:
-        #             print(f'  Back-adjustment made {direction=}.')
-        #     else:
-        #         if debugging:
-        #             print(f'  No back-adjustment needed {direction=}.')
-
     else:
         # -----------------------------------------------------------------
         # There is at least one surrounding box-drawing character with
@@ -362,46 +282,15 @@ def _compute_and_place_drawing_char(
             view_settings = view.settings()
             view_settings.set(core.cfg_view_box_drawing_last_direction_key, Direction.NONE)
             if debugging:
-                print('  NOT influencing computed character in order to finish a box.')
+                print('  NOT influencing character with direction in order to finish a box.')
                 print(f'    Reason 1:  {same_direction=} and {zero_line_count=}.')
-                print(f'    Reason 2:  saw an intersection ahead.')
+                print(f'    Reason 2:  saw opportunity to finish box ahead.')
         else:
+            # We want the current direction to influence (i.e. add line(s) to)
+            # the character we are computing.  So we arrange that here.
             if debugging:
                 print(f'  Influencing computed character with {direction=}.')
 
-            # TODO:  this can go away as it is not currently being called.
-            # # Are we going in the same direction and previous character not connected?
-            # # If so, we want to "back adjust" it to be connected.
-            # if same_direction:
-            #     adj_row = row
-            #     adj_col = col
-
-            #     if direction == Direction.UP:
-            #         adj_row = row + 1
-            #     elif direction == Direction.RIGHT:
-            #         adj_col = col - 1
-            #     elif direction == Direction.DOWN:
-            #         adj_row = row - 1
-            #     elif direction == Direction.LEFT:
-            #         adj_col = col + 1
-
-            #     prev_c = _virtual_char_at(view, adj_row, adj_col)
-            #     back_ln_cnt = core.line_count(prev_c, direction, debugging)
-            #     if debugging:
-            #         print('  yyyySame direction:  examining our side of previous char:')
-            #         print(f'  {prev_c=}')
-            #         print(f'  {back_ln_cnt=}')
-            #     if back_ln_cnt != new_line_count:
-            #         # "Back adjustment" needed:  previous character is not connected.
-            #         _back_adjust(view, edit, adj_row, adj_col, prev_c, back_ln_cnt, direction, debugging)
-            #         if debugging:
-            #             print(f'  Back-adjustment made {direction=}.')
-            #     else:
-            #         if debugging:
-            #             print(f'  No back-adjustment needed {direction=}.')
-
-            # We want the current direction to influence (i.e. add line(s) to)
-            # the character we are computing.  So we arrange that here.
             if direction == Direction.UP:
                 up_ln_cnt = new_line_count
             elif direction == Direction.RIGHT:
@@ -501,6 +390,8 @@ def _compute_and_place_drawing_char(
     lf_bit_field = lf_ln_cnt << core.lf_bit_shift_count
     classification = up_bit_field | rt_bit_field | dn_bit_field | lf_bit_field
     c = core.glst_box_char_lookup_by_classification[classification]
+    if debugging:
+        print(f'  {classification=} ({classification:#02X})')
 
     # ---------------------------------------------------------------------
     # Replace `cur_char` with computed character.
@@ -514,7 +405,7 @@ def _compute_and_place_drawing_char(
     # Insert if at EOL or EOF, replace otherwise.
     if cur_char == '\n' or at_eof:
         if debugging:
-            print(f'  Inserting [{repr(c)}].')
+            print(f'  Inserting {repr(c)}.')
         view.insert(edit, pt, c)
         # This moved the caret, so move it back to where it was.
         sel_list = view.sel()
@@ -522,7 +413,7 @@ def _compute_and_place_drawing_char(
         sel_list.add(pt)
     else:
         if debugging:
-            print(f'  Replacing [{repr(cur_char)}] with [{repr(c)}].')
+            print(f'  Replacing {repr(cur_char)} with {repr(c)}.')
         view.replace(edit, dest_char_rgn, c)
 
 
@@ -698,7 +589,7 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
             # Insert if at EOL or EOF, replace otherwise.
             if cur_char == '\n' or at_eof:
                 if debugging:
-                    print(f'  Inserting [{repr(c)}].')
+                    print(f'  Inserting {repr(c)}.')
                 view.insert(edit, src_char_pt, c)
                 # This moved the caret, so move it back to where it was.
                 sel_list = view.sel()
@@ -706,7 +597,7 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
                 sel_list.add(src_char_pt)
             else:
                 if debugging:
-                    print(f'  Replacing [{repr(cur_char)}] with [{repr(c)}].')
+                    print(f'  Replacing {repr(cur_char)} with {repr(c)}.')
                 view.replace(edit, dest_char_rgn, c)
 
             # Move caret to new location, inserting spaces as needed...
