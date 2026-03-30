@@ -175,30 +175,6 @@ Unicode:
     - single with double-line intersections:  ╞ ╡ ╥ ╨
     - both                                 :  ╪ ╫
 
-- rounded corners (single-line only):
-    - ╭ ╮ ╰ ╯
-
-- dashed:
-    - 2 dashes vertical:  ╌
-    - 3 dashes horizontal:  ╎
-    - 3 dashes horizontal:  ┄
-    - 3 dashes vertical:  ┆
-    - 4 dashes horizontal:  ┈
-    - 4 dashes vertical:  ┊
-    - 2 dashes horizontal:  ╌
-    - 3 dashes horizontal:  ┄
-    - 3 dashes horizontal:  ┄
-
-- diagonal:
-    - ╱
-    - ╲
-    - ╳
-
-- shading:
-    - ░
-    - ▒
-    - ▓
-
 Examples:
 ~~~~~~~~~
 
