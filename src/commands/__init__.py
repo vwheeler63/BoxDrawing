@@ -7,18 +7,16 @@ debugging = is_debugging(DebugBit.IMPORTING)
 if debugging:
     print(f'  {submodule_name}  >>> module execution')
 
-reload(submodule_name, ('draw_one_char', 'toggle_drawing', 'toggle_char_set', 'turn_off'))
+reload(submodule_name, ('draw_one_char', 'toggle_drawing', 'toggle_char_set'))
 
 from .draw_one_char import BoxDrawingDrawOneCharacterCommand
 from .toggle_drawing import BoxDrawingToggleDrawingCommand
 from .toggle_char_set import BoxDrawingToggleCharacterSetCommand
-from .turn_off import BoxDrawingTurnOffCommand
 
 __all__ = [
     'BoxDrawingDrawOneCharacterCommand',
     'BoxDrawingToggleDrawingCommand',
     'BoxDrawingToggleCharacterSetCommand',
-    'BoxDrawingTurnOffCommand',
 ]
 
 if debugging:
