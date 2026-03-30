@@ -5,6 +5,9 @@ Box Character
 This logic pertains to box-character drawing logic.
 It is supports both ASCII and Unicode box-drawing logic.
 
+By design, this module knows nothing about Sublime Text,
+Views, View settings, etc..
+
 
 Line Types
 ==========
@@ -520,13 +523,17 @@ gdict_classification_by_char = gdict_ascii_classification_by_char_ordered
 glst_box_char_lookup_by_classification = glst_ascii_box_char_lookup_by_classification
 
 
+def is_ascii_mode() -> bool:
+    return ((gdict_classification_by_char == gdict_ascii_classification_by_char_ordered))
+
+
 def set_ascii_mode(debugging: bool):
     global gdict_classification_by_char
     global glst_box_char_lookup_by_classification
     gdict_classification_by_char = gdict_ascii_classification_by_char_ordered
     glst_box_char_lookup_by_classification = glst_ascii_box_char_lookup_by_classification
     if debugging:
-        print('  ASCII mode initialized.')
+        print('  Active Character Set:  ASCII.')
 
 
 def set_unicode_mode(debugging: bool):
@@ -535,7 +542,7 @@ def set_unicode_mode(debugging: bool):
     gdict_classification_by_char = gdict_unicode_classification_by_char_ordered
     glst_box_char_lookup_by_classification = glst_unicode_box_char_lookup_by_classification
     if debugging:
-        print('  Unicode mode initialized.')
+        print('  Active Character Set:  Unicode.')
 
 
 # =========================================================================

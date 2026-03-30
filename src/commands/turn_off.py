@@ -23,7 +23,7 @@ class BoxDrawingTurnOffCommand(sublime_plugin.TextCommand):
         """
         Set BoxDrawing Package to ON mode.
 
-        :param self:        BoxDrawingTurnOnCommand object connected to current View
+        :param self:        BoxDrawingTurnOffCommand object connected to current View
         :param edit:        sublime.Edit passed by Sublime Text connected to current View
         :return:  None
         """

@@ -50,6 +50,42 @@ appends enough space characters at the end of the target line so as to
 accommodate the new line character.
 
 
+Settings
+========
+
+See ``BoxDrawing.sublime-settings`` to see what user-configurable Package
+settings there are and what they mean.
+
+- default_character_set ("ASCII" | "Unicode")
+- debugging (see ``BoxDrawing.sublime-settings`` for description of valid values)
+
+
+States
+======
+
+This Package has several states that can change during a Sublime Text session:
+
+- Is Box Drawing enabled?  This state is tracked per View.
+  ``Tools > Box Drawing Enabled`` shows this state with a checkmark.  At the
+  beginning of each Sublime Text session, this state is DISABLED for all Views.
+
+- Which Box Drawing character set is in use:  ASCII or Unicode?
+  This state is global (remembered within the loaded Package) and applies
+  to all Views at the same time.  Since this can be conveniently switched
+  via a single keystroke, there is no need to keep it per View.
+  ``Tools > Toggle Box Drawing Character Set (ASCII)`` shows this state
+  with the value in parentheses.  At the beginning of each Sublime Text session,
+  this state is set to the configured ``default_character_set``.  The memory
+  of it is kept within the ``box_character.py`` module and is accessed by
+  ``box_character.is_ascii_mode()``, which returns a Boolean value and can
+  be used to determine which mode is current.
+
+- Last drawing direction used:  up, right, down, or left?  This state is
+  tracked per View.  This state is, by design, only visible internally and is
+  used as part of the drawing algorithm in the ``box_drawing_draw_one_character``
+  command.
+
+
 Vocabulary
 ==========
 
@@ -130,20 +166,22 @@ See ``box_character.py`` to see which characters are involved.
 Keys
 ====
 
-This Package remember what drawing mode it is in (``OFF`` vs ``ON``)
+This Package remembers what drawing mode it is in (``OFF`` vs ``ON``)
 through a command to turn box-drawing mode ON and OFF (which the user is free
 to map to any key combination he wishes, or simply execute the command via
 the Command Palette).  The Package would have a custom ``on_query_context``
 implemented to override these normal key combinations when box drawing mode
 was ON:
 
-+--------------------------------+-------------+
-| Key Combination                | Meaning     |
-+================================+=============+
-| alt+(left|right|up|down)       | single line |
-+--------------------------------+-------------+
-| alt+shift+(left|right|up|down) | double line |
-+--------------------------------+-------------+
++-------------------------------------+-------------+
+| Key Combination                     | Meaning     |
++=====================================+=============+
+| alt+(left|right|up|down)            | single line |
++-------------------------------------+-------------+
+| alt+shift+(left|right|up|down)      | double line |
++-------------------------------------+-------------+
+| ctrl+alt+shift+(left|right|up|down) | erase       |
++-------------------------------------+-------------+
 
 When ``linedrawing.on_query_context()`` returns ``True`` (based on
 mode), its keymap would override the default key mappings for
@@ -225,7 +263,7 @@ _cfg_on_settings_chgd_listener_id       = '_bd_settings_changed_tag'
 _cfg_stg_name__character_set            = 'character_set'
 _cfg_stg_name__debugging                = 'debugging'
 
-# View settings key accessed by other modules.
+# View settings keys (accessed by multiple external modules).
 cfg_view_box_drawing_state_key          = '_box_drawing_state'
 cfg_view_box_drawing_last_direction_key = '_box_drawing_last_direction'
 
@@ -409,13 +447,6 @@ def _on_pkg_settings_chgd():
     if debugging:
         print(f'In _on_pkg_settings_chgd()')
 
-    # Initialize character set data.
-    is_ascii = ((bd_setting(_cfg_stg_name__character_set) == 'ASCII'))
-    if is_ascii:
-        box_character.set_ascii_mode(debugging)
-    else:
-        box_character.set_unicode_mode(debugging)
-
 
 def on_plugin_loaded():
     """
@@ -436,8 +467,16 @@ def on_plugin_loaded():
     # `plugin_unloaded()` to prevent a callback leak.
     bd_setting.obj.add_on_change(_cfg_on_settings_chgd_listener_id, _on_pkg_settings_chgd)
 
+    # Set initial box-drawing character set.
+    debugging = is_debugging(DebugBit.LOAD_UNLOAD)
+    is_ascii = ((bd_setting(_cfg_stg_name__character_set) == 'ASCII'))
+    if is_ascii:
+        box_character.set_ascii_mode(debugging)
+    else:
+        box_character.set_unicode_mode(debugging)
+
     # Report.
-    if is_debugging(DebugBit.LOAD_UNLOAD):
+    if debugging:
         print(f'{package_name}:  Initialized at {timestamp()}.')
 
 

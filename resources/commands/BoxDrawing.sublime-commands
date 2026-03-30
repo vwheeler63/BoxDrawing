@@ -28,6 +28,10 @@
 		"command": "box_drawing_toggle_drawing"
 	},
 	{
+		"caption": "BoxDrawing: Toggle ASCII <==> Unicode",
+		"command": "box_drawing_toggle_character_set"
+	},
+	{
 		"caption": "BoxDrawing: Draw Single Line Up",
 		"command": "box_drawing_draw_one_character",
 		"args": {

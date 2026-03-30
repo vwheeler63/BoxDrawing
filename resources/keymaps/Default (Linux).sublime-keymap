@@ -6,6 +6,10 @@
 		"keys": ["alt+keypad_divide"],
 		"command": "box_drawing_toggle_drawing",
 	},
+	{
+		"keys": ["alt+keypad_multiply"],
+		"command": "box_drawing_toggle_character_set",
+	},
 
 	// --------------------------------------------------------------------
 	// Up

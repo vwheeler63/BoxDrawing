@@ -426,8 +426,9 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
         super().__init__(view)
         # self.view is now attached to ``view``.
 
-        # Force Box-Drawing ON/OFF and Last Direction to
-        # NOT be remembered across Sublime Text sessions.
+        # Establish multi-module state values in View Settings.
+        # Simultaneously force Box-Drawing ON/OFF and Last Direction
+        # to NOT be remembered across Sublime Text sessions.
         view_settings = view.settings()
         view_settings.set(core.cfg_view_box_drawing_state_key, State.OFF)
         view_settings.set(core.cfg_view_box_drawing_last_direction_key, Direction.NONE)
