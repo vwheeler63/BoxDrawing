@@ -4,7 +4,7 @@
 	// String.  Character Set Name
 	// ---------------------------
 	// Valid values: "ASCII" or "Unicode"
-	"character_set": "ASCII",
+	"default_character_set": "ASCII",
 
 	// String | Integer | Boolean
 	//

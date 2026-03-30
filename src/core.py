@@ -260,7 +260,7 @@ _cfg_pkg_settings_file                  = package_name + '.sublime-settings'
 _cfg_on_settings_chgd_listener_id       = '_bd_settings_changed_tag'
 
 # Package Settings Names (most are used multiple times throughout this Plugin)
-_cfg_stg_name__character_set            = 'character_set'
+_cfg_stg_name__default_character_set    = 'default_character_set'
 _cfg_stg_name__debugging                = 'debugging'
 
 # View settings keys (accessed by multiple external modules).
@@ -293,7 +293,7 @@ def bd_setting(setting_name: str):
 # =========================================================================
 
 bd_setting.default = {
-    _cfg_stg_name__character_set: "ASCII",
+    _cfg_stg_name__default_character_set: "ASCII",
     _cfg_stg_name__debugging: False
 }
 
@@ -469,7 +469,7 @@ def on_plugin_loaded():
 
     # Set initial box-drawing character set.
     debugging = is_debugging(DebugBit.LOAD_UNLOAD)
-    is_ascii = ((bd_setting(_cfg_stg_name__character_set) == 'ASCII'))
+    is_ascii = ((bd_setting(_cfg_stg_name__default_character_set) == 'ASCII'))
     if is_ascii:
         box_character.set_ascii_mode(debugging)
     else:

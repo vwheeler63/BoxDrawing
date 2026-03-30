@@ -16,7 +16,7 @@ class BoxDrawingToggleCharacterSetCommand(sublime_plugin.TextCommand):
         else:
             curr_char_set = 'Unicode'
 
-        return f'Toggle Box Drawing Character Set ({curr_char_set})'
+        return f'Toggle Box Drawing Character Set (Current: {curr_char_set})'
 
     def run(self, edit):
         """

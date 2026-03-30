@@ -7,7 +7,11 @@
 				"caption": "Box Drawing Enabled",
 				"command": "box_drawing_toggle_drawing",
 				// "checkbox": true
-			}
+			},
+			{
+				// "caption": "fulfilled by toggle_char_set.description().",
+				"command": "box_drawing_toggle_character_set",
+			},
 		]
 	},
 

@@ -41,7 +41,7 @@
 
 Wherever the user directs box drawing to go replaces any text that is already there, as if in "overwrite" mode, and extends text with spaces as needed to go there.
 
-The type of box characters used depend upon the Package's `character_set` setting.  Valid options are:  "ASCII" (default), and "Unicode".  See the Configuration section below to see how to change the Package's settings.
+The type of box characters used depend upon the Package's `default_character_set` setting.  Valid options are:  "ASCII" (default), and "Unicode".  See the Configuration section below to see how to change the Package's settings.
 
 
 
@@ -140,7 +140,7 @@ DrawOneCharacter(left, none)    | Ctrl-Alt-Shift-Left  | BoxDrawing: Draw Erase 
 
 The following setting items can be found and individually overridden via the usual method for Sublime Text Package settings:  `Preferences > Package Settings > BoxDrawing > Settings`.  The comments in the default settings file explain what each one means and, where applicable, the limits of their valid values.  Their default values are shown below.
 
-- `character_set`: "ASCII"
+- `default_character_set`: "ASCII"
 - `debugging`: false
 
 
