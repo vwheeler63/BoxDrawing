@@ -5,7 +5,7 @@
 		[
 			{
 				"caption": "Box Drawing Enabled",
-				"command": "box_drawing_toggle",
+				"command": "box_drawing_toggle_drawing",
 				// "checkbox": true
 			}
 		]

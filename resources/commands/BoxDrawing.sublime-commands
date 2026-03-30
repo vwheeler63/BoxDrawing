@@ -25,7 +25,7 @@
 	},
 	{
 		"caption": "BoxDrawing: Toggle ON/OFF",
-		"command": "box_drawing_toggle"
+		"command": "box_drawing_toggle_drawing"
 	},
 	{
 		"caption": "BoxDrawing: Draw Single Line Up",

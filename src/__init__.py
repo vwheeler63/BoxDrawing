@@ -24,7 +24,7 @@ __all__ = [
     "BoxDrawingDrawOneCharacterCommand",
     'BoxDrawingTurnOnCommand',
     'BoxDrawingTurnOffCommand',
-    'BoxDrawingToggleCommand',
+    'BoxDrawingToggleDrawingCommand',
 ]
 
 if debugging:

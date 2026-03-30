@@ -3,7 +3,7 @@ from ...lib.debug import IntFlag, DebugBit, is_debugging
 from .. import core
 
 
-class BoxDrawingToggleCommand(sublime_plugin.TextCommand):
+class BoxDrawingToggleDrawingCommand(sublime_plugin.TextCommand):
     def is_enabled(self):
         """
         Determine whether associated menu item is enabled.
@@ -49,6 +49,6 @@ class BoxDrawingToggleCommand(sublime_plugin.TextCommand):
         """
         debugging = is_debugging(DebugBit.COMMANDS)
         if debugging:
-            print('In BoxDrawingToggleCommand()...')
+            print('In BoxDrawingToggleDrawingCommand()...')
 
         core.toggle_state(self.view)
