@@ -1,0 +1,74 @@
+Box Drawing is Sublime Text package enabling the user to use
+
+- [Alt-Arrow]             (single line)
+- [Alt-Shift-Arrow]       (double line), or
+- [Ctrl-Alt-Shift-Arrow]  (erase)
+
+to draw lines and boxes in their text like these:
+
+┌─┬┐  ╔═╦╗  ╓─╥╖  ╒═╤╕
+│ ││  ║ ║║  ║ ║║  │ ││
+├─┼┤  ╠═╬╣  ╟─╫╢  ╞═╪╡
+└─┴┘  ╚═╩╝  ╙─╨╜  ╘═╧╛┌─────────────┐
+┌───────────────────┐ │    ╔═══════╕│            ┌───┐
+│  ╔═══╗ Some Text  │ │╓───╫┐ ╔══╗ ││ ┌──┬───┐  ┌┴┬┐ │
+│  ╚═╦═╝ in the box │ │║   ║│ ║  ║ ││ ╞══╡   │  ├─┼┼─┘
+╞═╤══╩══╤═══════════╡ │║   ║│ ║  ║ ││ │  │   │  │ ││
+│ ├──┬──┤           │ │╙───╫┘ ╚══╝ ││ └──┴───┘  └─┴┘
+│ └──┴──┘           │ └────╫───────┼┘
+└───────────────────┘      ╙───────┘
+
++-----+-+-+-+-----------------------------------------------------+
+|Key  |S|C|A| Command                                             |
++=====+=+=+=+=====================================================+
+|Up   | |x| | stop side-by-side editing                           |
++-----+-+-+-+-----------------------------------------------------+
+|Left | |x| | deselect Sheet to the left                          |
++-----+-+-+-+-----------------------------------------------------+
+|Left |x|x| | select Sheet to the left                            |
++-----+-+-+-+-----------------------------------------------------+
+|Right| |x| | deselect Sheet to the right,                        |
++-----+-+-+-+-----------------------------------------------------+
+|Right|x|x| | select Sheet to the right                           |
++-----+-+-+-+-----------------------------------------------------+
+|PgUp | |x| | move focus to selected Sheet to the left            |
++-----+-+-+-+-----------------------------------------------------+
+|PgDn | |x| | move focus to selected Sheet to the right           |
++-----+-+-+-+-----------------------------------------------------+
+|j    | |x| | open message box explaining `ctrl+j` mapping change |
++-----+-+-+-+-----------------------------------------------------+
+
+
+Features
+--------
+
+- Draws using intuitive key combinations with arrow keys.
+- Arrow-key bindings are temporary, while Box Drawing is turned ON.  You turn it OFF
+  again when you are done.
+- Intuitively overwrites characters where directed as if always in "overwrite" mode.
+- There is no need to add spaces to short lines.  The package extends short lines
+  with spaces automatically when needed, enabling you to conveniently draw wherever
+  you direct it.
+- Initially uses ASCII or Unicode box-drawing character sets, depending on a
+  user-configurable setting.
+- Switching between ASCII and Unicode character sets is conveniently accomplished
+  with one keystroke.
+- Box drawing with the ASCII character set is compatible with the requirements of
+  reStructuredText tables.  (The above ASCII-based table is an example.)
+
+
+Quick Start
+-----------
+
+Review the README to learn how to use it (Usage and Settings sections) and enjoy!
+
+
+Problems?
+---------
+
+If you encounter any problems with BoxDrawing, or think that it can be
+improved to make your work easier, please log an issue with the BoxDrawing
+issue tracker:
+
+    https://github.com/vwheeler63/BoxDrawing/issues
+
