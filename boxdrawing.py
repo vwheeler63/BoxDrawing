@@ -4,9 +4,9 @@ Box Drawing
 
 Box Drawing is Sublime Text package enabling the user to use
 
-- [Alt+Arrow]             (single line)
-- [Alt+Shift+Arrow]       (double line), or
-- [Ctrl+Alt+Shift+Arrow]  (erase)
+- [Alt-Arrow]             (single line)
+- [Alt-Shift-Arrow]       (double line), or
+- [Ctrl-Alt-Shift-Arrow]  (erase)
 
 to draw lines and boxes in their text like these:
 

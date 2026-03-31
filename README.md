@@ -45,9 +45,9 @@
 - Arrow-key bindings are temporary, while Box Drawing is turned ON.  You turn it OFF again when you are done.
 - Intuitively overwrites characters where directed as if always in "overwrite" mode.
 - There is no need to add spaces to short lines.  The package extends short lines with spaces automatically when needed, enabling you to conveniently draw wherever you direct it.
-- Initially uses ASCII or Unicode box-drawing character sets, depending on a customizable setting.
+- Initially uses ASCII or Unicode box-drawing character sets, depending on a user-configurable setting.
 - Switching between ASCII and Unicode character sets is conveniently accomplished with one keystroke.
-- Box drawing with the ASCII character set is compatible with the requirements of reStructuredText tables.  (The above ASCII-based table is an example of this.)
+- Box drawing with the ASCII character set is compatible with the requirements of reStructuredText tables.  (The above ASCII-based table is an example.)
 
 
 
@@ -74,6 +74,15 @@ If you instead clone **BoxDrawing's** repository into your `<data_path>/Packages
 7. Toggle between character sets (ASCII/Unicode) using `[Alt-Keypad *]` or `Tools > Toggle Box Drawing Character Set (<current_set>)`.  (A temporary Status-Bar message "Box Drawing:  ASCII/Unicode" shows which character set was switched in.)  The `Tools > Toggle Box Drawing Character Set (<current_set>)` menu item always shows the current character set in parentheses.
 8. When you are done drawing, turn Box-Drawing OFF again:  `[Alt-Keypad /]`.
 
+
+
+
+## Settings
+
+The following setting items can be found and individually overridden via the usual method for Sublime Text Package settings:  `Preferences > Package Settings > BoxDrawing > Settings`.  The comments in the default settings file explain what each one means and lists valid values.  Their default values are shown below.
+
+- `default_character_set`: "ASCII"
+- `debugging`: false
 
 
 
@@ -136,15 +145,6 @@ DrawOneCharacter(up, none)       | Ctrl-Alt-Shift-Up    | BoxDrawing: Draw Erase
 DrawOneCharacter(right, none)    | Ctrl-Alt-Shift-Right | BoxDrawing: Draw Erase Right
 DrawOneCharacter(down, none)     | Ctrl-Alt-Shift-Down  | BoxDrawing: Draw Erase Down
 DrawOneCharacter(left, none)     | Ctrl-Alt-Shift-Left  | BoxDrawing: Draw Erase Left
-
-
-
-## Settings
-
-The following setting items can be found and individually overridden via the usual method for Sublime Text Package settings:  `Preferences > Package Settings > BoxDrawing > Settings`.  The comments in the default settings file explain what each one means and lists valid values.  Their default values are shown below.
-
-- `default_character_set`: "ASCII"
-- `debugging`: false
 
 
 
