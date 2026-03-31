@@ -176,7 +176,7 @@ class Direction(IntEnum):
 # Columns are in bit order left-to-right (most-significant to least):
 #       LEFT   BOTTOM   RIGHT   TOP
 # -------------------------------------------------------------------------
-gdict_unicode_classification_by_char_ordered = {
+gdict_unicode_classification_by_char = {
     '└': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_1,  # 0x05
     '╙': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_2,  # 0x06
     '╘': CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_2 | CF.LINES_UP_1,  # 0x09
@@ -219,7 +219,7 @@ gdict_unicode_classification_by_char_ordered = {
     '╬': CF.LINES_LEFT_2 | CF.LINES_DOWN_2 | CF.LINES_RIGHT_2 | CF.LINES_UP_2,  # 0xAA
 }
 
-gdict_ascii_classification_by_char_ordered = {
+gdict_ascii_classification_by_char = {
     '|': CF.LINES_LEFT_0 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_0 | CF.LINES_UP_1,  # 0x11
     '-': CF.LINES_LEFT_1 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_1 | CF.LINES_UP_0,  # 0x44
     '+': CF.LINES_LEFT_1 | CF.LINES_DOWN_1 | CF.LINES_RIGHT_1 | CF.LINES_UP_1,  # 0x55
@@ -497,9 +497,9 @@ glst_ascii_box_char_lookup_by_classification = [
 # Pre-allocate array with 256 elements with _nc (middle dot U+00B7) as placeholder.
 glst_unicode_box_char_lookup_by_classification = [_nc] * 256
 
-# Populate Unicode look-up array using `gdict_unicode_classification_by_char_ordered`.
-for c in gdict_unicode_classification_by_char_ordered:
-    classif_idx = gdict_unicode_classification_by_char_ordered[c]
+# Populate Unicode look-up array using `gdict_unicode_classification_by_char`.
+for c in gdict_unicode_classification_by_char:
+    classif_idx = gdict_unicode_classification_by_char[c]
     glst_unicode_box_char_lookup_by_classification[classif_idx] = c
 
 up_bit_shift_count = Direction.UP    << 1
@@ -512,18 +512,18 @@ lf_bit_shift_count = Direction.LEFT  << 1
 # Data
 # =========================================================================
 
-gdict_classification_by_char = gdict_ascii_classification_by_char_ordered
+gdict_classification_by_char = gdict_ascii_classification_by_char
 glst_box_char_lookup_by_classification = glst_ascii_box_char_lookup_by_classification
 
 
 def is_ascii_mode() -> bool:
-    return ((gdict_classification_by_char == gdict_ascii_classification_by_char_ordered))
+    return ((gdict_classification_by_char == gdict_ascii_classification_by_char))
 
 
 def set_ascii_mode(debugging: bool):
     global gdict_classification_by_char
     global glst_box_char_lookup_by_classification
-    gdict_classification_by_char = gdict_ascii_classification_by_char_ordered
+    gdict_classification_by_char = gdict_ascii_classification_by_char
     glst_box_char_lookup_by_classification = glst_ascii_box_char_lookup_by_classification
     if debugging:
         print('  Active Character Set:  ASCII.')
@@ -532,7 +532,7 @@ def set_ascii_mode(debugging: bool):
 def set_unicode_mode(debugging: bool):
     global gdict_classification_by_char
     global glst_box_char_lookup_by_classification
-    gdict_classification_by_char = gdict_unicode_classification_by_char_ordered
+    gdict_classification_by_char = gdict_unicode_classification_by_char
     glst_box_char_lookup_by_classification = glst_unicode_box_char_lookup_by_classification
     if debugging:
         print('  Active Character Set:  Unicode.')
