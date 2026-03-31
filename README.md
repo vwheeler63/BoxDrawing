@@ -39,21 +39,16 @@
 
 
 
-Wherever the user directs box drawing to go replaces any text that is already there, as if in "overwrite" mode, and extends text with spaces as needed to go there.
-
-The type of box characters used depend upon the Package's `default_character_set` setting.  Valid options are:  "ASCII" (default), and "Unicode".  See the Configuration section below to see how to change the Package's settings.
-
-
-
 ## Features
 
-- Uses ASCII or Unicode box-drawing characters, depending on a customizable setting.
-- feature 2
-- feature 3
-- feature 4
-- feature 5
-- feature 6
-- feature 7
+- Draws using intuitive key combinations with arrow keys.
+- Arrow-key bindings are temporary, while Box Drawing is turned ON.  You turn it OFF again when you are done.
+- Intuitively overwrites characters where directed as if always in "overwrite" mode.
+- There is no need to add spaces to short lines.  The package extends short lines with spaces automatically when needed, enabling you to conveniently draw wherever you direct it.
+- Initially uses ASCII or Unicode box-drawing character sets, depending on a customizable setting.
+- Switching between ASCII and Unicode character sets is conveniently accomplished with one keystroke.
+- Box drawing with the ASCII character set is compatible with the requirements of reStructuredText tables.  (The above ASCII-based table is an example of this.)
+
 
 
 
@@ -67,43 +62,38 @@ If you instead clone **BoxDrawing's** repository into your `<data_path>/Packages
 
 ## Usage
 
-You get **BoxDrawing** to draw lines and boxes by telling it what you want through key combinations.
+1. In any type of document, ensure there is just 1 selection (caret) and that no text is selected.
 
-1. Ensure there is just 1 caret.
+2. Turn Box-Drawing ON using `[Alt-Keypad /]` or `Tools > Box Drawing Enabled`.  (A temporary Status-Bar message "Box Drawing ON/OFF" shows which mode that View is in.)  The  `Tools > Box Drawing Enabled` menu item always shows the ON/OFF state for the current View by showing a checkmark (**✓**) next to that menu item when Box Drawing is enabled.
 
-2. Start anywhere in text.
+4. Draw using single lines using the arrow keys while the `[Alt]` key is held down.
 
-3. Turn Box-Drawing ON:  `[Alt-Keypad /]`.  (A temporary Status-Bar message "BoxDrawing ON" or "BoxDrawing OFF" shows which mode that View is in.)
+5. Draw using double lines using the arrow keys while the `[Alt+Shift]` keys are held down.
 
-4. Draw lines and boxes by hitting the arrow keys (`[Up]`, `[Right]`, `[Down]` or `[Left]`) while `[Alt]` or `[Alt-Shift]` are held down for single- and double-lines respectively.
-
-5. Do the same while ERASING instead of drawing lines by holding down `[Alt-Shift-Ctrl]`.
-
-6. When you are done, turn Box-Drawing OFF again:  `[Alt-Keypad /]`.
+6. Erase using the arrow keys while the `[Alt-Shift-Ctrl]` keys are held down.
+7. Toggle between character sets (ASCII/Unicode) using `[Alt-Keypad *]` or `Tools > Toggle Box Drawing Character Set (<current_set>)`.  (A temporary Status-Bar message "Box Drawing:  ASCII/Unicode" shows which character set was switched in.)  The `Tools > Toggle Box Drawing Character Set (<current_set>)` menu item always shows the current character set in parentheses.
+8. When you are done drawing, turn Box-Drawing OFF again:  `[Alt-Keypad /]`.
 
 
 
 
 ## Key Bindings
 
-This Package provides the following key customizable bindings:
+This Package provides the following customizable key bindings:
 
 Key Combination                        | Meaning
--------------------------------------- | -----------
-Alt-Keypad / | turn Box Drawing ON or OFF
-Alt-(Left\|Right\|Up\|Down)            | single line
-Alt-Shift-(Left\|Right\|Up\|Down)      | double line
-Ctrl-Alt-Shift-(Left\|Right\|Up\|Down) | erase
+-------------------------------------- | ------------------------------------------
+Alt-Keypad /                           | Turn Box Drawing ON or OFF 
+Alt-Keypad \*                          | Switch character sets (ASCII <==> Unicode)
+Alt-(Left\|Right\|Up\|Down)            | Draw with single lines 
+Alt-Shift-(Left\|Right\|Up\|Down)      | Draw with double lines 
+Ctrl-Alt-Shift-(Left\|Right\|Up\|Down) | Erase
 
-When Box-Drawing is ON, the Package temporarily overrides the normal key bindings for the arrow-key combinations.  When Box Drawing is turned OFF again, everything goes back to normal.  (The [Alt-Keypad /] remains active full time.)
+When Box-Drawing is ON for a particular View, the Package temporarily overrides the normal key bindings for the arrow-key combinations for that View only.  When Box Drawing is turned OFF again, normal key bindings for the arrow keys are resumed.  `[Alt-Keypad /]` and `[Alt-Keypad *]` both remain bound to the `ON/OFF` and `switch character sets` Commands full time.
 
-When the ``on_query_context()`` returns ``True`` (based on ON/OFF mode, there being only a single caret, and no text being selected), this Package's key map overrides the default key mappings for the various [Alt] [Alt-Shift] and [Ctrl-Alt-Shift] key modifiers combined with the arrow keys.
+By default, `[Alt-(Left|Right)]` key combinations are mapped to "move left/right by sub-words" with "extending selection" when the `[Shift]` key is held down.
 
-By default, [Alt-(Left|Right)] key combinations are mapped to "move left/right by sub-words" with "extending selection" when the [Shift] key is held down.
-
-And by default, [Alt-(Up|Down)] is mapped in the reStructuredText Package to "move up/down by 1 section", with a possible [Shift] modifier limiting the move to only the same level of section or higher.
-
-When the Box-Drawing is OFF for a particular View, its ``on_query_context()`` returns ``False`` or ``None`` as appropriate, and Sublime Text uses the normal mappings for these keys.
+And by default, `[Alt-(Up|Down)]` is mapped in the reStructuredText Package to "move up/down by 1 section", with a possible `[Shift]` modifier limiting the move to only the same level of section or higher.
 
 These key bindings can be customized via:
 
@@ -111,34 +101,47 @@ These key bindings can be customized via:
 
 
 
+## Menu Items
+
+BoxDrawing adds the following menu items to Sublime Text when installed:
+
+- [**✓**]  Tools > Box Drawing Enabled (checkmark appears when enabled; it's OFF by default)
+- Tools > Toggle Box Drawing Character Set (ASCII/Unicode)  (default character set is configurable)
+- Preferences > Package Settings > BoxDrawing > README
+- Preferences > Package Settings > BoxDrawing > Settings
+- Preferences > Package Settings > BoxDrawing > Key Bindings
+
+
+
 ## Commands
 
 BoxDrawing adds the following Commands to Sublime Text when installed:
 
-Action                          | Key Combination      | Command Palette
-------------------------------- | -------------------- | ------------------------------
-Open README                     | ---not mapped---     | BoxDrawing: Open Readme
-Edit BoxDrawing Settings        | ---not mapped---     | BoxDrawing: Edit BoxDrawing Settings
-Edit BoxDrawing Key Bindings    | ---not mapped---     | BoxDrawing: Edit BoxDrawing Key Bindings
-Turn Box-Drawing ON or OFF      | Alt-Keypad /         | BoxDrawing: Toggle ON/OFF
-DrawOneCharacter(up, single)    | Alt-Up               | BoxDrawing: Draw Single Line Up
-DrawOneCharacter(right, single) | Alt-Right            | BoxDrawing: Draw Single Line Right
-DrawOneCharacter(down, single)  | Alt-Down             | BoxDrawing: Draw Single Line Down
-DrawOneCharacter(left, single)  | Alt-Left             | BoxDrawing: Draw Single Line Left
-DrawOneCharacter(up, double)    | Alt-Shift-Up         | BoxDrawing: Draw Double Line Up
-DrawOneCharacter(right, double) | Alt-Shift-Right      | BoxDrawing: Draw Double Line Right
-DrawOneCharacter(down, double)  | Alt-Shift-Down       | BoxDrawing: Draw Double Line Down
-DrawOneCharacter(left, double)  | Alt-Shift-Left       | BoxDrawing: Draw Double Line Left
-DrawOneCharacter(up, none)      | Ctrl-Alt-Shift-Up    | BoxDrawing: Draw Erase Up
-DrawOneCharacter(right, none)   | Ctrl-Alt-Shift-Right | BoxDrawing: Draw Erase Right
-DrawOneCharacter(down, none)    | Ctrl-Alt-Shift-Down  | BoxDrawing: Draw Erase Down
-DrawOneCharacter(left, none)    | Ctrl-Alt-Shift-Left  | BoxDrawing: Draw Erase Left
+Action                           | Key Combination      | Command Palette
+-------------------------------- | -------------------- | ------------------------------
+Open README                      | ---not mapped---     | BoxDrawing: Open Readme
+Edit BoxDrawing Settings         | ---not mapped---     | BoxDrawing: Edit BoxDrawing Settings
+Edit BoxDrawing Key Bindings     | ---not mapped---     | BoxDrawing: Edit BoxDrawing Key Bindings
+Turn Box-Drawing ON or OFF       | Alt-Keypad /         | BoxDrawing: Toggle ON/OFF
+Toggle between ASCII and Unicode | Alt-Keypad *         | BoxDrawing: Toggle ASCII <==> Unicode
+DrawOneCharacter(up, single)     | Alt-Up               | BoxDrawing: Draw Single Line Up
+DrawOneCharacter(right, single)  | Alt-Right            | BoxDrawing: Draw Single Line Right
+DrawOneCharacter(down, single)   | Alt-Down             | BoxDrawing: Draw Single Line Down
+DrawOneCharacter(left, single)   | Alt-Left             | BoxDrawing: Draw Single Line Left
+DrawOneCharacter(up, double)     | Alt-Shift-Up         | BoxDrawing: Draw Double Line Up
+DrawOneCharacter(right, double)  | Alt-Shift-Right      | BoxDrawing: Draw Double Line Right
+DrawOneCharacter(down, double)   | Alt-Shift-Down       | BoxDrawing: Draw Double Line Down
+DrawOneCharacter(left, double)   | Alt-Shift-Left       | BoxDrawing: Draw Double Line Left
+DrawOneCharacter(up, none)       | Ctrl-Alt-Shift-Up    | BoxDrawing: Draw Erase Up
+DrawOneCharacter(right, none)    | Ctrl-Alt-Shift-Right | BoxDrawing: Draw Erase Right
+DrawOneCharacter(down, none)     | Ctrl-Alt-Shift-Down  | BoxDrawing: Draw Erase Down
+DrawOneCharacter(left, none)     | Ctrl-Alt-Shift-Left  | BoxDrawing: Draw Erase Left
 
 
 
 ## Settings
 
-The following setting items can be found and individually overridden via the usual method for Sublime Text Package settings:  `Preferences > Package Settings > BoxDrawing > Settings`.  The comments in the default settings file explain what each one means and, where applicable, the limits of their valid values.  Their default values are shown below.
+The following setting items can be found and individually overridden via the usual method for Sublime Text Package settings:  `Preferences > Package Settings > BoxDrawing > Settings`.  The comments in the default settings file explain what each one means and lists valid values.  Their default values are shown below.
 
 - `default_character_set`: "ASCII"
 - `debugging`: false
@@ -147,7 +150,7 @@ The following setting items can be found and individually overridden via the usu
 
 ## Notes
 
-While Sublime Text supports having multiple carets, **BoxDrawing** will draw box characters when:
+While Sublime Text supports having multiple carets, **BoxDrawing** will draw box characters only when:
 
 - Box Drawing is ON for that View,
 - there is one caret, and

@@ -41,5 +41,5 @@
 	//
 	// Note:  the spaces surrounding the '|' operator are optional,
 	//        but are recommended for readability.
-	"debugging": "DebugBit.NONE",
+	"debugging": false,
 }

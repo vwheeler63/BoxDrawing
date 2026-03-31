@@ -1,3 +1,74 @@
+"""
+Draw One Character
+==================
+
+This logic is launched via the ``BoxDrawingDrawOneCharacterCommand``
+command at the end of this file.  The details of the algorithm are in
+the docstring for that command.
+
+
+Vocabulary
+==========
+
+- source character, the character at the position the cursor is moving FROM.
+- destination character, the character at the position the cursor is moving TO.
+
+The destination character can be same as the source character under certain
+circumstances.  See below for details.
+
+
+Behavior
+========
+
+Box drawing is turned ON to draw lines, and turned OFF again to permit the
+normal arrow-key bindings to be used for their normal purposes.
+
+Issuing a box-drawing command impacts one character at a time.  If modifying
+the src character is needed, the cursor does not move.  If not, the cursor
+moves to the dest character and overwrites whatever is there.
+
+
+Variables in the Algorithm
+==========================
+
+The algorithm used to modify the source and destination characters involves
+a set of variables and character classifications.
+
+- number of lines to write (1 or 2; see line characters below);
+- direction of movement;
+- classification of source character;
+- classification of destination character;
+- classification of characters above, below, to the left and right of
+  the destination character.
+
+See ``box_character.py`` to see which characters are involved.
+
+
+Resources for Detecting Empty Space to the Right of EOL
+=======================================================
+
+Given any document of any size, and arguments of `row` and `col`:
+
+.. code-block:: py
+
+    last_pt = view.size()
+    last_row, last_col = view.rowcol(last_pt)
+
+give us the boundaries we need to work with `row` and `col` to
+detect when we need to append spaces to the end of a line.  Also:
+
+    pt1 = view.text_point(16, 10, clamp_column=False)
+    pt2 = view.text_point(16, 10, clamp_column=True)
+
+``pt1`` is row (16,0) + 10 clamped to EOF
+``pt2`` is row (16,0) + 10 clamped to EOF AND clamped to EOL.
+``pt1 > pt2`` when column 10 is past the end of row 16.
+But ``pt1 - pt2`` is not always the number of spaces that need to be
+appended to row 16 for (row,col) to be a valid position in Buffer.
+
+See ``_append_spaces_if_needed()`` below to see how these resources
+are used.
+"""
 from typing import List
 import sublime_plugin
 import sublime
@@ -267,18 +338,15 @@ def _compute_and_place_drawing_char(
                     finishes_box = True
 
         if finishes_box:
-            # Character about to be placed is going to finish a box.  The
-            # user intuitively expects the character not to go "past" the
-            # finished box, so in this case we do not add the arrow direction
-            # to the classification of the character we are going to place.
-            # This means we have to "back adjust" the previous character if
-            # the user continues in the same direction.  While more complex,
-            # this improves the user experience noticeably.
+            # The character about to be placed is going to finish a box.
+            # The user intuitively expects the character not to go "past"
+            # the finished box, so in this case we do not add line(s) in the
+            # arrow direction to the character we are going to place.
             #
             # We also need to set last direction to NONE to avoid
             # ``same_direction`` on the next keystroke if user is trying to
             # continue a line in the same direction.  Reason:  execution
-            # would arrive here 2 times in a row will cause certain
+            # would arrive here 2 times in a row and would cause certain
             # box-drawing characters to be difficult to draw, requiring
             # extra keystrokes and user frustration.
             view_settings = view.settings()
@@ -452,9 +520,10 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
         """
         Draw box character with specified line count in specified direction.
 
-        :param edit:        sublime.Edit object, needed for editing Buffer
-        :param direction:   Direction drawing will proceed (see Direction)
+        :param self:        BoxDrawingDrawOneCharacterCommand object connected to current View
+        :param edit:        sublime.Edit connected to current View, needed to edit Buffer
         :param line_count:  0 = erase, 1 = single, 2 = double
+        :param direction:   Direction drawing will proceed (see box_character.Direction)
         :return:  None
 
 

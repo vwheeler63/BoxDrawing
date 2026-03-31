@@ -4,7 +4,7 @@ from .. import core
 
 
 class BoxDrawingToggleDrawingCommand(sublime_plugin.TextCommand):
-    """ Switch box-drawing state between ON and OFF. """
+    """ Toggle box-drawing state between ON and OFF. """
 
     def is_checked(self):
         """ Determine whether a checkmark appears next to menu item. """
@@ -14,8 +14,8 @@ class BoxDrawingToggleDrawingCommand(sublime_plugin.TextCommand):
         """
         Set BoxDrawing Package to ON mode.
 
-        :param self:        BoxDrawingToggleDrawingCommand object connected to current View
-        :param edit:        sublime.Edit passed by Sublime Text connected to current View
+        :param self:  BoxDrawingToggleDrawingCommand object connected to current View
+        :param edit:  sublime.Edit connected to current View, needed to edit Buffer
         :return:  None
         """
         debugging = is_debugging(DebugBit.COMMANDS)

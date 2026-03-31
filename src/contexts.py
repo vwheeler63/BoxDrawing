@@ -25,7 +25,7 @@ class BoxDrawingContextEventListener(sublime_plugin.ViewEventListener):
         either ``True`` of ``False``.  If the context is unknown, it should
         return ``None``.
 
-        :param self:       ViewEventListener object; self.view == target View
+        :param self:       BoxDrawingContextEventListener object; self.view == target View
         :param key:        Context key to query. This generally refers to specific
                              state held by a plugin (i.e. what is being tested).
         :param operator:   Operator to check against the operand; whether to

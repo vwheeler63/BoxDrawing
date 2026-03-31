@@ -4,7 +4,6 @@ Box Character
 
 This logic pertains to box-character drawing logic.
 It is supports both ASCII and Unicode box-drawing logic.
-
 By design, this module knows nothing about Sublime Text,
 Views, View settings, etc..
 
@@ -77,8 +76,7 @@ Examples:
 Character Classification
 ========================
 
-See docstring in line_count() function below.
-
+See docstring in ``line_count()`` function below.
 """
 from enum import IntFlag, IntEnum
 
@@ -99,8 +97,8 @@ _nc = _cfg_neutral_character
 
 class ClassificationBit(IntFlag):
     r"""
-    Character Classification
-    ========================
+    Character Classification Bits
+    =============================
 
     Character Classification consists of 1 byte containing four 2-bit fields:
 
@@ -168,11 +166,12 @@ class Direction(IntEnum):
 # -------------------------------------------------------------------------
 # Classifications by Box-Drawing Character
 #
-# Note:  not all bit combinations are represented.  While there appears
-# to be a Unicode character for each bit-field combination, many fonts
-# (including the one(s) used by Sublime Text) only have a subset of
-# this list of characters in them.  So this list will be limited to
-# those characters.
+# Note:  not all bit combinations are represented.  Some bit-field
+# combinations do not appear in the Unicode box-drawing character set,
+# so they are not represented below.  Such combinations are caught within
+# the box-drawing logic before they are used.  Also, many fonts only have
+# a subset of the full set of Unicode box-drawing characters (including
+# Sublime Text) so only the normally-supported character set is used.
 #
 # Columns are in bit order left-to-right (most-significant to least):
 #       LEFT   BOTTOM   RIGHT   TOP
@@ -231,13 +230,13 @@ gdict_ascii_classification_by_char_ordered = {
 # -------------------------------------------------------------------------
 # The following used the above Unicode classification dictionary
 # to generate this ASCII lookup array for manual editing.  The
-# finished arrayis here.  It is indexed by classification as is
+# finished array is here.  It is indexed by classification as is
 # ``glst_unicode_box_char_lookup_by_classification`` which is
 # populated programmatically below.  The result looks a great deal
 # like this lookup array.
 # -------------------------------------------------------------------------
 glst_ascii_box_char_lookup_by_classification = [
-    _nc,  # 0x00 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_0
+    _nc,  # 0x00
     '|',  # 0x01 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_1
     '#',  # 0x02 = CF.LINES_LEFT_0 | CF.LINES_DOWN_0 | CF.LINES_RIGHT_0 | CF.LINES_UP_2
     _nc,  # 0x03
@@ -500,11 +499,8 @@ glst_unicode_box_char_lookup_by_classification = [_nc] * 256
 
 # Populate Unicode look-up array using `gdict_unicode_classification_by_char_ordered`.
 for c in gdict_unicode_classification_by_char_ordered:
-    mc = c
-    if c[0] == 'D':
-        mc = c[1]
     classif_idx = gdict_unicode_classification_by_char_ordered[c]
-    glst_unicode_box_char_lookup_by_classification[classif_idx] = mc
+    glst_unicode_box_char_lookup_by_classification[classif_idx] = c
 
 up_bit_shift_count = Direction.UP    << 1
 rt_bit_shift_count = Direction.RIGHT << 1
@@ -516,9 +512,6 @@ lf_bit_shift_count = Direction.LEFT  << 1
 # Data
 # =========================================================================
 
-# These will be arbitrarily assigned until we implement ASCII,
-# then the configured character set will determine which arrays get
-# assigned and this will get updated when Package settings change.
 gdict_classification_by_char = gdict_ascii_classification_by_char_ordered
 glst_box_char_lookup_by_classification = glst_ascii_box_char_lookup_by_classification
 
@@ -546,7 +539,7 @@ def set_unicode_mode(debugging: bool):
 
 
 # =========================================================================
-# Box-Drawing Character Classification Utilities
+# Character Classification Utilities
 # =========================================================================
 
 def line_count(c: str, side: Direction, debugging: bool) -> int:
@@ -559,10 +552,12 @@ def line_count(c: str, side: Direction, debugging: bool) -> int:
     All other characters will be considered to have 0 lines on all sides
     because they are not found in global ``gdict_classification_by_char``.
 
-    ``gdict_classification_by_char`` references a dictionary with the
-    box-drawing characters as keys.  Which dictionary it references is
-    based on the "character_set" Package setting:  ASCII or Unicode.  The
-    integer values contain bit fields that tell us how many lines come out
+    ``gdict_classification_by_char`` references a dictionary with the box-drawing
+    characters as keys.  Which dictionary it references is starts out (each
+    Sublime Text session) matching the "default_character_set" Package setting:
+    ASCII or Unicode.
+
+    The integer values contain bit fields that tell us how many lines come out
     of each side of that box-drawing character.  Here is how the bits are
     arranged:
 
