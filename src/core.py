@@ -261,7 +261,7 @@ def set_state_off(view: View):
     if view.sheet_id() != 0:
         view_settings = view.settings()
         view_settings.set(cfg_view_box_drawing_state_key, State.OFF)
-        view_settings.set(cfg_view_box_drawing_last_direction_key, Direction.NONE)
+        view_settings.set(cfg_view_box_drawing_last_direction_key, box_character.Direction.NONE)
         sublime.status_message('Box Drawing OFF')
         if debugging:
             print(f'  {is_state_active(view)=}')
