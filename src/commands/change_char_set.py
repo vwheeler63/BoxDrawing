@@ -5,7 +5,7 @@ from .. import core
 from .. import box_character
 
 
-class BoxDrawingToggleCharacterSetCommand(sublime_plugin.TextCommand):
+class BoxDrawingChangeCharacterSetCommand(sublime_plugin.TextCommand):
     """ Toggle box-drawing character set between ASCII and Unicode. """
 
     def description(self):
@@ -17,13 +17,13 @@ class BoxDrawingToggleCharacterSetCommand(sublime_plugin.TextCommand):
         else:
             curr_char_set = 'Unicode'
 
-        return f'Toggle Box Drawing Character Set ({curr_char_set})'
+        return f'Change Character Set ({curr_char_set})'
 
     def run(self, edit):
         """
         Toggle box-drawing character set between ASCII and Unicode.
 
-        :param self:  BoxDrawingToggleCharacterSetCommand object connected to current View
+        :param self:  BoxDrawingChangeCharacterSetCommand object connected to current View
         :param edit:  sublime.Edit connected to current View, needed to edit Buffer
         :return:  None
         """

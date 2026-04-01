@@ -23,7 +23,7 @@ __all__ = [
     # commands/*
     "BoxDrawingDrawOneCharacterCommand",
     'BoxDrawingToggleDrawingCommand',
-    'BoxDrawingToggleCharacterSetCommand',
+    'BoxDrawingChangeCharacterSetCommand',
 ]
 
 if debugging:

@@ -8,7 +8,7 @@
 	},
 	{
 		"keys": ["alt+keypad_multiply"],
-		"command": "box_drawing_toggle_character_set",
+		"command": "box_drawing_change_character_set",
 	},
 
 	// --------------------------------------------------------------------

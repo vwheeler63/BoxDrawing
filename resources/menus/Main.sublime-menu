@@ -9,8 +9,8 @@
 				// "checkbox": true
 			},
 			{
-				// "caption": "fulfilled by toggle_char_set.description().",
-				"command": "box_drawing_toggle_character_set",
+				// "caption": "fulfilled by change_char_set.description().",
+				"command": "box_drawing_change_character_set",
 			},
 		]
 	},
