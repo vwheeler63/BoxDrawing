@@ -187,13 +187,11 @@ class DebugBit(IntFlag):
     NONE                   = 0x0000
     DEBUGGING              = 0x0001
     LOAD_UNLOAD            = 0x0002
-    INITIALIZATION         = 0x0004
-    SETTINGS_CHANGED_EVENT = 0x0008
-    QUERY_CONTEXT_EVENT    = 0x0010
-    STATE                  = 0x0020
-    COMMANDS               = 0x0040
-    BOX_DRAWING            = 0x0080
-    EXTENDING_LINES        = 0x0100
+    SETTINGS_CHANGED_EVENT = 0x0004
+    QUERY_CONTEXT_EVENT    = 0x0008
+    ON_OFF_STATE           = 0x0010
+    COMMANDS               = 0x0020
+    BOX_DRAWING            = 0x0040
 
     # ---------------------------------------------------------------------
     # Importing Bits

@@ -249,7 +249,7 @@ def set_state_off(view: View):
     Set box-drawing state OFF in ``view``, but only if View is connected to a Sheet,
     i.e. not part of a Panel or Overlay.
     """
-    debugging = is_debugging(DebugBit.COMMANDS | DebugBit.STATE)
+    debugging = is_debugging(DebugBit.COMMANDS | DebugBit.ON_OFF_STATE)
     if debugging:
         print('In set_state_on()...')
 
@@ -270,7 +270,7 @@ def set_state_on(view: View):
     Set box-drawing state ON in ``view``, but only if View is connected to a Sheet,
     i.e. not part of a Panel or Overlay.
     """
-    debugging = is_debugging(DebugBit.COMMANDS | DebugBit.STATE)
+    debugging = is_debugging(DebugBit.COMMANDS | DebugBit.ON_OFF_STATE)
     if debugging:
         print('In set_state_on()...')
 
@@ -286,7 +286,7 @@ def set_state_on(view: View):
 
 
 def toggle_state(view: View):
-    if is_debugging(DebugBit.COMMANDS | DebugBit.STATE):
+    if is_debugging(DebugBit.COMMANDS | DebugBit.ON_OFF_STATE):
         print('In toggle_state()...')
 
     if is_state_active(view):
@@ -325,7 +325,8 @@ def on_plugin_loaded():
     # ``_on_pkg_settings_chgd()`` is called, since it is what loads
     # the Package settings.
     _on_pkg_settings_chgd()
-    if is_debugging(DebugBit.SETTINGS_CHANGED_EVENT):
+    debugging = is_debugging(DebugBit.LOAD_UNLOAD)
+    if debugging:
         print(f'In on_plugin_loaded()')
 
     # Establish event hook for "settings changed" event. This allows the user
@@ -336,7 +337,6 @@ def on_plugin_loaded():
     bd_setting.obj.add_on_change(_cfg_on_settings_chgd_listener_id, _on_pkg_settings_chgd)
 
     # Set initial box-drawing character set.
-    debugging = is_debugging(DebugBit.LOAD_UNLOAD)
     is_ascii = ((bd_setting(_cfg_stg_name__default_character_set) == 'ASCII'))
     if is_ascii:
         character_set.set_ascii_mode(debugging)
