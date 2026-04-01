@@ -7,8 +7,8 @@ command at the end of this file.  The details of the algorithm are in
 the docstring for that command.
 
 
-Vocabulary
-==========
+Terminology
+===========
 
 - source character, the character at the position the cursor is moving FROM.
 - destination character, the character at the position the cursor is moving TO.
