@@ -4,13 +4,19 @@
 		"children":
 		[
 			{
-				"caption": "Box Drawing Enabled",
-				"command": "box_drawing_toggle_drawing",
-				// "checkbox": true
-			},
-			{
-				// "caption": "fulfilled by change_char_set.description().",
-				"command": "box_drawing_change_character_set",
+				"caption": "BoxDrawing",
+				"children":
+				[
+					{
+						"caption": "Enabled",
+						"command": "box_drawing_toggle_drawing",
+						// "checkbox": true
+					},
+					{
+						// "caption": "fulfilled by change_char_set.description().",
+						"command": "box_drawing_change_character_set",
+					},
+				]
 			},
 		]
 	},
