@@ -2,7 +2,7 @@ import sublime_plugin
 import sublime
 from ...lib.debug import IntFlag, DebugBit, is_debugging
 from .. import core
-from .. import box_character
+from .. import character_set
 
 
 class BoxDrawingChangeCharacterSetCommand(sublime_plugin.TextCommand):
@@ -12,7 +12,7 @@ class BoxDrawingChangeCharacterSetCommand(sublime_plugin.TextCommand):
         """ Provide caption for associated menu item when it does not have
             a "caption" entry, or it is empty.
         """
-        if box_character.is_ascii_mode():
+        if character_set.is_ascii_mode():
             curr_char_set = 'ASCII'
         else:
             curr_char_set = 'Unicode'
@@ -28,13 +28,13 @@ class BoxDrawingChangeCharacterSetCommand(sublime_plugin.TextCommand):
         :return:  None
         """
         debugging = is_debugging(DebugBit.COMMANDS)
-        if box_character.is_ascii_mode():
-            box_character.set_unicode_mode(debugging)
+        if character_set.is_ascii_mode():
+            character_set.set_unicode_mode(debugging)
         else:
-            box_character.set_ascii_mode(debugging)
+            character_set.set_ascii_mode(debugging)
 
         # Confirm change was actually made.
-        if box_character.is_ascii_mode():
+        if character_set.is_ascii_mode():
             sublime.status_message('Box Drawing:  ASCII')
         else:
             sublime.status_message('Box Drawing:  Unicode')

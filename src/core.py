@@ -62,8 +62,8 @@ This Package has several states that can change during a Sublime Text session:
   ``Tools > Toggle Box Drawing Character Set (ASCII)`` shows this state
   with the value in parentheses.  At the beginning of each Sublime Text session,
   this state is set to the configured ``default_character_set``.  The memory
-  of it is kept within the ``box_character.py`` module and is accessed by
-  ``box_character.is_ascii_mode()``, which returns a Boolean value and is used
+  of it is kept within the ``character_set.py`` module and is accessed by
+  ``character_set.is_ascii_mode()``, which returns a Boolean value and is used
   throughout the Package to determine which character set is current.
 
 - Last drawing direction used:  up, right, down, or left?
@@ -119,7 +119,7 @@ from enum import IntEnum, IntFlag
 from ..lib.debug import DebugBit, is_debugging, set_debugging_bits
 from ..lib import utils
 from ..boxdrawing import package_name
-from . import box_character
+from . import character_set
 
 
 # =========================================================================
@@ -261,7 +261,7 @@ def set_state_off(view: View):
     if view.sheet_id() != 0:
         view_settings = view.settings()
         view_settings.set(cfg_view_box_drawing_state_key, State.OFF)
-        view_settings.set(cfg_view_box_drawing_last_direction_key, box_character.Direction.NONE)
+        view_settings.set(cfg_view_box_drawing_last_direction_key, character_set.Direction.NONE)
         sublime.status_message('Box Drawing OFF')
         if debugging:
             print(f'  {is_state_active(view)=}')
@@ -344,9 +344,9 @@ def on_plugin_loaded():
     debugging = is_debugging(DebugBit.LOAD_UNLOAD)
     is_ascii = ((bd_setting(_cfg_stg_name__default_character_set) == 'ASCII'))
     if is_ascii:
-        box_character.set_ascii_mode(debugging)
+        character_set.set_ascii_mode(debugging)
     else:
-        box_character.set_unicode_mode(debugging)
+        character_set.set_unicode_mode(debugging)
 
     # Report.
     if debugging:

@@ -7,7 +7,7 @@ debugging = is_debugging(DebugBit.IMPORTING)
 if debugging:
     print(f'{submodule_name}  >>> module execution')
 
-reload(submodule_name, ('core','contexts', 'box_character'))
+reload(submodule_name, ('core','contexts', 'character_set'))
 reload(submodule_name + '.commands')  # Recurse into .commands/ subpackage.
 
 from . import core

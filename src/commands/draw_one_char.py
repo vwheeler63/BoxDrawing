@@ -41,7 +41,7 @@ a set of variables and character classifications.
 - classification of characters above, below, to the left and right of
   the destination character.
 
-See ``box_character.py`` to see which characters are involved.
+See ``character_set.py`` to see which characters are involved.
 
 
 Resources for Detecting Empty Space to the Right of EOL
@@ -77,8 +77,8 @@ from sublime_types import Point
 from ...lib.debug import IntFlag, DebugBit, is_debugging
 from .. import core
 from ..core import State
-from .. import box_character
-from ..box_character import Direction
+from .. import character_set
+from ..character_set import Direction
 
 
 def _append_spaces_if_needed(view: View, edit, row: int, col: int, debugging: bool):
@@ -275,10 +275,10 @@ def _compute_and_place_drawing_char(
     dn_char = _virtual_char_at(view, row + 1, col    )
     lf_char = _virtual_char_at(view, row    , col - 1)
 
-    up_ln_cnt = box_character.line_count(up_char, Direction.DOWN , debugging)
-    rt_ln_cnt = box_character.line_count(rt_char, Direction.LEFT , debugging)
-    dn_ln_cnt = box_character.line_count(dn_char, Direction.UP   , debugging)
-    lf_ln_cnt = box_character.line_count(lf_char, Direction.RIGHT, debugging)
+    up_ln_cnt = character_set.line_count(up_char, Direction.DOWN , debugging)
+    rt_ln_cnt = character_set.line_count(rt_char, Direction.LEFT , debugging)
+    dn_ln_cnt = character_set.line_count(dn_char, Direction.UP   , debugging)
+    lf_ln_cnt = character_set.line_count(lf_char, Direction.RIGHT, debugging)
 
     if debugging:
         print('  Surrounding chars:')
@@ -454,12 +454,12 @@ def _compute_and_place_drawing_char(
     # ---------------------------------------------------------------------
     # Compute box-drawing draw character.
     # ---------------------------------------------------------------------
-    up_bit_field = up_ln_cnt << box_character.up_bit_shift_count
-    rt_bit_field = rt_ln_cnt << box_character.rt_bit_shift_count
-    dn_bit_field = dn_ln_cnt << box_character.dn_bit_shift_count
-    lf_bit_field = lf_ln_cnt << box_character.lf_bit_shift_count
+    up_bit_field = up_ln_cnt << character_set.up_bit_shift_count
+    rt_bit_field = rt_ln_cnt << character_set.rt_bit_shift_count
+    dn_bit_field = dn_ln_cnt << character_set.dn_bit_shift_count
+    lf_bit_field = lf_ln_cnt << character_set.lf_bit_shift_count
     classification = up_bit_field | rt_bit_field | dn_bit_field | lf_bit_field
-    c = box_character.glst_box_char_lookup_by_classification[classification]
+    c = character_set.glst_box_char_lookup_by_classification[classification]
     if debugging:
         print(f'  {classification=} ({classification:#02X})')
 
@@ -523,7 +523,7 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
         :param self:        BoxDrawingDrawOneCharacterCommand object connected to current View
         :param edit:        sublime.Edit connected to current View, needed to edit Buffer
         :param line_count:  0 = erase, 1 = single, 2 = double
-        :param direction:   Direction drawing will proceed (see box_character.Direction)
+        :param direction:   Direction drawing will proceed (see character_set.Direction)
         :return:  None
 
 
