@@ -15,25 +15,20 @@
 │ └──┴──┘           │ └────╫───────┼┘
 └───────────────────┘      ╙───────┘
 
-+-----+-+-+-+---------------------------------------------------------------------+
-|Key  |S|C|A| Command                                                             |
-+=====+=+=+=+=====================================================================+
-|Up   | |x| | stop side-by-side editing, deselecting all but the Sheet with focus |
-+-----+-+-+-+---------------------------------------------------------------------+
-|Left | |x| | deselect Sheet to the left, removing it from side-by-side editing   |
-+-----+-+-+-+---------------------------------------------------------------------+
-|Left |x|x| | select Sheet to the left, adding it to side-by-side editing         |
-+-----+-+-+-+---------------------------------------------------------------------+
-|Right| |x| | deselect Sheet to the right, removing it from side-by-side editing  |
-+-----+-+-+-+---------------------------------------------------------------------+
-|Right|x|x| | select Sheet to the right, adding it to side-by-side editing        |
-+-----+-+-+-+---------------------------------------------------------------------+
-|PgUp | |x| | move focus to selected Sheet to the left                            |
-+-----+-+-+-+---------------------------------------------------------------------+
-|PgDn | |x| | move focus to selected Sheet to the right                           |
-+-----+-+-+-+---------------------------------------------------------------------+
-|j    | |x| | open message box explaining `ctrl+j` mapping change                 |
-+-----+-+-+-+---------------------------------------------------------------------+
++-------------+------------+------------------------------------------------+
+| XML Element | Completion | Description                                    |
+|             | Equivalent |                                                |
++=============+============+================================================+
+| scope       | scope      | optional, selector syntax; see :ref:`Selector` |
++-------------+------------+------------------------------------------------+
+| tabTrigger  | trigger    | optional, text that begins snippet             |
++-------------+------------+------------------------------------------------+
+| content     | contents   | required, a single ``<![CDATA[...]]>`` tag     |
+|             |            | with "smart template" syntax detailed below    |
++-------------+------------+------------------------------------------------+
+| description | annotation | optional, contains a short annotation shown to |
+|             |            | right of completions popup showing what it is  |
++-------------+------------+------------------------------------------------+
 
 ```
 

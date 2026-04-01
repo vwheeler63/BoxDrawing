@@ -22,25 +22,20 @@ to draw lines and boxes in their text like these:
 │ └──┴──┘           │ └────╫───────┼┘
 └───────────────────┘      ╙───────┘
 
-+-----+-+-+-+-----------------------------------------------------+
-|Key  |S|C|A| Command                                             |
-+=====+=+=+=+=====================================================+
-|Up   | |x| | stop side-by-side editing                           |
-+-----+-+-+-+-----------------------------------------------------+
-|Left | |x| | deselect Sheet to the left                          |
-+-----+-+-+-+-----------------------------------------------------+
-|Left |x|x| | select Sheet to the left                            |
-+-----+-+-+-+-----------------------------------------------------+
-|Right| |x| | deselect Sheet to the right,                        |
-+-----+-+-+-+-----------------------------------------------------+
-|Right|x|x| | select Sheet to the right                           |
-+-----+-+-+-+-----------------------------------------------------+
-|PgUp | |x| | move focus to selected Sheet to the left            |
-+-----+-+-+-+-----------------------------------------------------+
-|PgDn | |x| | move focus to selected Sheet to the right           |
-+-----+-+-+-+-----------------------------------------------------+
-|j    | |x| | open message box explaining `ctrl+j` mapping change |
-+-----+-+-+-+-----------------------------------------------------+
++-------------+------------+------------------------------------------------+
+| XML Element | Completion | Description                                    |
+|             | Equivalent |                                                |
++=============+============+================================================+
+| scope       | scope      | optional, selector syntax; see :ref:`Selector` |
++-------------+------------+------------------------------------------------+
+| tabTrigger  | trigger    | optional, text that begins snippet             |
++-------------+------------+------------------------------------------------+
+| content     | contents   | required, a single ``<![CDATA[...]]>`` tag     |
+|             |            | with "smart template" syntax detailed below    |
++-------------+------------+------------------------------------------------+
+| description | annotation | optional, contains a short annotation shown to |
+|             |            | right of completions popup showing what it is  |
++-------------+------------+------------------------------------------------+
 
 See `README.md` and `src/core.py` for more details.
 
