@@ -44,7 +44,7 @@ States
 This Package has several states that can change during a Sublime Text session:
 
 - Is Box Drawing enabled?  This state is tracked per View.
-  ``Tools > Box Drawing > Enabled`` shows the state for the current View with
+  ``Tools > BoxDrawing > Enabled`` shows the state for the current View with
   a checkmark.  At the beginning of each Sublime Text session, this state is
   DISABLED for all Views.
 
@@ -52,7 +52,7 @@ This Package has several states that can change during a Sublime Text session:
   This state is global (remembered within the loaded Package) and applies to
   all Views at the same time.  Since this can be conveniently changed via a
   single keystroke, there is no use case that justifies keeping it per View.
-  ``Tools > Box Drawing > Change Character Set (ASCII)`` shows this state
+  ``Tools > BoxDrawing > Change Character Set (ASCII)`` shows this state
   with the name of the current character set in parentheses.  At the beginning
   of each Sublime Text session, this state is set to the character set
   indicated by the user-configurable ``default_character_set_id`` setting.
