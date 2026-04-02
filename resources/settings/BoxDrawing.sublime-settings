@@ -1,10 +1,20 @@
 // Place your settings in the file "Packages/User/ProComment.sublime-settings",
 // which overrides the settings in here.
 {
-	// String.  Character Set Name
-	// ---------------------------
-	// Valid values: "ASCII" or "Unicode"
-	"default_character_set": "ASCII",
+	// Integer.  Character Set ID
+	// --------------------------
+	// One of the values from this enumeration class:
+	//
+	// class CharacterSetID(IntEnum):
+	//     UNICODE_SQUARE_CORNERS = 0
+	//     UNICODE_ROUND_CORNERS  = 1
+	//     UNICODE_2_DASHES       = 2
+	//     UNICODE_3_DASHES       = 3
+	//     UNICODE_4_DASHES       = 4
+	//     UNICODE_SHADOW         = 5
+	//     ASCII                  = 6
+	//     LAST                   = 6
+	"default_character_set_id": 6,
 
 	// String | Integer | Boolean
 	//
@@ -25,6 +35,7 @@
 	//     ON_OFF_STATE           = 0x0010
 	//     COMMANDS               = 0x0020
 	//     BOX_DRAWING            = 0x0040
+	//     CHARACTER_SET          = 0x0080
 	//     IMPORTING              = 0X8000
 	//
 	//     ALL                    = 0xFFFF

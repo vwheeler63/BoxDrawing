@@ -116,6 +116,11 @@ from sublime import View, Region, RegionFlags
 
 class DebugBit(IntFlag):
     """
+    Named bits used in debugging Packages.
+
+    Maintenance Note:  when this class changes, update the documentation
+    about it in the ``.sublime-settings`` file.
+
     The actual bit names in the ``DebugBit`` class will change, Package to
     Package, based on what is applicable to the Package using it.  It is,
     however, recommended to keep the NONE, DEBUGGING, ALL and ANY bits as
@@ -192,6 +197,7 @@ class DebugBit(IntFlag):
     ON_OFF_STATE           = 0x0010
     COMMANDS               = 0x0020
     BOX_DRAWING            = 0x0040
+    CHARACTER_SET          = 0x0080
 
     # ---------------------------------------------------------------------
     # Importing Bits

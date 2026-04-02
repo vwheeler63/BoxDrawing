@@ -215,6 +215,45 @@ def _move_caret(view: View, edit, row: int, col: int, direction: Direction, debu
     return row, col
 
 
+def _insert_or_replace(
+        view     : View,
+        edit     : sublime.Edit,
+        c        : str,
+        row      : int,
+        col      : int,
+        debugging: bool
+        ):
+    """ Replace char at `row` and `col` with `c`.
+
+    :param view:            current View
+    :param edit:            sublime.Edit required to modify Buffer
+    :param c:               character to insert or replace
+    :param row:             target row
+    :param col:             target column
+    :param debugging:       Are we debugging?
+
+    @pre  row and col must point to a valid, existing character.
+    """
+    pt = view.text_point(row, col)
+    dest_char_rgn = Region(pt, pt + 1)
+    cur_char = view.substr(dest_char_rgn)
+    last_pt = view.size()
+    at_eof = ((pt == last_pt))
+
+    # Insert if at EOL or EOF, replace otherwise.
+    if cur_char == '\n' or at_eof:
+        if debugging:
+            print(f'  Inserting {repr(c)}.')
+        view.insert(edit, pt, c)
+        # This moved the caret, so move it back to where it was.
+        sel_list = view.sel()
+        sel_list.clear()
+        sel_list.add(pt)
+    else:
+        if debugging:
+            print(f'  Replacing {repr(cur_char)} with {repr(c)}.')
+        view.replace(edit, dest_char_rgn, c)
+
 def _compute_and_place_drawing_char(
         view          : View,
         edit          : sublime.Edit,
@@ -227,12 +266,8 @@ def _compute_and_place_drawing_char(
         ):
     """
     Compute character:
-        - use surrounding chars to assemble a classification
-        - use classification to index into the appropriate lookup array:
-            - One of these 2 arrays will be referenced by
-              glst_box_char_lookup_by_classification:
-                - glst_unicode_box_char_lookup_by_classification
-                - glst_ascii_box_char_lookup_by_classification
+        - use surrounding chars to assemble a classification;
+        - use classification to index into the appropriate lookup array.
 
     Note that the ``Direction`` IntEnum class is carefully ordered to so that
     each ``side`` can be used to compute the number of bits to shift to place
@@ -243,11 +278,12 @@ def _compute_and_place_drawing_char(
         DOWN  = 2   # << 1 = number of bits to shift
         LEFT  = 3   # << 1 = number of bits to shift
 
-    Note:  This logic works with both ASCII and Unicode characterization dictionaries
-    and look-up arrays.  The magic is in dictionaries and look-up arrays.  Which one
-    is used is determined in ``core._on_pkg_settings_chgd()``.
+    Note:  This logic works with both ASCII and Unicode characterization (classification)
+    dictionaries and look-up arrays.  The magic is in dictionaries and look-up arrays.
+    Which one is used is determined in ``core._on_pkg_settings_chgd()``.
 
     :param view:            current View
+    :param edit:            sublime.Edit required to modify Buffer
     :param row:             target row
     :param col:             target column
     :param new_line_count:  number of lines indicated by user's key combination
@@ -258,6 +294,28 @@ def _compute_and_place_drawing_char(
     :param debugging:       Are we debugging?
     """
     assert (Direction.UP <= direction <= Direction.LEFT), f'`Direction` {direction} not recognized.'
+
+    # ---------------------------------------------------------------------
+    # Shadow Character Set is unusual in that:
+    # - it completely ignores surrounding character
+    # -
+    # - [Alt-Arrow]             (lightest shadow char instead of single line)
+    # - [Alt-Shift-Arrow]       (medium shadow char instead of double line)
+    # - [Ctrl-Alt-Shift-Arrow]  (heaviest shadow char instead of erase)
+    # ---------------------------------------------------------------------
+    if character_set.is_shadow_character_set():
+        if new_line_count == 1:
+            c = '░'
+        elif new_line_count == 2:
+            c = '▒'
+        else:  # new_line_count == 0:
+            c = '▓'
+
+        # -----------------------------------------------------------------
+        # Replace `cur_char` with computed character.
+        # -----------------------------------------------------------------
+        _insert_or_replace(view, edit, c, row, col, debugging)
+        return
 
     # ---------------------------------------------------------------------
     # Gather information about surrounding characters.
@@ -454,37 +512,12 @@ def _compute_and_place_drawing_char(
     # ---------------------------------------------------------------------
     # Compute box-drawing draw character.
     # ---------------------------------------------------------------------
-    up_bit_field = up_ln_cnt << character_set.up_bit_shift_count
-    rt_bit_field = rt_ln_cnt << character_set.rt_bit_shift_count
-    dn_bit_field = dn_ln_cnt << character_set.dn_bit_shift_count
-    lf_bit_field = lf_ln_cnt << character_set.lf_bit_shift_count
-    classification = up_bit_field | rt_bit_field | dn_bit_field | lf_bit_field
-    c = character_set.glst_box_char_lookup_by_classification[classification]
-    if debugging:
-        print(f'  {classification=} ({classification:#02X})')
+    c = character_set.character_by_line_counts(up_ln_cnt, rt_ln_cnt, dn_ln_cnt, lf_ln_cnt)
 
     # ---------------------------------------------------------------------
-    # Replace `cur_char` with computed character.
+    # Replace char at `row` and `col` with `c`.
     # ---------------------------------------------------------------------
-    pt = view.text_point(row, col)
-    dest_char_rgn = Region(pt, pt + 1)
-    cur_char = view.substr(dest_char_rgn)
-    last_pt = view.size()
-    at_eof = ((pt == last_pt))
-
-    # Insert if at EOL or EOF, replace otherwise.
-    if cur_char == '\n' or at_eof:
-        if debugging:
-            print(f'  Inserting {repr(c)}.')
-        view.insert(edit, pt, c)
-        # This moved the caret, so move it back to where it was.
-        sel_list = view.sel()
-        sel_list.clear()
-        sel_list.add(pt)
-    else:
-        if debugging:
-            print(f'  Replacing {repr(cur_char)} with {repr(c)}.')
-        view.replace(edit, dest_char_rgn, c)
+    _insert_or_replace(view, edit, c, row, col, debugging)
 
 
 class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
@@ -619,13 +652,9 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
             If condition (L) above (same direction and disagreeing existing line):
                 "back adjust" `src_char`.
 
-            Compute character based on surrounding characters:
-                - use surrounding chars to assemble a classification
-                - use classification to index into the appropriate lookup array:
-                    - One of these 2 arrays will be referenced by
-                      glst_box_char_lookup_by_classification:
-                        - glst_unicode_box_char_lookup_by_classification
-                        - glst_ascii_box_char_lookup_by_classification
+            Compute character:
+                - use surrounding chars to assemble a classification;
+                - use classification to index into the appropriate lookup array.
 
             Replace `cur_char` with computed character.
         """
@@ -679,7 +708,7 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
         else:
             # Draw something.
             if debugging:
-                if line_count > 1:
+                if line_count == 0 or line_count > 1:
                     plural_suffix = 's'
                 else:
                     plural_suffix = ''
@@ -717,12 +746,8 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
             #     "back adjust" `src_char`.
             #
             # Compute character:
-            #     - use surrounding chars to assemble a classification
-            #     - use classification to index into the appropriate lookup array:
-            #         - One of these 2 arrays will be referenced by
-            #           `glst_box_char_lookup_by_classification`:
-            #             - glst_unicode_box_char_lookup_by_classification
-            #             - glst_ascii_box_char_lookup_by_classification
+            #     - use surrounding chars to assemble a classification;
+            #     - use classification to index into the appropriate lookup array.
             _compute_and_place_drawing_char(
                     view,
                     edit,

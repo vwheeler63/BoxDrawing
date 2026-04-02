@@ -6,29 +6,27 @@
 ┌─┬┐  ╔═╦╗  ╓─╥╖  ╒═╤╕
 │ ││  ║ ║║  ║ ║║  │ ││
 ├─┼┤  ╠═╬╣  ╟─╫╢  ╞═╪╡
-└─┴┘  ╚═╩╝  ╙─╨╜  ╘═╧╛┌─────────────┐
-┌───────────────────┐ │    ╔═══════╕│            ┌───┐
-│  ╔═══╗ Some Text  │ │╓───╫┐ ╔══╗ ││ ┌──┬───┐  ┌┴┬┐ │
-│  ╚═╦═╝ in the box │ │║   ║│ ║  ║ ││ ╞══╡   │  ├─┼┼─┘
-╞═╤══╩══╤═══════════╡ │║   ║│ ║  ║ ││ │  │   │  │ ││
-│ ├──┬──┤           │ │╙───╫┘ ╚══╝ ││ └──┴───┘  └─┴┘
-│ └──┴──┘           │ └────╫───────┼┘
-└───────────────────┘      ╙───────┘
+└─┴┘  ╚═╩╝  ╙─╨╜  ╘═╧╛ ┌─────────────┐
+╭───────────────────╮  │    ╔═══════╕│            ┌───┐
+│  ╔═══╗ Some Text  │  │╓───╫┐ ╔══╗ ││ ┌──┬───┐  ┌┴┬┐ │
+│  ╚═╦═╝ in the box │░ │║   ║│ ║  ║ ││ ╞══╡   │  ├─┼┼─┘
+╞═╤══╩══╤═══════════╡░ │║   ║│ ║  ║ ││ │  │   │  │ ││
+│ ├──┬──┤           │░ │╙───╫┘ ╚══╝ ││ └──┴───┘  └─┴┘
+│ └──┴──┘           │░ └────╫───────┼┘
+╰───────────────────╯░      ╙───────┘
+  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒░
 
-+-------------+------------+------------------------------------------------+
-| XML Element | Completion | Description                                    |
-|             | Equivalent |                                                |
-+=============+============+================================================+
-| scope       | scope      | optional, selector syntax; see :ref:`Selector` |
-+-------------+------------+------------------------------------------------+
-| tabTrigger  | trigger    | optional, text that begins snippet             |
-+-------------+------------+------------------------------------------------+
-| content     | contents   | required, a single ``<![CDATA[...]]>`` tag     |
-|             |            | with "smart template" syntax detailed below    |
-+-------------+------------+------------------------------------------------+
-| description | annotation | optional, contains a short annotation shown to |
-|             |            | right of completions popup showing what it is  |
-+-------------+------------+------------------------------------------------+
++------------+----------------+--------------+
+| Column One | Column Two     | Column Three |
++============+================+==============+
+|            |                |              |
++------------+----------------+--------------+
+|            |                |              |
++------------+----------------+--------------+
+|            |                |              |
++------------+----------------+--------------+
+|            |                |              |
++------------+----------------+--------------+
 
 ```
 
@@ -76,7 +74,7 @@ If you instead clone **BoxDrawing's** repository into your `<data_path>/Packages
 
 The following setting items can be found and individually overridden via the usual method for Sublime Text Package settings:  `Preferences > Package Settings > BoxDrawing > Settings`.  The comments in the default settings file explain what each one means and lists valid values.  Their default values are shown below.
 
-- `default_character_set`: "ASCII"
+- `default_character_set_id`: 0 (means ASCII)
 - `debugging`: false
 
 

@@ -12,12 +12,8 @@ class BoxDrawingChangeCharacterSetCommand(sublime_plugin.TextCommand):
         """ Provide caption for associated menu item when it does not have
             a "caption" entry, or it is empty.
         """
-        if character_set.is_ascii_mode():
-            curr_char_set = 'ASCII'
-        else:
-            curr_char_set = 'Unicode'
-
-        return f'Change Character Set ({curr_char_set})'
+        name = character_set.current_character_set_name()
+        return f'Change Character Set ({name})'
 
     def run(self, edit):
         """
@@ -27,14 +23,15 @@ class BoxDrawingChangeCharacterSetCommand(sublime_plugin.TextCommand):
         :param edit:  sublime.Edit connected to current View, needed to edit Buffer
         :return:  None
         """
-        debugging = is_debugging(DebugBit.COMMANDS)
-        if character_set.is_ascii_mode():
-            character_set.set_unicode_mode(debugging)
-        else:
-            character_set.set_ascii_mode(debugging)
+        debugging = is_debugging(DebugBit.COMMANDS | DebugBit.CHARACTER_SET)
+        character_set.advance_to_next_character_set(debugging)
 
         # Confirm change was actually made.
-        if character_set.is_ascii_mode():
-            sublime.status_message('Box Drawing:  ASCII')
+        name = character_set.current_character_set_name()
+
+        if core.is_state_active(self.view):
+            state = 'ON'
         else:
-            sublime.status_message('Box Drawing:  Unicode')
+            state = 'OFF'
+
+        sublime.status_message(f'Box Drawing {state} ({name})')

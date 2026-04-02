@@ -13,29 +13,27 @@ to draw lines and boxes in their text like these:
 ┌─┬┐  ╔═╦╗  ╓─╥╖  ╒═╤╕
 │ ││  ║ ║║  ║ ║║  │ ││
 ├─┼┤  ╠═╬╣  ╟─╫╢  ╞═╪╡
-└─┴┘  ╚═╩╝  ╙─╨╜  ╘═╧╛┌─────────────┐
-┌───────────────────┐ │    ╔═══════╕│            ┌───┐
-│  ╔═══╗ Some Text  │ │╓───╫┐ ╔══╗ ││ ┌──┬───┐  ┌┴┬┐ │
-│  ╚═╦═╝ in the box │ │║   ║│ ║  ║ ││ ╞══╡   │  ├─┼┼─┘
-╞═╤══╩══╤═══════════╡ │║   ║│ ║  ║ ││ │  │   │  │ ││
-│ ├──┬──┤           │ │╙───╫┘ ╚══╝ ││ └──┴───┘  └─┴┘
-│ └──┴──┘           │ └────╫───────┼┘
-└───────────────────┘      ╙───────┘
+└─┴┘  ╚═╩╝  ╙─╨╜  ╘═╧╛ ┌─────────────┐
+╭───────────────────╮  │    ╔═══════╕│            ┌───┐
+│  ╔═══╗ Some Text  │  │╓───╫┐ ╔══╗ ││ ┌──┬───┐  ┌┴┬┐ │
+│  ╚═╦═╝ in the box │░ │║   ║│ ║  ║ ││ ╞══╡   │  ├─┼┼─┘
+╞═╤══╩══╤═══════════╡░ │║   ║│ ║  ║ ││ │  │   │  │ ││
+│ ├──┬──┤           │░ │╙───╫┘ ╚══╝ ││ └──┴───┘  └─┴┘
+│ └──┴──┘           │░ └────╫───────┼┘
+╰───────────────────╯░      ╙───────┘
+  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒░
 
-+-------------+------------+------------------------------------------------+
-| XML Element | Completion | Description                                    |
-|             | Equivalent |                                                |
-+=============+============+================================================+
-| scope       | scope      | optional, selector syntax; see :ref:`Selector` |
-+-------------+------------+------------------------------------------------+
-| tabTrigger  | trigger    | optional, text that begins snippet             |
-+-------------+------------+------------------------------------------------+
-| content     | contents   | required, a single ``<![CDATA[...]]>`` tag     |
-|             |            | with "smart template" syntax detailed below    |
-+-------------+------------+------------------------------------------------+
-| description | annotation | optional, contains a short annotation shown to |
-|             |            | right of completions popup showing what it is  |
-+-------------+------------+------------------------------------------------+
++------------+----------------+--------------+
+| Column One | Column Two     | Column Three |
++============+================+==============+
+|            |                |              |
++------------+----------------+--------------+
+|            |                |              |
++------------+----------------+--------------+
+|            |                |              |
++------------+----------------+--------------+
+|            |                |              |
++------------+----------------+--------------+
 
 See `README.md` and `src/core.py` for more details.
 
@@ -57,12 +55,12 @@ _cfg_compressed_pkg_ext = '.sublime-package'
 
 # Use name of parent directory as `package_name`.
 module_path, _ = os.path.splitext(os.path.realpath(__file__))
-parent_dir, submodule_name = os.path.split(module_path)
-_, package_name = os.path.split(parent_dir)
+_, submodule_name = os.path.split(module_path)
+package_name = __package__
 if package_name.endswith(_cfg_compressed_pkg_ext):
     package_name = package_name[:-len(_cfg_compressed_pkg_ext)]
-del _
 this_module_name = f'{package_name}.{submodule_name}'
+del _, module_path, submodule_name
 _reload_indent_level = -1
 
 # Can't use `debugging = is_debugging(DebugBit.IMPORTING)` here because
@@ -156,3 +154,29 @@ def plugin_unloaded():
 
 if debugging:
     print(f'{this_module_name}  <<<')
+
+#
+#
+#
+#
+#      ┌─────┐  ┌╌╌┐  ┌──┐  ┌──┐  ╭──╮  ░░░░░
+#      │     │  ╎  ╎  │  │  │  │  ├──┤  ░
+#      │     │  ╎  ╎  │  │  │  │  ╞══╡  ░
+#      └─────┘  └╌╌┘  └──┘  └──┘  ╰──╯
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#

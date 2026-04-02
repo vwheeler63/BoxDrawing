@@ -8,10 +8,13 @@ This logic pertains to box-character drawing logic, and its ability to become
 - ASCII
 - Unicode (Square Corners)
 - Unicode (Round Corners)
-- Shadows
+- Unicode (2 Dashes)
+- Unicode (3 Dashes)
+- Unicode (4 Dashes)
+- Shadow Characters
 
 By design, this module knows nothing about Sublime Text, Views, View settings, etc..
-Only these sets of characters and their characteristics/classifications.
+Only these sets of characters and their characteristics (classifications).
 
 
 Line Types
@@ -36,18 +39,6 @@ Unicode:
     - horizontal with intersections:  ┬ ┴
     - both                         :  ┼
 
-- half lines (single-line only):
-    - left side only, horizontal :  ╴
-    - right side only, horizontal:  ╶
-    - top side only, vertical    :  ╵
-    - bottom side only, vertical :  ╷
-
-- There is a whole set of bold-face and half-line-bold-face single-line characters
-  which are not included here.  Not very useful in my opinion.  These code points
-  would have been better served supplying partials (like the above) for double-lines,
-  of which there appear to be none currently.  In my opinion, those 87 code points
-  were wasted in a block of 256 code points for this box-drawing character set.
-
 - double-line characters
     - straight lines               :  ═ ║
     - corners                      :  ╔ ╗ ╚ ╝
@@ -62,6 +53,23 @@ Unicode:
     - single with double-line intersections:  ╞ ╡ ╥ ╨
     - both                                 :  ╪ ╫
 
+- rounded corners (single-line only):
+    - ╭ ╮ ╰ ╯
+
+- dashed:
+    - 2 dashes vertical  :  ╎
+    - 2 dashes horizontal:  ╌
+    - 3 dashes vertical  :  ┆
+    - 3 dashes horizontal:  ┄
+    - 4 dashes vertical  :  ┊
+    - 4 dashes horizontal:  ┈
+
+- shadow characters:
+    - ░
+    - ▒
+    - ▓
+
+
 Examples:
 ~~~~~~~~~
 
@@ -69,14 +77,14 @@ Examples:
 │ ││  ║ ║║  ║ ║║  │ ││    | Column One | Column Two     |
 ├─┼┤  ╠═╬╣  ╟─╫╢  ╞═╪╡    +============+================+
 └─┴┘  ╚═╩╝  ╙─╨╜  ╘═╧╛    |            |                |
-┌───────────────────┐     +------------+----------------+
+╭───────────────────╮     +------------+----------------+
 │  ╔═══╗ Some Text  │     |            |                |
-│  ╚═╦═╝ in the box │     +------------+----------------+
-╞═╤══╩══╤═══════════╡     |            |                |
-│ ├──┬──┤           │     +------------+----------------+
-│ └──┴──┘           │     |            |                |
-└───────────────────┘     +------------+----------------+
-
+│  ╚═╦═╝ in the box │░    +------------+----------------+
+╞═╤══╩══╤═══════════╡░    |            |                |
+│ ├──┬──┤           │░    +------------+----------------+
+│ └──┴──┘           │░    |            |                |
+╰───────────────────╯░    +------------+----------------+
+  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒░
 
 
 Character Classification
@@ -85,16 +93,8 @@ Character Classification
 See docstring in ``line_count()`` function below.
 """
 from enum import IntFlag, IntEnum
-
-
-# =========================================================================
-# Configuration
-# =========================================================================
-
-# Neutral character in look-up arrays.
-_cfg_neutral_character = '·'
-# Abbreviation to make the various look-up arrays more readable.
-_nc = _cfg_neutral_character
+from typing import List, Dict
+from ..lib.debug import DebugBit, is_debugging
 
 
 # =========================================================================
@@ -120,14 +120,15 @@ class ClassificationBit(IntFlag):
         b = bottom side
         L = left side
 
-    The unsigned integer in each bit field contains:
+    The unsigned integer in each bit field contains the count of lines for
+    each character in the classification dictionary:
 
     - 0 = no lines
     - 1 = 1 line
     - 2 = 2 lines
 
-    The OR-ed combined value will index into a character-lookup array for fast
-    character selection by combining bits from this classification list.
+    The OR-ed combined values of the 4 bit fields index into a
+    character-lookup array for fast character look-up.
     """
     LINES_UP_0    = 0x00
     LINES_UP_1    = 0x01
@@ -165,14 +166,79 @@ class Direction(IntEnum):
     LEFT  = 3   # val * 2 = bit-shift right to isolate classification in 2 LSbs.
 
 
+class CharacterSet:
+    """
+    A CharacterSet knows:
+    - its name
+    - its classification dictionary
+    - its lookup array (by classification)
+    """
+    __slots__ = ['name', 'classification_dict', 'lookup_array']
+
+    def __init__(self, name, classification_dict, lookup_array):
+        self.name                = name
+        self.classification_dict = classification_dict
+        self.lookup_array        = lookup_array
+
+
+class CharacterSetID(IntEnum):
+    """
+    DrawingDirection Enumeration
+
+    Classification mentioned in comments is from ``ClassificationBit`` class above.
+
+    Maintenance Note:  when this class changes, also change the
+    documentation in ``BoxDrawing.sublime-settings``.
+    """
+    UNICODE_SQUARE_CORNERS = 0
+    UNICODE_ROUND_CORNERS  = 1
+    UNICODE_2_DASHES       = 2
+    UNICODE_3_DASHES       = 3
+    UNICODE_4_DASHES       = 4
+    UNICODE_SHADOW         = 5
+    ASCII                  = 6
+    LAST                   = 6
+
+
+# =========================================================================
+# Configuration
+# =========================================================================
+
+# Neutral character in look-up arrays.
+_cfg_neutral_character = '·'
+# Abbreviation to make the various look-up arrays more readable.
+_nc = _cfg_neutral_character
+
+# Initial character set.
+_cfg_initial_character_set_id: CharacterSetID = CharacterSetID.ASCII
+
+
 # =========================================================================
 # Constants
 # =========================================================================
 
+_g_character_sets: List[CharacterSet] = []
+
+
+def _generated_lookup_array(classification_dict: Dict[str, int]) -> List[str]:
+    """
+    Populate square-corner Unicode look-up array using `classification_dict`.
+    """
+    # Pre-allocate look-up array with 256 elements with
+    # _nc (middle dot U+00B7) as placeholder.
+    result = [_nc] * 256
+
+    for c in classification_dict:
+        classif_idx = classification_dict[c]
+        result[classif_idx] = c
+
+    return result
+
+
 # -------------------------------------------------------------------------
 # Classifications by Box-Drawing Character
 #
-# Note:  not all bit combinations are represented.  Some bit-field
+# Note that not all bit combinations are represented.  Some bit-field
 # combinations do not appear in the Unicode box-drawing character set,
 # so they are not represented below.  Such combinations are caught within
 # the box-drawing logic before they are used.  Also, many fonts only have
@@ -182,7 +248,10 @@ class Direction(IntEnum):
 # Columns are in bit order left-to-right (most-significant to least):
 #       LEFT   BOTTOM   RIGHT   TOP
 # -------------------------------------------------------------------------
-gdict_unicode_classification_by_char = {
+# -------------------------------------------------------------------------
+# Unicode (Square Corners)
+# -------------------------------------------------------------------------
+_temp_dict = {
     '└': CB.LINES_LEFT_0 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_1,  # 0x05
     '╙': CB.LINES_LEFT_0 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_2,  # 0x06
     '╘': CB.LINES_LEFT_0 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_2 | CB.LINES_UP_1,  # 0x09
@@ -225,6 +294,213 @@ gdict_unicode_classification_by_char = {
     '╬': CB.LINES_LEFT_2 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_2 | CB.LINES_UP_2,  # 0xAA
 }
 
+_name = 'Unicode [Square Corners]'
+_temp_array = _generated_lookup_array(_temp_dict)
+_g_character_sets.append(CharacterSet(_name, _temp_dict, _temp_array))
+
+# -------------------------------------------------------------------------
+# Unicode (Round Corners)
+# -------------------------------------------------------------------------
+_temp_dict = {
+    '╰': CB.LINES_LEFT_0 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_1,  # 0x05
+    '╙': CB.LINES_LEFT_0 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_2,  # 0x06
+    '╘': CB.LINES_LEFT_0 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_2 | CB.LINES_UP_1,  # 0x09
+    '╚': CB.LINES_LEFT_0 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_2 | CB.LINES_UP_2,  # 0x0A
+    '│': CB.LINES_LEFT_0 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_0 | CB.LINES_UP_1,  # 0x11
+    '╭': CB.LINES_LEFT_0 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_1 | CB.LINES_UP_0,  # 0x14
+    '├': CB.LINES_LEFT_0 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_1 | CB.LINES_UP_1,  # 0x15
+    '╒': CB.LINES_LEFT_0 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_2 | CB.LINES_UP_0,  # 0x18
+    '╞': CB.LINES_LEFT_0 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_2 | CB.LINES_UP_1,  # 0x19
+    '║': CB.LINES_LEFT_0 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_0 | CB.LINES_UP_2,  # 0x22
+    '╓': CB.LINES_LEFT_0 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_1 | CB.LINES_UP_0,  # 0x24
+    '╟': CB.LINES_LEFT_0 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_1 | CB.LINES_UP_2,  # 0x26
+    '╔': CB.LINES_LEFT_0 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_2 | CB.LINES_UP_0,  # 0x28
+    '╠': CB.LINES_LEFT_0 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_2 | CB.LINES_UP_2,  # 0x2A
+    '╯': CB.LINES_LEFT_1 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_0 | CB.LINES_UP_1,  # 0x41
+    '╜': CB.LINES_LEFT_1 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_0 | CB.LINES_UP_2,  # 0x42
+    '─': CB.LINES_LEFT_1 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_0,  # 0x44
+    '┴': CB.LINES_LEFT_1 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_1,  # 0x45
+    '╨': CB.LINES_LEFT_1 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_2,  # 0x46
+    '╮': CB.LINES_LEFT_1 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_0 | CB.LINES_UP_0,  # 0x50
+    '┤': CB.LINES_LEFT_1 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_0 | CB.LINES_UP_1,  # 0x51
+    '┬': CB.LINES_LEFT_1 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_1 | CB.LINES_UP_0,  # 0x54
+    '┼': CB.LINES_LEFT_1 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_1 | CB.LINES_UP_1,  # 0x55
+    '╖': CB.LINES_LEFT_1 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_0 | CB.LINES_UP_0,  # 0x60
+    '╢': CB.LINES_LEFT_1 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_0 | CB.LINES_UP_2,  # 0x62
+    '╥': CB.LINES_LEFT_1 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_1 | CB.LINES_UP_0,  # 0x64
+    '╫': CB.LINES_LEFT_1 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_1 | CB.LINES_UP_2,  # 0x66
+    '╛': CB.LINES_LEFT_2 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_0 | CB.LINES_UP_1,  # 0x81
+    '╝': CB.LINES_LEFT_2 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_0 | CB.LINES_UP_2,  # 0x82
+    '═': CB.LINES_LEFT_2 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_2 | CB.LINES_UP_0,  # 0x88
+    '╧': CB.LINES_LEFT_2 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_2 | CB.LINES_UP_1,  # 0x89
+    '╩': CB.LINES_LEFT_2 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_2 | CB.LINES_UP_2,  # 0x8A
+    '╕': CB.LINES_LEFT_2 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_0 | CB.LINES_UP_0,  # 0x90
+    '╡': CB.LINES_LEFT_2 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_0 | CB.LINES_UP_1,  # 0x91
+    '╤': CB.LINES_LEFT_2 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_2 | CB.LINES_UP_0,  # 0x98
+    '╪': CB.LINES_LEFT_2 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_2 | CB.LINES_UP_1,  # 0x99
+    '╗': CB.LINES_LEFT_2 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_0 | CB.LINES_UP_0,  # 0xA0
+    '╣': CB.LINES_LEFT_2 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_0 | CB.LINES_UP_2,  # 0xA2
+    '╦': CB.LINES_LEFT_2 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_2 | CB.LINES_UP_0,  # 0xA8
+    '╬': CB.LINES_LEFT_2 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_2 | CB.LINES_UP_2,  # 0xAA
+}
+
+_name = 'Unicode [Round Corners]'
+_temp_array = _generated_lookup_array(_temp_dict)
+_g_character_sets.append(CharacterSet(_name, _temp_dict, _temp_array))
+
+# -------------------------------------------------------------------------
+# Unicode (2 Dashes)
+# -------------------------------------------------------------------------
+_temp_dict = {
+    '└': CB.LINES_LEFT_0 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_1,  # 0x05
+    '╙': CB.LINES_LEFT_0 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_2,  # 0x06
+    '╘': CB.LINES_LEFT_0 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_2 | CB.LINES_UP_1,  # 0x09
+    '╚': CB.LINES_LEFT_0 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_2 | CB.LINES_UP_2,  # 0x0A
+    '╎': CB.LINES_LEFT_0 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_0 | CB.LINES_UP_1,  # 0x11
+    '┌': CB.LINES_LEFT_0 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_1 | CB.LINES_UP_0,  # 0x14
+    '├': CB.LINES_LEFT_0 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_1 | CB.LINES_UP_1,  # 0x15
+    '╒': CB.LINES_LEFT_0 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_2 | CB.LINES_UP_0,  # 0x18
+    '╞': CB.LINES_LEFT_0 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_2 | CB.LINES_UP_1,  # 0x19
+    '║': CB.LINES_LEFT_0 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_0 | CB.LINES_UP_2,  # 0x22
+    '╓': CB.LINES_LEFT_0 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_1 | CB.LINES_UP_0,  # 0x24
+    '╟': CB.LINES_LEFT_0 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_1 | CB.LINES_UP_2,  # 0x26
+    '╔': CB.LINES_LEFT_0 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_2 | CB.LINES_UP_0,  # 0x28
+    '╠': CB.LINES_LEFT_0 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_2 | CB.LINES_UP_2,  # 0x2A
+    '┘': CB.LINES_LEFT_1 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_0 | CB.LINES_UP_1,  # 0x41
+    '╜': CB.LINES_LEFT_1 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_0 | CB.LINES_UP_2,  # 0x42
+    '╌': CB.LINES_LEFT_1 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_0,  # 0x44
+    '┴': CB.LINES_LEFT_1 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_1,  # 0x45
+    '╨': CB.LINES_LEFT_1 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_2,  # 0x46
+    '┐': CB.LINES_LEFT_1 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_0 | CB.LINES_UP_0,  # 0x50
+    '┤': CB.LINES_LEFT_1 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_0 | CB.LINES_UP_1,  # 0x51
+    '┬': CB.LINES_LEFT_1 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_1 | CB.LINES_UP_0,  # 0x54
+    '┼': CB.LINES_LEFT_1 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_1 | CB.LINES_UP_1,  # 0x55
+    '╖': CB.LINES_LEFT_1 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_0 | CB.LINES_UP_0,  # 0x60
+    '╢': CB.LINES_LEFT_1 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_0 | CB.LINES_UP_2,  # 0x62
+    '╥': CB.LINES_LEFT_1 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_1 | CB.LINES_UP_0,  # 0x64
+    '╫': CB.LINES_LEFT_1 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_1 | CB.LINES_UP_2,  # 0x66
+    '╛': CB.LINES_LEFT_2 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_0 | CB.LINES_UP_1,  # 0x81
+    '╝': CB.LINES_LEFT_2 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_0 | CB.LINES_UP_2,  # 0x82
+    '═': CB.LINES_LEFT_2 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_2 | CB.LINES_UP_0,  # 0x88
+    '╧': CB.LINES_LEFT_2 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_2 | CB.LINES_UP_1,  # 0x89
+    '╩': CB.LINES_LEFT_2 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_2 | CB.LINES_UP_2,  # 0x8A
+    '╕': CB.LINES_LEFT_2 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_0 | CB.LINES_UP_0,  # 0x90
+    '╡': CB.LINES_LEFT_2 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_0 | CB.LINES_UP_1,  # 0x91
+    '╤': CB.LINES_LEFT_2 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_2 | CB.LINES_UP_0,  # 0x98
+    '╪': CB.LINES_LEFT_2 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_2 | CB.LINES_UP_1,  # 0x99
+    '╗': CB.LINES_LEFT_2 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_0 | CB.LINES_UP_0,  # 0xA0
+    '╣': CB.LINES_LEFT_2 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_0 | CB.LINES_UP_2,  # 0xA2
+    '╦': CB.LINES_LEFT_2 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_2 | CB.LINES_UP_0,  # 0xA8
+    '╬': CB.LINES_LEFT_2 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_2 | CB.LINES_UP_2,  # 0xAA
+}
+
+_name = 'Unicode [2 Dashes]'
+_temp_array = _generated_lookup_array(_temp_dict)
+_g_character_sets.append(CharacterSet(_name, _temp_dict, _temp_array))
+
+# -------------------------------------------------------------------------
+# Unicode (3 Dashes)
+# -------------------------------------------------------------------------
+_temp_dict = {
+    '└': CB.LINES_LEFT_0 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_1,  # 0x05
+    '╙': CB.LINES_LEFT_0 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_2,  # 0x06
+    '╘': CB.LINES_LEFT_0 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_2 | CB.LINES_UP_1,  # 0x09
+    '╚': CB.LINES_LEFT_0 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_2 | CB.LINES_UP_2,  # 0x0A
+    '┆': CB.LINES_LEFT_0 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_0 | CB.LINES_UP_1,  # 0x11
+    '┌': CB.LINES_LEFT_0 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_1 | CB.LINES_UP_0,  # 0x14
+    '├': CB.LINES_LEFT_0 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_1 | CB.LINES_UP_1,  # 0x15
+    '╒': CB.LINES_LEFT_0 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_2 | CB.LINES_UP_0,  # 0x18
+    '╞': CB.LINES_LEFT_0 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_2 | CB.LINES_UP_1,  # 0x19
+    '║': CB.LINES_LEFT_0 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_0 | CB.LINES_UP_2,  # 0x22
+    '╓': CB.LINES_LEFT_0 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_1 | CB.LINES_UP_0,  # 0x24
+    '╟': CB.LINES_LEFT_0 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_1 | CB.LINES_UP_2,  # 0x26
+    '╔': CB.LINES_LEFT_0 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_2 | CB.LINES_UP_0,  # 0x28
+    '╠': CB.LINES_LEFT_0 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_2 | CB.LINES_UP_2,  # 0x2A
+    '┘': CB.LINES_LEFT_1 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_0 | CB.LINES_UP_1,  # 0x41
+    '╜': CB.LINES_LEFT_1 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_0 | CB.LINES_UP_2,  # 0x42
+    '┄': CB.LINES_LEFT_1 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_0,  # 0x44
+    '┴': CB.LINES_LEFT_1 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_1,  # 0x45
+    '╨': CB.LINES_LEFT_1 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_2,  # 0x46
+    '┐': CB.LINES_LEFT_1 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_0 | CB.LINES_UP_0,  # 0x50
+    '┤': CB.LINES_LEFT_1 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_0 | CB.LINES_UP_1,  # 0x51
+    '┬': CB.LINES_LEFT_1 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_1 | CB.LINES_UP_0,  # 0x54
+    '┼': CB.LINES_LEFT_1 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_1 | CB.LINES_UP_1,  # 0x55
+    '╖': CB.LINES_LEFT_1 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_0 | CB.LINES_UP_0,  # 0x60
+    '╢': CB.LINES_LEFT_1 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_0 | CB.LINES_UP_2,  # 0x62
+    '╥': CB.LINES_LEFT_1 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_1 | CB.LINES_UP_0,  # 0x64
+    '╫': CB.LINES_LEFT_1 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_1 | CB.LINES_UP_2,  # 0x66
+    '╛': CB.LINES_LEFT_2 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_0 | CB.LINES_UP_1,  # 0x81
+    '╝': CB.LINES_LEFT_2 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_0 | CB.LINES_UP_2,  # 0x82
+    '═': CB.LINES_LEFT_2 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_2 | CB.LINES_UP_0,  # 0x88
+    '╧': CB.LINES_LEFT_2 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_2 | CB.LINES_UP_1,  # 0x89
+    '╩': CB.LINES_LEFT_2 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_2 | CB.LINES_UP_2,  # 0x8A
+    '╕': CB.LINES_LEFT_2 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_0 | CB.LINES_UP_0,  # 0x90
+    '╡': CB.LINES_LEFT_2 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_0 | CB.LINES_UP_1,  # 0x91
+    '╤': CB.LINES_LEFT_2 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_2 | CB.LINES_UP_0,  # 0x98
+    '╪': CB.LINES_LEFT_2 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_2 | CB.LINES_UP_1,  # 0x99
+    '╗': CB.LINES_LEFT_2 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_0 | CB.LINES_UP_0,  # 0xA0
+    '╣': CB.LINES_LEFT_2 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_0 | CB.LINES_UP_2,  # 0xA2
+    '╦': CB.LINES_LEFT_2 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_2 | CB.LINES_UP_0,  # 0xA8
+    '╬': CB.LINES_LEFT_2 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_2 | CB.LINES_UP_2,  # 0xAA
+}
+
+_name = 'Unicode [3 Dashes]'
+_temp_array = _generated_lookup_array(_temp_dict)
+_g_character_sets.append(CharacterSet(_name, _temp_dict, _temp_array))
+
+# -------------------------------------------------------------------------
+# Unicode (4 Dashes)
+# -------------------------------------------------------------------------
+_temp_dict = {
+    '└': CB.LINES_LEFT_0 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_1,  # 0x05
+    '╙': CB.LINES_LEFT_0 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_2,  # 0x06
+    '╘': CB.LINES_LEFT_0 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_2 | CB.LINES_UP_1,  # 0x09
+    '╚': CB.LINES_LEFT_0 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_2 | CB.LINES_UP_2,  # 0x0A
+    '┊': CB.LINES_LEFT_0 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_0 | CB.LINES_UP_1,  # 0x11
+    '┌': CB.LINES_LEFT_0 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_1 | CB.LINES_UP_0,  # 0x14
+    '├': CB.LINES_LEFT_0 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_1 | CB.LINES_UP_1,  # 0x15
+    '╒': CB.LINES_LEFT_0 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_2 | CB.LINES_UP_0,  # 0x18
+    '╞': CB.LINES_LEFT_0 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_2 | CB.LINES_UP_1,  # 0x19
+    '║': CB.LINES_LEFT_0 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_0 | CB.LINES_UP_2,  # 0x22
+    '╓': CB.LINES_LEFT_0 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_1 | CB.LINES_UP_0,  # 0x24
+    '╟': CB.LINES_LEFT_0 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_1 | CB.LINES_UP_2,  # 0x26
+    '╔': CB.LINES_LEFT_0 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_2 | CB.LINES_UP_0,  # 0x28
+    '╠': CB.LINES_LEFT_0 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_2 | CB.LINES_UP_2,  # 0x2A
+    '┘': CB.LINES_LEFT_1 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_0 | CB.LINES_UP_1,  # 0x41
+    '╜': CB.LINES_LEFT_1 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_0 | CB.LINES_UP_2,  # 0x42
+    '┈': CB.LINES_LEFT_1 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_0,  # 0x44
+    '┴': CB.LINES_LEFT_1 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_1,  # 0x45
+    '╨': CB.LINES_LEFT_1 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_2,  # 0x46
+    '┐': CB.LINES_LEFT_1 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_0 | CB.LINES_UP_0,  # 0x50
+    '┤': CB.LINES_LEFT_1 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_0 | CB.LINES_UP_1,  # 0x51
+    '┬': CB.LINES_LEFT_1 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_1 | CB.LINES_UP_0,  # 0x54
+    '┼': CB.LINES_LEFT_1 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_1 | CB.LINES_UP_1,  # 0x55
+    '╖': CB.LINES_LEFT_1 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_0 | CB.LINES_UP_0,  # 0x60
+    '╢': CB.LINES_LEFT_1 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_0 | CB.LINES_UP_2,  # 0x62
+    '╥': CB.LINES_LEFT_1 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_1 | CB.LINES_UP_0,  # 0x64
+    '╫': CB.LINES_LEFT_1 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_1 | CB.LINES_UP_2,  # 0x66
+    '╛': CB.LINES_LEFT_2 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_0 | CB.LINES_UP_1,  # 0x81
+    '╝': CB.LINES_LEFT_2 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_0 | CB.LINES_UP_2,  # 0x82
+    '═': CB.LINES_LEFT_2 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_2 | CB.LINES_UP_0,  # 0x88
+    '╧': CB.LINES_LEFT_2 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_2 | CB.LINES_UP_1,  # 0x89
+    '╩': CB.LINES_LEFT_2 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_2 | CB.LINES_UP_2,  # 0x8A
+    '╕': CB.LINES_LEFT_2 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_0 | CB.LINES_UP_0,  # 0x90
+    '╡': CB.LINES_LEFT_2 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_0 | CB.LINES_UP_1,  # 0x91
+    '╤': CB.LINES_LEFT_2 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_2 | CB.LINES_UP_0,  # 0x98
+    '╪': CB.LINES_LEFT_2 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_2 | CB.LINES_UP_1,  # 0x99
+    '╗': CB.LINES_LEFT_2 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_0 | CB.LINES_UP_0,  # 0xA0
+    '╣': CB.LINES_LEFT_2 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_0 | CB.LINES_UP_2,  # 0xA2
+    '╦': CB.LINES_LEFT_2 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_2 | CB.LINES_UP_0,  # 0xA8
+    '╬': CB.LINES_LEFT_2 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_2 | CB.LINES_UP_2,  # 0xAA
+}
+
+_name = 'Unicode [4 Dashes]'
+_temp_array = _generated_lookup_array(_temp_dict)
+_g_character_sets.append(CharacterSet(_name, _temp_dict, _temp_array))
+
+# -------------------------------------------------------------------------
+# Unicode (Shadow) and ASCII
+# -------------------------------------------------------------------------
 gdict_ascii_classification_by_char = {
     '|': CB.LINES_LEFT_0 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_0 | CB.LINES_UP_1,  # 0x11
     '-': CB.LINES_LEFT_1 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_0,  # 0x44
@@ -233,14 +509,11 @@ gdict_ascii_classification_by_char = {
     '#': CB.LINES_LEFT_2 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_2 | CB.LINES_UP_2,  # 0xAA
 }
 
-# -------------------------------------------------------------------------
-# The following used the above Unicode classification dictionary
-# to generate this ASCII lookup array for manual editing.  The
-# finished array is here.  It is indexed by classification as is
-# ``glst_unicode_box_char_lookup_by_classification`` which is
-# populated programmatically below.  The result looks a great deal
-# like this lookup array.
-# -------------------------------------------------------------------------
+# The ASCII look-up array is an exception that needed to be created manually.
+#
+# The following used the above Unicode classification dictionary to generate
+# this ASCII lookup array for manual editing.  The finished array is here.
+# It is indexed by classification like the other character look-up arrays.
 glst_ascii_box_char_lookup_by_classification = [
     _nc,  # 0x00
     '|',  # 0x01 = CB.LINES_LEFT_0 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_0 | CB.LINES_UP_1
@@ -500,13 +773,32 @@ glst_ascii_box_char_lookup_by_classification = [
     _nc,  # 0xFF
 ]
 
-# Pre-allocate array with 256 elements with _nc (middle dot U+00B7) as placeholder.
-glst_unicode_box_char_lookup_by_classification = [_nc] * 256
+# -------------------------------------------------------------------------
+# Unicode (Shadow)
+#
+# This is really just a placeholder.  Drawing logic does not use
+# this except to identify the current character set as being the
+# UNICODE_SHADOW set.
+# -------------------------------------------------------------------------
+_name = 'Unicode [Shadow]'
+_temp_dict = gdict_ascii_classification_by_char             # Dummy list (safety for some API functions)
+_temp_array = glst_ascii_box_char_lookup_by_classification  # Dummy list (safety for some API functions)
+_g_character_sets.append(CharacterSet(_name, _temp_dict, _temp_array))
 
-# Populate Unicode look-up array using `gdict_unicode_classification_by_char`.
-for c in gdict_unicode_classification_by_char:
-    classif_idx = gdict_unicode_classification_by_char[c]
-    glst_unicode_box_char_lookup_by_classification[classif_idx] = c
+# -------------------------------------------------------------------------
+# ASCII
+# -------------------------------------------------------------------------
+_name = 'ASCII'
+_temp_dict = gdict_ascii_classification_by_char
+_temp_array = glst_ascii_box_char_lookup_by_classification
+_g_character_sets.append(CharacterSet(_name, _temp_dict, _temp_array))
+
+# Clean up.
+del _name, _temp_array, _temp_dict
+
+# Sanity Check
+assert len(_g_character_sets) == CharacterSetID.LAST + 1, \
+        'CharacterSet enumeration must reflect contents of `_g_character_sets`.'
 
 up_bit_shift_count = Direction.UP    << 1
 rt_bit_shift_count = Direction.RIGHT << 1
@@ -518,30 +810,105 @@ lf_bit_shift_count = Direction.LEFT  << 1
 # Data
 # =========================================================================
 
-gdict_classification_by_char = gdict_ascii_classification_by_char
-glst_box_char_lookup_by_classification = glst_ascii_box_char_lookup_by_classification
+# These two define the current character set.
+# Clients of this module use these two properties.
+# They get their initial assignments below with the call to
+# `advance_to_next_character_set()`.
+gdict_classification_by_char = None
+glst_box_char_lookup_by_classification = None
+
+# This index allows `advance_to_next_character_set()` to know where to go next.
+_gi_current_char_set_id: CharacterSetID = _cfg_initial_character_set_id
 
 
-def is_ascii_mode() -> bool:
-    return ((gdict_classification_by_char == gdict_ascii_classification_by_char))
-
-
-def set_ascii_mode(debugging: bool):
-    global gdict_classification_by_char
-    global glst_box_char_lookup_by_classification
-    gdict_classification_by_char = gdict_ascii_classification_by_char
-    glst_box_char_lookup_by_classification = glst_ascii_box_char_lookup_by_classification
+def set_current_character_set(id: CharacterSetID, debugging: bool):
+    """ Set current character set using `id`. """
+    global _gi_current_char_set_id
+    _gi_current_char_set_id = id
+    debugging = debugging or is_debugging(DebugBit.CHARACTER_SET)
     if debugging:
-        print('  Active Character Set:  ASCII.')
+        name = current_character_set_name()
+        print('In set_current_character_set()')
+        print(f'  New character set: {id} ({name})')
 
 
-def set_unicode_mode(debugging: bool):
-    global gdict_classification_by_char
-    global glst_box_char_lookup_by_classification
-    gdict_classification_by_char = gdict_unicode_classification_by_char
-    glst_box_char_lookup_by_classification = glst_unicode_box_char_lookup_by_classification
-    if debugging:
-        print('  Active Character Set:  Unicode.')
+def is_character_set(id: CharacterSetID):
+    """ Does `id` match ID of current character set? """
+    return ((id == _gi_current_char_set_id))
+
+
+def is_shadow_character_set():
+    """ Is current character set the shadow set? """
+    return ((_gi_current_char_set_id == CharacterSetID.UNICODE_SHADOW))
+
+
+def current_character_set_id():
+    """ Current character set ID """
+    return _gi_current_char_set_id
+
+
+def current_character_set():
+    """ Current character set """
+    return _g_character_sets[_gi_current_char_set_id]
+
+
+def current_character_set_name():
+    """ Current character lookup array """
+    char_set = _g_character_sets[_gi_current_char_set_id]
+    return char_set.name
+
+
+def current_classification_dictionary():
+    """ Current classification dictionary """
+    char_set = _g_character_sets[_gi_current_char_set_id]
+    return char_set.classification_dict
+
+
+def current_lookup_array():
+    """ Current character lookup array """
+    char_set = _g_character_sets[_gi_current_char_set_id]
+    return char_set.lookup_array
+
+
+def character_by_classification(classification: int) -> str:
+    """ Current character lookup array """
+    assert 0 <= classification <= 255, '`classification` must be in range [0-255].'
+    char_set = _g_character_sets[_gi_current_char_set_id]
+    return char_set.lookup_array[classification]
+
+
+def character_by_line_counts(up: int, rt: int, dn: int, lf: int) -> str:
+    """ Current character lookup array """
+    assert 0 <= up <= 2, '`up` must be in range [0-2].'
+    assert 0 <= rt <= 2, '`rt` must be in range [0-2].'
+    assert 0 <= dn <= 2, '`dn` must be in range [0-2].'
+    assert 0 <= lf <= 2, '`lf` must be in range [0-2].'
+
+    up_bit_field = up << up_bit_shift_count
+    rt_bit_field = rt << rt_bit_shift_count
+    dn_bit_field = dn << dn_bit_shift_count
+    lf_bit_field = lf << lf_bit_shift_count
+    classification = up_bit_field | rt_bit_field | dn_bit_field | lf_bit_field
+
+    char_set = _g_character_sets[_gi_current_char_set_id]
+    print(f'>>>>>>>> charset name = [{current_character_set_name()}]')
+    return char_set.lookup_array[classification]
+
+def advance_to_next_character_set(debugging: bool):
+    global _gi_current_char_set_id
+    _gi_current_char_set_id += 1
+    if _gi_current_char_set_id > CharacterSetID.LAST:
+        _gi_current_char_set_id = 0
+    set_current_character_set(_gi_current_char_set_id, debugging)
+
+
+# Set initial character set.  This is simply to establish a consistent
+# state.  Once the Package is fully loaded, `core.on_package_loaded()`
+# gets called, reads the Package settings, and then calls this function
+# again setting the character set according to the user-configured
+# ``default_character_set_id`` setting.
+debugging = is_debugging(DebugBit.CHARACTER_SET)
+set_current_character_set(_cfg_initial_character_set_id, debugging)
 
 
 # =========================================================================
@@ -554,18 +921,16 @@ def line_count(c: str, side: Direction, debugging: bool) -> int:
 
     Only box-drawing characters can have 1 or 2 lines, and most box-drawing
     characters have 0 lines coming out of at least one of their sides.
-
     All other characters will be considered to have 0 lines on all sides
-    because they are not found in global ``gdict_classification_by_char``.
+    because they are not found in the current classification dictionary.
 
-    ``gdict_classification_by_char`` references a dictionary with the box-drawing
-    characters as keys.  Which dictionary it references is starts out (each
-    Sublime Text session) matching the "default_character_set" Package setting:
-    ASCII or Unicode.
+    The current classification dictionary references a dictionary with the
+    box-drawing characters as keys.  Which dictionary it references starts
+    out (each Sublime Text session) with a user-configured character set
+    index controlled by the `default_character_set` setting.
 
-    The integer values contain bit fields that tell us how many lines come out
-    of each side of that box-drawing character.  Here is how the bits are
-    arranged:
+    The integer values contain 4 bit fields that tell us how many lines
+    come out of each side of that box-drawing character:
 
     .. code-block:: text
 
@@ -581,19 +946,19 @@ def line_count(c: str, side: Direction, debugging: bool) -> int:
             b = bottom side
             L = left side
 
-    The unsigned integer in each bit field contains:
+    The unsigned integer in each bit field provides the count of lines on
+    that side:
 
     - 0 = 0b00 = no lines
     - 1 = 0b01 = 1 line
     - 2 = 0b10 = 2 lines
 
-    The OR-ed combined value will index into a character-lookup array for fast
-    character selection by combining bits from this classification list.
+    The OR-ed combined values of the 4 bit fields index into a
+    character-lookup array for fast character look-up.
 
     Note that the ``Direction`` IntEnum class is carefully ordered to so
-    that the ``side`` can be used to compute the number of bits to
-    right-shift this integer value to place the indicated field into the
-    least-significant 2 bits.
+    that the ``side`` can be used to compute the number of bits each
+    field is shifted.
 
         UP    = 0   # 0 << 1 == 0 == number of bits to shift
         RIGHT = 1   # 1 << 1 == 2 == number of bits to shift
@@ -607,14 +972,15 @@ def line_count(c: str, side: Direction, debugging: bool) -> int:
     if debugging:
         print('  In line_count()...')
     result = 0
+    curr_classification_dict = current_classification_dictionary()
 
-    if c in gdict_classification_by_char:
-        classification = gdict_classification_by_char[c]
-        right_shift_bit_count = side << 1
-        result = (classification >> right_shift_bit_count) & 0x03
+    if c in curr_classification_dict:
+        classification = curr_classification_dict[c]
+        shift_bit_count = side << 1
+        result = (classification >> shift_bit_count) & 0x03
         if debugging:
             print(f'    classification=0x{classification:02X}')
-            print(f'    {right_shift_bit_count=}')
+            print(f'    {shift_bit_count=}')
 
     if debugging:
         print(f'    {result=}')
@@ -624,7 +990,8 @@ def line_count(c: str, side: Direction, debugging: bool) -> int:
 
 def adjusted_classification(c: str, side: Direction, new_line_count: int, debugging: bool):
     """ Adjusted classification to connect on ``side`` with ``new_line_count``. """
-    classification = gdict_classification_by_char[c]
+    curr_classification_dict = current_classification_dictionary()
+    result = curr_classification_dict[c]
     shift_bit_count = side << 1
 
     # Remove any old bits.
@@ -634,20 +1001,20 @@ def adjusted_classification(c: str, side: Direction, new_line_count: int, debugg
         print(f'  {c=}')
         print(f'  {side=}')
         print(f'  {new_line_count=}')
-        print(f'  Classification     : 0x{classification:02X}')
+        print(f'  Classification     : 0x{result:02X}')
         print(f'  {shift_bit_count=}')
         print(f'  Mask-out bits      : 0x{mask_out_bits_mask:02X}')
-    classification &= ~mask_out_bits_mask
+    result &= ~mask_out_bits_mask
     if debugging:
-        print(f'   Bits masked out   : 0x{classification:02X}')
+        print(f'   Bits masked out   : 0x{result:02X}')
 
     # Add new bits.
     new_bit_mask = new_line_count << shift_bit_count
-    classification |= new_bit_mask
+    result |= new_bit_mask
     if debugging:
         print(f'   New bit field     : 0x{new_bit_mask:02X}')
-        print(f'   Adj classification: 0x{classification:02X}')
+        print(f'   Adj classification: 0x{result:02X}')
 
-    return classification
+    return result
 
 

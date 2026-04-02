@@ -13,29 +13,27 @@ to draw lines and boxes in their text like these:
 ┌─┬┐  ╔═╦╗  ╓─╥╖  ╒═╤╕
 │ ││  ║ ║║  ║ ║║  │ ││
 ├─┼┤  ╠═╬╣  ╟─╫╢  ╞═╪╡
-└─┴┘  ╚═╩╝  ╙─╨╜  ╘═╧╛┌─────────────┐
-┌───────────────────┐ │    ╔═══════╕│            ┌───┐
-│  ╔═══╗ Some Text  │ │╓───╫┐ ╔══╗ ││ ┌──┬───┐  ┌┴┬┐ │
-│  ╚═╦═╝ in the box │ │║   ║│ ║  ║ ││ ╞══╡   │  ├─┼┼─┘
-╞═╤══╩══╤═══════════╡ │║   ║│ ║  ║ ││ │  │   │  │ ││
-│ ├──┬──┤           │ │╙───╫┘ ╚══╝ ││ └──┴───┘  └─┴┘
-│ └──┴──┘           │ └────╫───────┼┘
-└───────────────────┘      ╙───────┘
+└─┴┘  ╚═╩╝  ╙─╨╜  ╘═╧╛ ┌─────────────┐
+╭───────────────────╮  │    ╔═══════╕│            ┌───┐
+│  ╔═══╗ Some Text  │  │╓───╫┐ ╔══╗ ││ ┌──┬───┐  ┌┴┬┐ │
+│  ╚═╦═╝ in the box │░ │║   ║│ ║  ║ ││ ╞══╡   │  ├─┼┼─┘
+╞═╤══╩══╤═══════════╡░ │║   ║│ ║  ║ ││ │  │   │  │ ││
+│ ├──┬──┤           │░ │╙───╫┘ ╚══╝ ││ └──┴───┘  └─┴┘
+│ └──┴──┘           │░ └────╫───────┼┘
+╰───────────────────╯░      ╙───────┘
+  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒░
 
-+-------------+------------+------------------------------------------------+
-| XML Element | Completion | Description                                    |
-|             | Equivalent |                                                |
-+=============+============+================================================+
-| scope       | scope      | optional, selector syntax; see :ref:`Selector` |
-+-------------+------------+------------------------------------------------+
-| tabTrigger  | trigger    | optional, text that begins snippet             |
-+-------------+------------+------------------------------------------------+
-| content     | contents   | required, a single ``<![CDATA[...]]>`` tag     |
-|             |            | with "smart template" syntax detailed below    |
-+-------------+------------+------------------------------------------------+
-| description | annotation | optional, contains a short annotation shown to |
-|             |            | right of completions popup showing what it is  |
-+-------------+------------+------------------------------------------------+
++------------+----------------+--------------+
+| Column One | Column Two     | Column Three |
++============+================+==============+
+|            |                |              |
++------------+----------------+--------------+
+|            |                |              |
++------------+----------------+--------------+
+|            |                |              |
++------------+----------------+--------------+
+|            |                |              |
++------------+----------------+--------------+
 
 See ``README.md`` for more details.
 
@@ -46,20 +44,20 @@ States
 This Package has several states that can change during a Sublime Text session:
 
 - Is Box Drawing enabled?  This state is tracked per View.
-  ``Tools > Box Drawing Enabled`` shows the state for the current View with a
-  checkmark.  At the beginning of each Sublime Text session, this state is
+  ``Tools > Box Drawing > Enabled`` shows the state for the current View with
+  a checkmark.  At the beginning of each Sublime Text session, this state is
   DISABLED for all Views.
 
-- Which Box Drawing character set is in use:  ASCII or Unicode?
+- Which Box Drawing character set is in use?
   This state is global (remembered within the loaded Package) and applies to
-  all Views at the same time.  Since this can be conveniently switched via a
+  all Views at the same time.  Since this can be conveniently changed via a
   single keystroke, there is no use case that justifies keeping it per View.
-  ``Tools > Toggle Box Drawing Character Set (ASCII)`` shows this state
-  with the value in parentheses.  At the beginning of each Sublime Text session,
-  this state is set to the configured ``default_character_set``.  The memory
-  of it is kept within the ``character_set.py`` module and is accessed by
-  ``character_set.is_ascii_mode()``, which returns a Boolean value and is used
-  throughout the Package to determine which character set is current.
+  ``Tools > Box Drawing > Change Character Set (ASCII)`` shows this state
+  with the name of the current character set in parentheses.  At the beginning
+  of each Sublime Text session, this state is set to the character set
+  indicated by the user-configurable ``default_character_set_id`` setting.
+  The memory of it is kept within the ``character_set.py`` module and is
+  accessed via its API.
 
 - Last drawing direction used:  up, right, down, or left?
   This state is tracked per View, and by design is only visible
@@ -128,7 +126,7 @@ _cfg_pkg_settings_file                  = package_name + '.sublime-settings'
 _cfg_on_settings_chgd_listener_id       = '_bd_settings_changed_tag'
 
 # Package Settings Names (most are used multiple times throughout this Plugin)
-_cfg_stg_name__default_character_set    = 'default_character_set'
+_cfg_stg_name__default_character_set_id = 'default_character_set_id'
 _cfg_stg_name__debugging                = 'debugging'
 
 # View settings keys (accessed by multiple external modules).
@@ -161,7 +159,7 @@ def bd_setting(setting_name: str):
 # =========================================================================
 
 bd_setting.default = {
-    _cfg_stg_name__default_character_set: "ASCII",
+    _cfg_stg_name__default_character_set_id: character_set.CharacterSetID.ASCII,
     _cfg_stg_name__debugging: False
 }
 
@@ -257,7 +255,8 @@ def set_state_off(view: View):
         view_settings = view.settings()
         view_settings.set(cfg_view_box_drawing_state_key, State.OFF)
         view_settings.set(cfg_view_box_drawing_last_direction_key, character_set.Direction.NONE)
-        sublime.status_message('Box Drawing OFF')
+        name = character_set.current_character_set_name()
+        sublime.status_message(f'Box Drawing OFF ({name})')
         if debugging:
             print(f'  {is_state_active(view)=}')
     else:
@@ -277,7 +276,8 @@ def set_state_on(view: View):
     if view.sheet_id() != 0:
         view_settings = view.settings()
         view_settings.set(cfg_view_box_drawing_state_key, State.ON)
-        sublime.status_message('Box Drawing ON')
+        name = character_set.current_character_set_name()
+        sublime.status_message(f'Box Drawing ON ({name})')
         if debugging:
             print(f'  {is_state_active(view)=}')
     else:
@@ -327,7 +327,7 @@ def on_plugin_loaded():
     _on_pkg_settings_chgd()
     debugging = is_debugging(DebugBit.LOAD_UNLOAD)
     if debugging:
-        print(f'In on_plugin_loaded()')
+        print(f'In {__package__}.core.on_plugin_loaded()')
 
     # Establish event hook for "settings changed" event. This allows the user
     # to change the lists that partake in the content of the RegEx that detects
@@ -337,11 +337,8 @@ def on_plugin_loaded():
     bd_setting.obj.add_on_change(_cfg_on_settings_chgd_listener_id, _on_pkg_settings_chgd)
 
     # Set initial box-drawing character set.
-    is_ascii = ((bd_setting(_cfg_stg_name__default_character_set) == 'ASCII'))
-    if is_ascii:
-        character_set.set_ascii_mode(debugging)
-    else:
-        character_set.set_unicode_mode(debugging)
+    def_char_set_id = bd_setting(_cfg_stg_name__default_character_set_id)
+    character_set.set_current_character_set(def_char_set_id, debugging)
 
     # Report.
     if debugging:
