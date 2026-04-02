@@ -120,18 +120,18 @@ from . import character_set
 # =========================================================================
 
 # Use name of parent directory as `package_name`.
-_cfg_pkg_settings_file                  = package_name + '.sublime-settings'
+_cfg_pkg_settings_file                   = package_name + '.sublime-settings'
 
 # Track on-settings-changed listener.
-_cfg_on_settings_chgd_listener_id       = '_bd_settings_changed_tag'
+_cfg_on_settings_chgd_listener_id        = '_bd_settings_changed_tag'
 
 # Package Settings Names (most are used multiple times throughout this Plugin)
-_cfg_stg_name__default_character_set_id = 'default_character_set_id'
-_cfg_stg_name__debugging                = 'debugging'
+_cfg_stg_name__default_character_set_id  = 'default_character_set_id'
+_cfg_stg_name__debugging                 = 'debugging'
 
 # View settings keys (accessed by multiple external modules).
-cfg_view_box_drawing_state_key          = '_box_drawing_state'
-cfg_view_box_drawing_last_direction_key = '_box_drawing_last_direction'
+_cfg_view_box_drawing_state_key          = '_box_drawing_state'
+_cfg_view_box_drawing_last_direction_key = '_box_drawing_last_direction'
 
 
 # =========================================================================
@@ -189,8 +189,7 @@ def ok_to_do_box_drawing(view: sublime.View, debugging: bool) -> bool:
     if view.sheet_id() != 0:
         live_sel_list = view.sel()
         sel_rgn = live_sel_list[0]
-        view_settings = view.settings()
-        drawing_state = view_settings.get(cfg_view_box_drawing_state_key)
+        state = drawing_state(view)
 
         # ---------------------------------------------------------------------
         # - View is attached to a Sheet, not a Panel or Overlay.
@@ -199,13 +198,13 @@ def ok_to_do_box_drawing(view: sublime.View, debugging: bool) -> bool:
         # - No text selected?
         # ---------------------------------------------------------------------
         result = ((
-                    (drawing_state == State.ON)
+                    (state == State.ON)
                 and (len(live_sel_list) == 1)
                 and (sel_rgn.b - sel_rgn.a == 0)
                 ))
 
         if debugging:
-            print(f'  {drawing_state=}')
+            print(f'  {state=}')
             print(f'  {len(live_sel_list)=}')
             print(f'  {sel_rgn=}')
 
@@ -223,6 +222,21 @@ def timestamp() -> str:
 
 
 # =========================================================================
+# Last Direction (per View)
+# =========================================================================
+
+def set_last_direction(view: View, direction: character_set.Direction):
+    view_settings = view.settings()
+    view_settings.set(_cfg_view_box_drawing_last_direction_key, direction)
+
+
+def last_direction(view: View) -> character_set.Direction:
+    view_settings = view.settings()
+    result = view_settings.get(_cfg_view_box_drawing_last_direction_key)
+    return result
+
+
+# =========================================================================
 # State Utilities
 #
 # State (OFF or ON)---per View
@@ -236,10 +250,19 @@ def timestamp() -> str:
 # the Commands.
 # =========================================================================
 
-def is_state_active(view: View) -> bool:
+def set_drawing_state(view: View, state: State):
     view_settings = view.settings()
-    drawing_state = view_settings.get(cfg_view_box_drawing_state_key)
-    return ((drawing_state == State.ON))
+    view_settings.set(_cfg_view_box_drawing_state_key, state)
+
+
+def drawing_state(view: View) -> character_set.Direction:
+    view_settings = view.settings()
+    result = view_settings.get(_cfg_view_box_drawing_state_key)
+    return result
+
+
+def is_state_active(view: View) -> bool:
+    return ((drawing_state(view) == State.ON))
 
 
 def set_state_off(view: View):
@@ -252,9 +275,8 @@ def set_state_off(view: View):
         print('In set_state_on()...')
 
     if view.sheet_id() != 0:
-        view_settings = view.settings()
-        view_settings.set(cfg_view_box_drawing_state_key, State.OFF)
-        view_settings.set(cfg_view_box_drawing_last_direction_key, character_set.Direction.NONE)
+        set_drawing_state(view, State.OFF)
+        set_last_direction(character_set.Direction.NONE)
         name = character_set.current_character_set_name()
         sublime.status_message(f'Box Drawing OFF ({name})')
         if debugging:
@@ -274,8 +296,7 @@ def set_state_on(view: View):
         print('In set_state_on()...')
 
     if view.sheet_id() != 0:
-        view_settings = view.settings()
-        view_settings.set(cfg_view_box_drawing_state_key, State.ON)
+        set_drawing_state(view, State.ON)
         name = character_set.current_character_set_name()
         sublime.status_message(f'Box Drawing ON ({name})')
         if debugging:

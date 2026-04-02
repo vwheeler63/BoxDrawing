@@ -6,11 +6,11 @@ This logic pertains to box-character drawing logic, and its ability to become
 "attached" to different character sets, namely:
 
 - ASCII
-- Unicode (Square Corners)
-- Unicode (Round Corners)
-- Unicode (2 Dashes)
-- Unicode (3 Dashes)
-- Unicode (4 Dashes)
+- Unicode [Square Corners]
+- Unicode [Round Corners]
+- Unicode [2 Dashes]
+- Unicode [3 Dashes]
+- Unicode [4 Dashes]
 - Shadow Characters
 
 By design, this module knows nothing about Sublime Text, Views, View settings, etc..

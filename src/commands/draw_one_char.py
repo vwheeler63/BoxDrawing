@@ -311,10 +311,21 @@ def _compute_and_place_drawing_char(
         else:  # new_line_count == 0:
             c = '▓'
 
-        # -----------------------------------------------------------------
-        # Replace `cur_char` with computed character.
-        # -----------------------------------------------------------------
         _insert_or_replace(view, edit, c, row, col, debugging)
+        return
+
+    # new_line_count == 0 now means ERASE.
+    #     write SPACE at current location
+    #     move in `direction`
+    #     last_direction = Direction.NONE
+    if new_line_count == 0:
+        # Erase.
+        if debugging:
+            print('Erase...')
+
+        c = ' '
+        _insert_or_replace(view, edit, c, row, col, debugging)
+        core.set_last_direction(view, Direction.NONE)
         return
 
     # ---------------------------------------------------------------------
@@ -407,8 +418,7 @@ def _compute_and_place_drawing_char(
             # would arrive here 2 times in a row and would cause certain
             # box-drawing characters to be difficult to draw, requiring
             # extra keystrokes and user frustration.
-            view_settings = view.settings()
-            view_settings.set(core.cfg_view_box_drawing_last_direction_key, Direction.NONE)
+            core.set_last_direction(view, Direction.NONE)
             if debugging:
                 print('  NOT influencing character with direction in order to finish a box.')
                 print(f'    Reason 1:  {same_direction=} and {zero_line_count=}.')
@@ -530,9 +540,8 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
         # Establish multi-module state values in View Settings.
         # Simultaneously force Box-Drawing ON/OFF and Last Direction
         # to NOT be remembered across Sublime Text sessions.
-        view_settings = view.settings()
-        view_settings.set(core.cfg_view_box_drawing_state_key, State.OFF)
-        view_settings.set(core.cfg_view_box_drawing_last_direction_key, Direction.NONE)
+        core.set_drawing_state(view, State.OFF)
+        core.set_last_direction(view, Direction.NONE)
 
     def is_enabled(self) -> bool:
         """
@@ -666,95 +675,61 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
 
         view = self.view
         view_settings = view.settings()
-        view_settings.get(core.cfg_view_box_drawing_state_key)
         live_sel_list = view.sel()
         src_caret_rgn = live_sel_list[0]
         src_char_pt   = src_caret_rgn.b
         src_char_rgn  = Region(src_char_pt, src_char_pt + 1)
         row, col      = view.rowcol(src_char_pt)
 
-        # if line_count == 0:  # erase:
-        #     write SPACE at current location
-        #     move in `direction`
-        #     last_direction = Direction.NONE
-        if line_count == 0:
-            # Erase.
-            if debugging:
-                print('Erase...')
-            dest_char_rgn = Region(src_char_pt, src_char_pt + 1)
-            cur_char = view.substr(dest_char_rgn)
-            last_pt = view.size()
-            at_eof = ((src_char_pt == last_pt))
-            c = ' '
-
-            # Insert if at EOL or EOF, replace otherwise.
-            if cur_char == '\n' or at_eof:
-                if debugging:
-                    print(f'  Inserting {repr(c)}.')
-                view.insert(edit, src_char_pt, c)
-                # This moved the caret, so move it back to where it was.
-                sel_list = view.sel()
-                sel_list.clear()
-                sel_list.add(src_char_pt)
+        # Draw something.
+        if debugging:
+            if line_count == 0 or line_count > 1:
+                plural_suffix = 's'
             else:
-                if debugging:
-                    print(f'  Replacing {repr(cur_char)} with {repr(c)}.')
-                view.replace(edit, dest_char_rgn, c)
+                plural_suffix = ''
+            print(f'Draw {line_count} line{plural_suffix}...')
+            print(f'  {row=}')
+            print(f'  {col=}')
+        # if same_direction and `src_char` is a box-drawing character:
+        last_direction = core.last_direction(view)
+        same_direction = ((last_direction == direction))
+        # last_direction = direction of keypress
+        core.set_last_direction(view, direction)
 
-            # Move caret to new location, inserting spaces as needed...
-            _move_caret(view, edit, row, col, direction, debugging)
-            # ...and record last-direction as NONE.
-            view_settings.set(core.cfg_view_box_drawing_last_direction_key, Direction.NONE)
-        else:
-            # Draw something.
+        if same_direction:
             if debugging:
-                if line_count == 0 or line_count > 1:
-                    plural_suffix = 's'
-                else:
-                    plural_suffix = ''
-                print(f'Draw {line_count} line{plural_suffix}...')
-                print(f'  {row=}')
-                print(f'  {col=}')
-            # if same_direction and `src_char` is a box-drawing character:
-            last_direction = view_settings.get(core.cfg_view_box_drawing_last_direction_key)
-            same_direction = ((last_direction == direction))
-            # last_direction = direction of keypress
-            view_settings.set(core.cfg_view_box_drawing_last_direction_key, direction)
+                print('  Same direction.')
+            # move in `direction`:
+            #     - If char does not exist in that direction, add enough spaces to
+            #       end of line so that a space character exists there to support
+            #       a "view.replace()" on that character.
+            #     - Move selection to that character.
+            row, col = _move_caret(view, edit, row, col, direction, debugging)
 
-            if same_direction:
-                if debugging:
-                    print('  Same direction.')
-                # move in `direction`:
-                #     - If char does not exist in that direction, add enough spaces to
-                #       end of line so that a space character exists there to support
-                #       a "view.replace()" on that character.
-                #     - Move selection to that character.
-                row, col = _move_caret(view, edit, row, col, direction, debugging)
-
-            # look_around()  # "involved" means "on side of cur_char".
-            #     - populates:
-            #         - up_char = char above (char above line 0 = None)
-            #         - dn_char = char below
-            #         - lf_char = char on left (char left of col 0 = None)
-            #         - rt_char = char on right
-            #         - up_ln_cnt = 0=not a box char, 1=1 vert line involved, 2=2 vert lines involved.
-            #         - dn_ln_cnt = 0=not a box char, 1=1 vert line involved, 2=2 vert lines involved.
-            #         - lf_ln_cnt = 0=not a box char, 1=1 horiz line involved, 2=2 horiz lines involved.
-            #         - rt_ln_cnt = 0=not a box char, 1=1 horiz line involved, 2=2 horiz lines involved.
-            #
-            # If condition (L.2) above (same direction and disagreeing existing line):
-            #     "back adjust" `src_char`.
-            #
-            # Compute character:
-            #     - use surrounding chars to assemble a classification;
-            #     - use classification to index into the appropriate lookup array.
-            _compute_and_place_drawing_char(
-                    view,
-                    edit,
-                    row,
-                    col,
-                    line_count,
-                    direction,
-                    same_direction,
-                    debugging
-                    )
+        # look_around()  # "involved" means "on side of cur_char".
+        #     - populates:
+        #         - up_char = char above (char above line 0 = None)
+        #         - dn_char = char below
+        #         - lf_char = char on left (char left of col 0 = None)
+        #         - rt_char = char on right
+        #         - up_ln_cnt = 0=not a box char, 1=1 vert line involved, 2=2 vert lines involved.
+        #         - dn_ln_cnt = 0=not a box char, 1=1 vert line involved, 2=2 vert lines involved.
+        #         - lf_ln_cnt = 0=not a box char, 1=1 horiz line involved, 2=2 horiz lines involved.
+        #         - rt_ln_cnt = 0=not a box char, 1=1 horiz line involved, 2=2 horiz lines involved.
+        #
+        # If condition (L.2) above (same direction and disagreeing existing line):
+        #     "back adjust" `src_char`.
+        #
+        # Compute character:
+        #     - use surrounding chars to assemble a classification;
+        #     - use classification to index into the appropriate lookup array.
+        _compute_and_place_drawing_char(
+                view,
+                edit,
+                row,
+                col,
+                line_count,
+                direction,
+                same_direction,
+                debugging
+                )

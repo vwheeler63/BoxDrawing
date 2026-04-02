@@ -38,11 +38,20 @@
 - Arrow-key bindings are temporary, while Box Drawing is turned ON.  You turn it OFF again when you are done.
 - Intuitively overwrites characters where directed as if always in "overwrite" mode.
 - There is no need to add spaces to short lines.  The package extends short lines with spaces automatically when needed, enabling you to conveniently draw wherever you direct it.
-- Initially uses ASCII or Unicode box-drawing character sets, depending on a user-configurable setting.
+- Initially uses ASCII or one of the Unicode box-drawing character sets, depending on a user-configurable setting.  (See below.)
 - Switching between ASCII and Unicode character sets is conveniently accomplished with one keystroke.
 - Box drawing with the ASCII character set is compatible with the requirements of reStructuredText tables.  (The above ASCII-based table is an example.)
-
-
+- The current state of the BoxDrawing Package can be seen:
+  - Tools > BoxDrawing > sub-menu items, and
+  - in the status bar for 4 seconds after each state change.
+- Supports the following "drawing" character sets:
+  - ASCII
+  - Unicode [Square Corners]
+  - Unicode [Round Corners]
+  - Unicode [2 Dashes]
+  - Unicode [3 Dashes]
+  - Unicode [4 Dashes]
+  - Shadow Characters
 
 
 ## Installation
@@ -57,14 +66,16 @@ If you instead clone **BoxDrawing's** repository into your `<data_path>/Packages
 
 1. In any type of document, ensure there is just 1 selection (caret) and that no text is selected.
 
-2. Turn Box-Drawing ON using `[Alt-Keypad /]` or `Tools > Box Drawing Enabled`.  (A temporary Status-Bar message "Box Drawing ON/OFF" shows which mode that View is in.)  The  `Tools > Box Drawing Enabled` menu item always shows the ON/OFF state for the current View by showing a checkmark (**✓**) next to that menu item when Box Drawing is enabled.
+2. Turn Box-Drawing ON using `[Alt-Keypad /]` or `Tools > BoxDrawing > Enabled`.  (A temporary Status-Bar message "Box Drawing ON/OFF (<char_set>)" shows which mode that View is in.)  The  `Tools > BoxDrawing > Enabled` menu item always shows the ON/OFF state for the current View by showing a checkmark (**✓**) next to that menu item when Box Drawing is enabled.
 
 4. Draw using single lines using the arrow keys while the `[Alt]` key is held down.
 
-5. Draw using double lines using the arrow keys while the `[Alt+Shift]` keys are held down.
+5. Draw using double lines using the arrow keys while the `[Alt-Shift]` keys are held down.
 
 6. Erase using the arrow keys while the `[Alt-Shift-Ctrl]` keys are held down.
-7. Toggle between character sets (ASCII/Unicode) using `[Alt-Keypad *]` or `Tools > Toggle Box Drawing Character Set (<current_set>)`.  (A temporary Status-Bar message "Box Drawing:  ASCII/Unicode" shows which character set was switched in.)  The `Tools > Toggle Box Drawing Character Set (<current_set>)` menu item always shows the current character set in parentheses.
+
+7. Toggle between character sets using `[Alt-Keypad *]` or `Tools > BoxDrawing > Change Character Set (<char_set>)`.  (A temporary Status-Bar message "Box Drawing ON/OFF:  <char_set>" shows which character set was switched in.)  The `Tools > BoxDrawing > Change Character Set (<char_set>)` menu item always shows the current character set in parentheses.
+
 8. When you are done drawing, turn Box-Drawing OFF again:  `[Alt-Keypad /]`.
 
 
@@ -74,7 +85,7 @@ If you instead clone **BoxDrawing's** repository into your `<data_path>/Packages
 
 The following setting items can be found and individually overridden via the usual method for Sublime Text Package settings:  `Preferences > Package Settings > BoxDrawing > Settings`.  The comments in the default settings file explain what each one means and lists valid values.  Their default values are shown below.
 
-- `default_character_set_id`: 0 (means ASCII)
+- `default_character_set_id`: 6 (means ASCII)
 - `debugging`: false
 
 
@@ -107,8 +118,8 @@ These key bindings can be customized via:
 
 BoxDrawing adds the following menu items to Sublime Text when installed:
 
-- [**✓**]  Tools > Box Drawing Enabled (checkmark appears when enabled; it's OFF by default)
-- Tools > Toggle Box Drawing Character Set (ASCII/Unicode)  (default character set is configurable)
+- [**✓**]  `Tools > BoxDrawing > Enabled` (checkmark appears when enabled; it's OFF by default)
+- `Tools > Toggle BoxDrawing > Change Character Set (<char set>)``  (default character set is configurable)
 - Preferences > Package Settings > BoxDrawing > README
 - Preferences > Package Settings > BoxDrawing > Settings
 - Preferences > Package Settings > BoxDrawing > Key Bindings
@@ -149,3 +160,14 @@ While Sublime Text supports having multiple carets, **BoxDrawing** will draw box
 - there is one caret, and
 - no text is selected.
 
+Also, while the Shadow character set is selected, there is no ERASE function.  Instead, the modifier key combinations select which shadow character is written to the Buffer:
+
+- [Alt] => lightest shadow character
+- [Alt-Shift] => medium shadow character
+- [Alt-Shift-Ctrl] => darkest shadow character
+
+
+
+## Known Issues
+
+In order to support multiple character sets, a sacrifice had to be made.  While the drawing algorithm is robust, and uses surrounding characters to know what character to place next, if any of the applicable surrounding characters are from another character set and are not found in the current character set, the drawn character will be the "neutral character" used in the look-up arrays:  currently a "middle dot", instead of the line-drawing character you expected.  This may be fixed in a future release.
