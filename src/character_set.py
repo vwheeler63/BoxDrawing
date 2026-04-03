@@ -229,11 +229,10 @@ class CharacterSet:
     - its classification dictionary
     - its lookup array (by classification)
     """
-    __slots__ = ['name', 'classification_dict', 'lookup_array']
+    __slots__ = ['name', 'lookup_array']
 
-    def __init__(self, name, classification_dict, lookup_array):
+    def __init__(self, name, lookup_array):
         self.name                = name
-        self.classification_dict = classification_dict
         self.lookup_array        = lookup_array
 
 
@@ -254,6 +253,7 @@ class CharacterSetID(IntEnum):
     UNICODE_SHADOW         = 5
     ASCII                  = 6
     LAST                   = 6
+    COUNT                  = 7
 
 
 # =========================================================================
@@ -273,12 +273,33 @@ _cfg_initial_character_set_id: CharacterSetID = CharacterSetID.ASCII
 # Constants
 # =========================================================================
 
+# -------------------------------------------------------------------------
+# Combined classification dictionary is used to classify box-drawing
+# characters when drawing is being done among characters from multiple
+# character sets.  This enables the drawing algorithm to discover how many
+# lines come out of the sides of each character, regardless of what
+# character set it is from.  It will be populated as execution progresses
+# below.
+# -------------------------------------------------------------------------
+_combined_classification_dict = {}
+
+# -------------------------------------------------------------------------
+# Master list of character sets, indexed by `_gi_current_char_set_id`
+# -------------------------------------------------------------------------
 _g_character_sets: List[CharacterSet] = []
 
 
 def _generated_lookup_array(classification_dict: Dict[str, int]) -> List[str]:
     """
     Populate square-corner Unicode look-up array using `classification_dict`.
+
+    :param classification_dict:  Dictionary containing classifications with
+                                   box-drawing characters as keys.  The
+                                   classifications tell how many lines the
+                                   character has on each side:
+                                   left, bottom, right, top.
+
+                                   See `line_count()` docstring for details.
     """
     # Pre-allocate look-up array with 256 elements with
     # _nc (middle dot U+00B7) as placeholder.
@@ -352,7 +373,9 @@ _temp_dict = {
 
 _name = 'Unicode [Square Corners]'
 _temp_array = _generated_lookup_array(_temp_dict)
-_g_character_sets.append(CharacterSet(_name, _temp_dict, _temp_array))
+_g_character_sets.append(CharacterSet(_name, _temp_array))
+# Update combined dictionary.
+_combined_classification_dict.update(_temp_dict)
 
 # -------------------------------------------------------------------------
 # Unicode (Round Corners)
@@ -402,7 +425,15 @@ _temp_dict = {
 
 _name = 'Unicode [Round Corners]'
 _temp_array = _generated_lookup_array(_temp_dict)
-_g_character_sets.append(CharacterSet(_name, _temp_dict, _temp_array))
+_g_character_sets.append(CharacterSet(_name, _temp_array))
+# Update combined dictionary.
+_temp_dict = {
+    '╰': CB.LINES_LEFT_0 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_1,  # 0x05
+    '╭': CB.LINES_LEFT_0 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_1 | CB.LINES_UP_0,  # 0x14
+    '╯': CB.LINES_LEFT_1 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_0 | CB.LINES_UP_1,  # 0x41
+    '╮': CB.LINES_LEFT_1 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_0 | CB.LINES_UP_0,  # 0x50
+}
+_combined_classification_dict.update(_temp_dict)
 
 # -------------------------------------------------------------------------
 # Unicode (2 Dashes)
@@ -452,7 +483,13 @@ _temp_dict = {
 
 _name = 'Unicode [2 Dashes]'
 _temp_array = _generated_lookup_array(_temp_dict)
-_g_character_sets.append(CharacterSet(_name, _temp_dict, _temp_array))
+_g_character_sets.append(CharacterSet(_name, _temp_array))
+# Update combined dictionary.
+_temp_dict = {
+    '╎': CB.LINES_LEFT_0 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_0 | CB.LINES_UP_1,  # 0x11
+    '╌': CB.LINES_LEFT_1 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_0,  # 0x44
+}
+_combined_classification_dict.update(_temp_dict)
 
 # -------------------------------------------------------------------------
 # Unicode (3 Dashes)
@@ -502,7 +539,13 @@ _temp_dict = {
 
 _name = 'Unicode [3 Dashes]'
 _temp_array = _generated_lookup_array(_temp_dict)
-_g_character_sets.append(CharacterSet(_name, _temp_dict, _temp_array))
+_g_character_sets.append(CharacterSet(_name, _temp_array))
+# Update combined dictionary.
+_temp_dict = {
+    '┆': CB.LINES_LEFT_0 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_0 | CB.LINES_UP_1,  # 0x11
+    '┄': CB.LINES_LEFT_1 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_0,  # 0x44
+}
+_combined_classification_dict.update(_temp_dict)
 
 # -------------------------------------------------------------------------
 # Unicode (4 Dashes)
@@ -552,25 +595,33 @@ _temp_dict = {
 
 _name = 'Unicode [4 Dashes]'
 _temp_array = _generated_lookup_array(_temp_dict)
-_g_character_sets.append(CharacterSet(_name, _temp_dict, _temp_array))
+_g_character_sets.append(CharacterSet(_name, _temp_array))
+# Update combined dictionary.
+_temp_dict = {
+    '┊': CB.LINES_LEFT_0 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_0 | CB.LINES_UP_1,  # 0x11
+    '┈': CB.LINES_LEFT_1 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_0,  # 0x44
+}
+_combined_classification_dict.update(_temp_dict)
 
 # -------------------------------------------------------------------------
 # Unicode (Shadow) and ASCII
 # -------------------------------------------------------------------------
-gdict_ascii_classification_by_char = {
+_gdict_ascii_classification_by_char = {
     '|': CB.LINES_LEFT_0 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_0 | CB.LINES_UP_1,  # 0x11
     '-': CB.LINES_LEFT_1 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_0,  # 0x44
     '+': CB.LINES_LEFT_1 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_1 | CB.LINES_UP_1,  # 0x55
     '=': CB.LINES_LEFT_2 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_2 | CB.LINES_UP_0,  # 0x88
     '#': CB.LINES_LEFT_2 | CB.LINES_DOWN_2 | CB.LINES_RIGHT_2 | CB.LINES_UP_2,  # 0xAA
 }
+# Update combined dictionary.
+_combined_classification_dict.update(_gdict_ascii_classification_by_char)
 
 # The ASCII look-up array is an exception that needed to be created manually.
 #
 # The following used the above Unicode classification dictionary to generate
 # this ASCII lookup array for manual editing.  The finished array is here.
 # It is indexed by classification like the other character look-up arrays.
-glst_ascii_box_char_lookup_by_classification = [
+_glst_ascii_box_char_lookup_by_classification = [
     _nc,  # 0x00
     '|',  # 0x01 = CB.LINES_LEFT_0 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_0 | CB.LINES_UP_1
     '#',  # 0x02 = CB.LINES_LEFT_0 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_0 | CB.LINES_UP_2
@@ -832,46 +883,37 @@ glst_ascii_box_char_lookup_by_classification = [
 # -------------------------------------------------------------------------
 # Unicode (Shadow)
 #
-# This is really just a placeholder.  Drawing logic does not use
-# this except to identify the current character set as being the
-# UNICODE_SHADOW set.
+# This is really just a placeholder.  Drawing logic does not use this except
+# to identify the current character set as being the UNICODE_SHADOW set.
 # -------------------------------------------------------------------------
 _name = 'Unicode [Shadow]'
-_temp_dict = gdict_ascii_classification_by_char             # Dummy list (safety for some API functions)
-_temp_array = glst_ascii_box_char_lookup_by_classification  # Dummy list (safety for some API functions)
-_g_character_sets.append(CharacterSet(_name, _temp_dict, _temp_array))
+_temp_array = _glst_ascii_box_char_lookup_by_classification  # Dummy list (safety for some API functions)
+_g_character_sets.append(CharacterSet(_name, _temp_array))
 
 # -------------------------------------------------------------------------
 # ASCII
 # -------------------------------------------------------------------------
 _name = 'ASCII'
-_temp_dict = gdict_ascii_classification_by_char
-_temp_array = glst_ascii_box_char_lookup_by_classification
-_g_character_sets.append(CharacterSet(_name, _temp_dict, _temp_array))
+_temp_array = _glst_ascii_box_char_lookup_by_classification
+_g_character_sets.append(CharacterSet(_name, _temp_array))
 
 # Clean up.
 del _name, _temp_array, _temp_dict
 
 # Sanity Check
-assert len(_g_character_sets) == CharacterSetID.LAST + 1, \
+assert len(_g_character_sets) == CharacterSetID.COUNT, \
         'CharacterSet enumeration must reflect contents of `_g_character_sets`.'
 
-up_bit_shift_count = Direction.UP    << 1
-rt_bit_shift_count = Direction.RIGHT << 1
-dn_bit_shift_count = Direction.DOWN  << 1
-lf_bit_shift_count = Direction.LEFT  << 1
+# << 1 == fast multiply by 2.
+_up_bit_shift_count = Direction.UP    << 1
+_rt_bit_shift_count = Direction.RIGHT << 1
+_dn_bit_shift_count = Direction.DOWN  << 1
+_lf_bit_shift_count = Direction.LEFT  << 1
 
 
 # =========================================================================
 # Data
 # =========================================================================
-
-# These two define the current character set.
-# Clients of this module use these two properties.
-# They get their initial assignments below with the call to
-# `advance_to_next_character_set()`.
-gdict_classification_by_char = None
-glst_box_char_lookup_by_classification = None
 
 # This index allows `advance_to_next_character_set()` to know where to go next.
 _gi_current_char_set_id: CharacterSetID = _cfg_initial_character_set_id
@@ -914,12 +956,6 @@ def current_character_set_name():
     return char_set.name
 
 
-def current_classification_dictionary():
-    """ Current classification dictionary """
-    char_set = _g_character_sets[_gi_current_char_set_id]
-    return char_set.classification_dict
-
-
 def current_lookup_array():
     """ Current character lookup array """
     char_set = _g_character_sets[_gi_current_char_set_id]
@@ -940,14 +976,13 @@ def character_by_line_counts(up: int, rt: int, dn: int, lf: int) -> str:
     assert 0 <= dn <= 2, '`dn` must be in range [0-2].'
     assert 0 <= lf <= 2, '`lf` must be in range [0-2].'
 
-    up_bit_field = up << up_bit_shift_count
-    rt_bit_field = rt << rt_bit_shift_count
-    dn_bit_field = dn << dn_bit_shift_count
-    lf_bit_field = lf << lf_bit_shift_count
+    up_bit_field = up << _up_bit_shift_count
+    rt_bit_field = rt << _rt_bit_shift_count
+    dn_bit_field = dn << _dn_bit_shift_count
+    lf_bit_field = lf << _lf_bit_shift_count
     classification = up_bit_field | rt_bit_field | dn_bit_field | lf_bit_field
-
     char_set = _g_character_sets[_gi_current_char_set_id]
-    print(f'>>>>>>>> charset name = [{current_character_set_name()}]')
+
     return char_set.lookup_array[classification]
 
 def advance_to_next_character_set(debugging: bool):
@@ -1028,10 +1063,9 @@ def line_count(c: str, side: Direction, debugging: bool) -> int:
     if debugging:
         print('  In line_count()...')
     result = 0
-    curr_classification_dict = current_classification_dictionary()
 
-    if c in curr_classification_dict:
-        classification = curr_classification_dict[c]
+    if c in _combined_classification_dict:
+        classification = _combined_classification_dict[c]
         shift_bit_count = side << 1
         result = (classification >> shift_bit_count) & 0x03
         if debugging:
@@ -1046,8 +1080,7 @@ def line_count(c: str, side: Direction, debugging: bool) -> int:
 
 def adjusted_classification(c: str, side: Direction, new_line_count: int, debugging: bool):
     """ Adjusted classification to connect on ``side`` with ``new_line_count``. """
-    curr_classification_dict = current_classification_dictionary()
-    result = curr_classification_dict[c]
+    result = _combined_classification_dict[c]
     shift_bit_count = side << 1
 
     # Remove any old bits.

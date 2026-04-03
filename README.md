@@ -165,9 +165,3 @@ Also, while the Shadow character set is selected, there is no ERASE function.  I
 - [Alt] => lightest shadow character
 - [Alt-Shift] => medium shadow character
 - [Alt-Shift-Ctrl] => darkest shadow character
-
-
-
-## Known Issues
-
-In order to support multiple character sets, a sacrifice had to be made.  While the drawing algorithm is robust, and uses surrounding characters to know what character to place next, if any of the applicable surrounding characters are from another character set and are not found in the current character set, the drawn character will be the "neutral character" used in the look-up arrays:  currently a "middle dot", instead of the line-drawing character you expected.  This may be fixed in a future release.

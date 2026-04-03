@@ -13,7 +13,6 @@
 	//     UNICODE_4_DASHES       = 4
 	//     UNICODE_SHADOW         = 5
 	//     ASCII                  = 6
-	//     LAST                   = 6
 	"default_character_set_id": 6,
 
 	// String | Integer | Boolean

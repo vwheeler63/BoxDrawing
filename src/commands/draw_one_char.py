@@ -447,9 +447,20 @@ def _compute_and_place_drawing_char(
     # ---------------------------------------------------------------------
     # Detect character line combinations that don't exist.
     # ---------------------------------------------------------------------
-    # Check for lines "ahead" and "behind" that disagree.
     corrected_bad_combination = False
+
+    num_sides_w_lines = \
+            bool(up_ln_cnt) + bool(rt_ln_cnt) + bool(dn_ln_cnt) + bool(lf_ln_cnt)
+    if debugging:
+        print(f'  {num_sides_w_lines=}')
+
+    # Check for lines "ahead" and "behind" that disagree.
     if direction == Direction.UP:
+        if up_ln_cnt and num_sides_w_lines == 1:
+            # Line counts represent a half-line, which doesn't exist.
+            # Modify "behind" side to match line count being drawn.
+            dn_ln_cnt = new_line_count
+            corrected_bad_combination = True
         if dn_ln_cnt and dn_ln_cnt != new_line_count:
             # Line(s) behind to connect to, but line count doesn't match.
             # Line count being drawn wins.
@@ -461,6 +472,11 @@ def _compute_and_place_drawing_char(
             up_ln_cnt = new_line_count
             corrected_bad_combination = True
     elif direction == Direction.RIGHT:
+        if rt_ln_cnt and num_sides_w_lines == 1:
+            # Line counts represent a half-line, which doesn't exist.
+            # Modify "behind" side to match line count being drawn.
+            lf_ln_cnt = new_line_count
+            corrected_bad_combination = True
         if lf_ln_cnt and lf_ln_cnt != new_line_count:
             # Line(s) behind to connect to, but line count doesn't match.
             # Line count being drawn wins.
@@ -472,6 +488,11 @@ def _compute_and_place_drawing_char(
             rt_ln_cnt = new_line_count
             corrected_bad_combination = True
     elif direction == Direction.DOWN:
+        if dn_ln_cnt and num_sides_w_lines == 1:
+            # Line counts represent a half-line, which doesn't exist.
+            # Modify "behind" side to match line count being drawn.
+            up_ln_cnt = new_line_count
+            corrected_bad_combination = True
         if up_ln_cnt and up_ln_cnt != new_line_count:
             # Line(s) behind to connect to, but line count doesn't match.
             # Line count being drawn wins.
@@ -483,6 +504,11 @@ def _compute_and_place_drawing_char(
             dn_ln_cnt = new_line_count
             corrected_bad_combination = True
     elif direction == Direction.LEFT:
+        if lf_ln_cnt and num_sides_w_lines == 1:
+            # Line counts represent a half-line, which doesn't exist.
+            # Modify "behind" side to match line count being drawn.
+            rt_ln_cnt = new_line_count
+            corrected_bad_combination = True
         if rt_ln_cnt and rt_ln_cnt != new_line_count:
             # Line(s) behind to connect to, but line count doesn't match.
             # Line count being drawn wins.
