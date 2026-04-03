@@ -91,6 +91,62 @@ Character Classification
 ========================
 
 See docstring in ``line_count()`` function below.
+
+
+Checklist to Add a New Character Set
+====================================
+
+1.  Modify list in comments above.
+
+2.  Build and append new character set to `_g_character_sets` in the
+    correct sequence.
+
+    a.  Create character set classification dictionary:
+        _temp_dict = {
+            '╰': CB.LINES_LEFT_0 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_1,  # 0x05
+            '╙': CB.LINES_LEFT_0 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_2,  # 0x06
+            '╘': CB.LINES_LEFT_0 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_2 | CB.LINES_UP_1,  # 0x09
+            ...
+        }
+
+    b.  Generate lookup array:
+        _temp_array = _generated_lookup_array(_temp_dict)
+
+    c.  Append to `_g_character_sets` as new CharacterSet:
+        _name = 'Unicode [Round Corners]'
+        _g_character_sets.append(CharacterSet(_name, _temp_array))
+
+    d.  Update `_combined_classification_dict` with unique characters from
+        dictionary created in (2.a.).
+        _temp_dict = {
+            '╰': CB.LINES_LEFT_0 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_1 | CB.LINES_UP_1,  # 0x05
+            '╭': CB.LINES_LEFT_0 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_1 | CB.LINES_UP_0,  # 0x14
+            '╯': CB.LINES_LEFT_1 | CB.LINES_DOWN_0 | CB.LINES_RIGHT_0 | CB.LINES_UP_1,  # 0x41
+            '╮': CB.LINES_LEFT_1 | CB.LINES_DOWN_1 | CB.LINES_RIGHT_0 | CB.LINES_UP_0,  # 0x50
+        }
+        _combined_classification_dict.update(_temp_dict)
+
+3.  Modify `CharacterSetID` enumeration class.
+    - Add enumeration name and value to match new sequence.
+    - Ensure LAST enumeration contains value of new last value.
+    - Ensure COUNT enumeration contains value == LAST + 1.
+
+4.  Modify `BoxDrawing.sublime-settings`:
+    - documentation of `CharacterSetID` class (lists valid values);
+    - `default_character_set_id` setting integer to match whatever
+      integer is now associated with ASCII.
+
+5.  Open the console window ([Ctrl-`])
+
+6.  Reload the Package (can be done by saving `boxdrawing.py`).
+    Observe in the Console Panel that there are no error messages.
+
+7.  Test by turning ON and OFF Box Drawing and use key binding to
+    progress through new list of character sets.  Check status bar and
+    `Tools > BoxDrawing` submenu to ensure the names are as intended.
+
+8.  Test actual drawing to confirm things are coming out as intended.
+    Fix if not.
 """
 from enum import IntFlag, IntEnum
 from typing import List, Dict
