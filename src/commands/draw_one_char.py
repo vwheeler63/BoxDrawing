@@ -326,6 +326,7 @@ def _compute_and_place_drawing_char(
         c = ' '
         _insert_or_replace(view, edit, c, row, col, debugging)
         core.set_last_direction(view, Direction.NONE)
+        _move_caret(view, edit, row, col, direction, debugging)
         return
 
     # ---------------------------------------------------------------------
@@ -659,39 +660,34 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
         Pseudocode to carry out above algorithm:
         ========================================
 
-        if line_count == 0:  # erase:
-            write SPACE at current location
-            move in `direction`
-            last_direction = Direction.NONE
-        else:
-            if same_direction and `src_char` is a box-drawing character:
-                move in `direction`:
-                    - If char does not exist in that direction, add enough spaces to
-                      end of line so that a space character exists there to support
-                      a "view.replace()" on that character.
-                    - Move selection to that character.
+        if same_direction and `src_char` is a box-drawing character:
+            move in `direction`:
+                - If char does not exist in that direction, add enough spaces to
+                  end of line so that a space character exists there to support
+                  a "view.replace()" on that character.
+                - Move selection to that character.
 
-            last_direction = direction of keypress
+        last_direction = direction of keypress
 
-            look_around()  # "involved" means "on side of cur_char".
-                - populate:
-                    - up_char = char above (char above line 0 = None)
-                    - dn_char = char below
-                    - lf_char = char on left (char left of col 0 = None)
-                    - rt_char = char on right
-                    - up_ln_cnt = 0=not a box char, 1=1 vert line involved, 2=2 vert lines involved.
-                    - dn_ln_cnt = 0=not a box char, 1=1 vert line involved, 2=2 vert lines involved.
-                    - lf_ln_cnt = 0=not a box char, 1=1 horiz line involved, 2=2 horiz lines involved.
-                    - rt_ln_cnt = 0=not a box char, 1=1 horiz line involved, 2=2 horiz lines involved.
+        look_around()  # "involved" means "on side of cur_char".
+            - populate:
+                - up_char = char above (char above line 0 = None)
+                - dn_char = char below
+                - lf_char = char on left (char left of col 0 = None)
+                - rt_char = char on right
+                - up_ln_cnt = 0=not a box char, 1=1 vert line involved, 2=2 vert lines involved.
+                - dn_ln_cnt = 0=not a box char, 1=1 vert line involved, 2=2 vert lines involved.
+                - lf_ln_cnt = 0=not a box char, 1=1 horiz line involved, 2=2 horiz lines involved.
+                - rt_ln_cnt = 0=not a box char, 1=1 horiz line involved, 2=2 horiz lines involved.
 
-            If condition (L) above (same direction and disagreeing existing line):
-                "back adjust" `src_char`.
+        If condition (L) above (same direction and disagreeing existing line):
+            "back adjust" `src_char`.
 
-            Compute character:
-                - use surrounding chars to assemble a classification;
-                - use classification to index into the appropriate lookup array.
+        Compute character:
+            - use surrounding chars to assemble a classification;
+            - use classification to index into the appropriate lookup array.
 
-            Replace `cur_char` with computed character.
+        Replace `cur_char` with computed character.
         """
         debugging = is_debugging(DebugBit.COMMANDS | DebugBit.BOX_DRAWING)
         if debugging:
