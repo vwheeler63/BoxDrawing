@@ -1,6 +1,6 @@
 # BoxDrawing
 
-**BoxDrawing** is a Sublime Text package enabling the user to draw lines and boxes like these:
+**BoxDrawing** is a Sublime Text package enabling the user to draw lines and boxes like these (normally with arrow keys):
 
 ```
 ┌─┬┐  ╔═╦╗  ╓─╥╖  ╒═╤╕
