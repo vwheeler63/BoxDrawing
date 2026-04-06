@@ -170,6 +170,6 @@ DrawOneCharacter(left, none)     | Ctrl-Alt-Shift-Left[^1]  | BoxDrawing: Draw E
 
 2.  While the Shadow Character Set is selected, there is no ERASE function.  Instead, the modifier key combinations select which shadow character is written to the Buffer:
 
-    - [Alt] => ligh shadow character
-    - [Alt-Shift] => medium shadow character
-    - [Alt-Shift-Ctrl] => dark shadow character
+    - `[Alt]` => ligh shadow character
+    - `[Alt-Shift]` => medium shadow character
+    - `[Alt-Shift-Ctrl]` => dark shadow character
