@@ -46,7 +46,7 @@ to draw lines and boxes like these:
 - There is no need to add spaces to short lines.  The package extends short lines with spaces automatically when needed, enabling you to conveniently draw wherever you direct it.
 - Initially uses ASCII or one of the Unicode box-drawing character sets, depending on a user-configurable setting.  (See below.)
 - Conveniently switch between character sets with one keystroke.
-- Box drawing with the ASCII character set is compatible with the requirements of reStructuredText tables.  (The above ASCII-based table is an example.)
+- Box drawing with the ASCII character set is compatible with the requirements of reStructuredText tables.  (The ASCII table above is an example.)
 - The current state of the BoxDrawing Package can be seen:
   - Tools > BoxDrawing > sub-menu items, and
   - in the status bar for 4 seconds after each state change.
@@ -82,8 +82,7 @@ If you instead clone **BoxDrawing's** repository into your `<data_path>/Packages
 
 6. Change current character set using `[Alt-Keypad *]` or `Tools > BoxDrawing > Change Character Set (<char_set>)` or from the Command Palette `BoxDrawing: Change Character Set`.  (A temporary Status-Bar message "Box Drawing ON/OFF:  <char_set>" shows which character set is now current.)  The `Tools > BoxDrawing > Change Character Set (<char_set>)` menu item always shows the current character set in parentheses.
 
-7. When you are done drawing, turn Box-Drawing OFF again with `[Alt-Keypad /]`.
-
+7. When you are done drawing, turn Box-Drawing OFF again with `[Alt-Keypad /]` or `Tools > BoxDrawing > Enabled` or from the Command Palette `BoxDrawing: Toggle ON/OFF`.
 
 
 
@@ -104,9 +103,9 @@ Key Combination                        | Meaning
 -------------------------------------- | ------------------------------------------
 Alt-Keypad /                           | Turn Box Drawing ON or OFF 
 Alt-Keypad \*                          | Switch character sets (ASCII <==> Unicode)
-Alt-(Left\|Right\|Up\|Down)            | Draw with single lines 
-Alt-Shift-(Left\|Right\|Up\|Down)      | Draw with double lines 
-Ctrl-Alt-Shift-(Left\|Right\|Up\|Down) | Erase
+Alt-(Left\|Right\|Up\|Down)            | Draw with single lines[^1]
+Alt-Shift-(Left\|Right\|Up\|Down)      | Draw with double lines[^1]
+Ctrl-Alt-Shift-(Left\|Right\|Up\|Down) | Erase[^1]
 
 When Box-Drawing is ON for a particular View, the Package temporarily overrides the normal key bindings for the arrow-key combinations for that View only.  When Box Drawing is turned OFF again, normal key bindings for the arrow keys are resumed.  `[Alt-Keypad /]` and `[Alt-Keypad *]` both remain bound to the `ON/OFF` and `switch character sets` Commands full time.
 
@@ -124,11 +123,17 @@ These key bindings can be customized via:
 
 BoxDrawing adds the following menu items to Sublime Text when installed:
 
-- [**✓**]  `Tools > BoxDrawing > Enabled` (checkmark appears when enabled; it's OFF by default)
-- `Tools > Toggle BoxDrawing > Change Character Set (<char set>)`  (default character set is configurable)
-- Preferences > Package Settings > BoxDrawing > README
-- Preferences > Package Settings > BoxDrawing > Settings
-- Preferences > Package Settings > BoxDrawing > Key Bindings
+- Tools >
+    - BoxDrawing >
+        - [✓] Enabled
+        - Change Character Set (ASCII)
+
+- Preferences >
+    -  Package Settings >
+        - README
+        - Settings
+        - Key Bindings
+
 
 
 
@@ -136,11 +141,11 @@ BoxDrawing adds the following menu items to Sublime Text when installed:
 
 BoxDrawing adds the following Commands to Sublime Text when installed:
 
-Action                           | Key Combination          | Command Palette
+Action                           | Key Binding              | Command Palette
 -------------------------------- | ------------------------ | ------------------------------
-Open README                      | ---not mapped---         | BoxDrawing: Open Readme
-Edit BoxDrawing Settings         | ---not mapped---         | BoxDrawing: Edit BoxDrawing Settings
-Edit BoxDrawing Key Bindings     | ---not mapped---         | BoxDrawing: Edit BoxDrawing Key Bindings
+Open README                      | ---not bound---          | BoxDrawing: Open Readme
+Edit BoxDrawing Settings         | ---not bound---          | BoxDrawing: Edit BoxDrawing Settings
+Edit BoxDrawing Key Bindings     | ---not bound---          | BoxDrawing: Edit BoxDrawing Key Bindings
 Turn Box-Drawing ON or OFF       | Alt-Keypad /             | BoxDrawing: Toggle ON/OFF
 Toggle between ASCII and Unicode | Alt-Keypad *             | BoxDrawing: Toggle ASCII <==> Unicode
 DrawOneCharacter(up, single)     | Alt-Up[^1]               | BoxDrawing: Draw Single Line Up
