@@ -113,7 +113,7 @@ By default, `[Alt-(Left|Right)]` key combinations are mapped to "move left/right
 
 And by default, `[Alt-(Up|Down)]` is mapped in the reStructuredText Package to "move up/down by 1 section", with a possible `[Shift]` modifier limiting the move to only the same level of section or higher.
 
-These key bindings can be customized via:
+If you need to re-map any of the above key bindings, you can do so via:
 
     `Preferences > Package Settings > BoxDrawing > Key Bindings`.
 
@@ -133,7 +133,6 @@ BoxDrawing adds the following menu items to Sublime Text when installed:
         - README
         - Settings
         - Key Bindings
-
 
 
 
