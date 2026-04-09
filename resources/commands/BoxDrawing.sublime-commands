@@ -8,7 +8,7 @@
 		}
 	},
 	{
-		"caption": "BoxDrawing: Edit BoxDrawing Settings",
+		"caption": "Preferences: BoxDrawing Settings",
 		"command": "edit_settings",
 		"args": {
 			"base_file": "${packages}/BoxDrawing/resources/settings/BoxDrawing.sublime-settings",
@@ -16,7 +16,7 @@
 		}
 	},
 	{
-		"caption": "BoxDrawing: Edit BoxDrawing Key Bindings",
+		"caption": "Preferences: BoxDrawing Key Bindings",
 		"command": "edit_settings",
 		"args": {
 			"base_file": "${packages}/BoxDrawing/resources/keymaps/Default ($platform).sublime-keymap",
