@@ -143,8 +143,8 @@ BoxDrawing adds the following Commands to Sublime Text when installed:
 Action                           | Key Binding              | Command Palette
 -------------------------------- | ------------------------ | ------------------------------
 Open README                      | ---not bound---          | BoxDrawing: Open Readme
-Edit BoxDrawing Settings         | ---not bound---          | BoxDrawing: Edit BoxDrawing Settings
-Edit BoxDrawing Key Bindings     | ---not bound---          | BoxDrawing: Edit BoxDrawing Key Bindings
+Edit BoxDrawing Settings         | ---not bound---          | Preferences: BoxDrawing Settings
+Edit BoxDrawing Key Bindings     | ---not bound---          | Preferences: BoxDrawing Key Bindings
 Turn Box-Drawing ON or OFF       | Alt-Keypad /             | BoxDrawing: Toggle ON/OFF
 Toggle between ASCII and Unicode | Alt-Keypad *             | BoxDrawing: Toggle ASCII <==> Unicode
 DrawOneCharacter(up, single)     | Alt-Up[^1]               | BoxDrawing: Draw Single Line Up
