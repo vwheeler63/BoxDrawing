@@ -66,7 +66,7 @@ _reload_indent_level = -1
 
 # Can't use `debugging = is_debugging(DebugBit.IMPORTING)` here because
 # the import required to support it causes a circular import.
-debugging = True
+debugging = False
 if debugging:
     print(f'{this_module_name}  >>> module execution')
 
