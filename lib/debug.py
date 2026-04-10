@@ -229,7 +229,7 @@ class DebugBit(IntFlag):
 # output, getting away from the profuse "all at once" debug output.
 # =========================================================================
 
-_debugging: DebugBit = DebugBit.ALL
+_debugging: DebugBit = DebugBit.NONE
 _valid_debugging_string_re = None
 _cfg_debugging_print_format = '04X'
 
