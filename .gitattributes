@@ -1,0 +1,7 @@
+# Source files
+# ============
+*.py     text diff=python
+
+# Binary files
+# ============
+*.gif    binary export-ignore

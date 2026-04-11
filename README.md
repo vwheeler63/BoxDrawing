@@ -1,40 +1,39 @@
+[![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](https://github.com/vwheeler63/BoxDrawing/blob/master/LICENSE)
+[![Requires Sublime Text Build 4000 or later](https://img.shields.io/badge/Sublime_Text-4000+-orange?style=flat-square&logo=sublime-text)](https://www.sublimetext.com)
+[![Download BoxDrawing from Package Control](https://img.shields.io/packagecontrol/dt/BoxDrawing.svg?style=flat-square&logo=sublime-text)](https://packages.sublimetext.io/packages/BoxDrawing)
+[![Latest Tag](https://img.shields.io/badge/tag-1.0.2-darkblue?style=flat-square&logo=github)](https://github.com/vwheeler63/BoxDrawing/tags)
+[![GitHub Repository](https://img.shields.io/badge/github-repo-blue?style=flat-square&logo=github)](https://github.com/vwheeler63/BoxDrawing)
+
+
+
 # BoxDrawing
 
-**BoxDrawing** is a Sublime Text package enabling the user, normally with these arrow-key combinations:
+**BoxDrawing** is a Sublime Text package enabling the user, with these arrow-key combinations:
 
-- `[Alt-Arrow]`             (single line)
-- `[Alt-Shift-Arrow]`       (double line), or
+- `[Alt-Arrow]           `  (single line)
+- `[Alt-Shift-Arrow]     `  (double line), or
 - `[Ctrl-Alt-Shift-Arrow]`  (erase)
 
 to draw lines and boxes like these:
 
 ```
-┌─┬┐  ╔═╦╗  ╓─╥╖  ╒═╤╕
-│ ││  ║ ║║  ║ ║║  │ ││
-├─┼┤  ╠═╬╣  ╟─╫╢  ╞═╪╡
-└─┴┘  ╚═╩╝  ╙─╨╜  ╘═╧╛ ┌─────────────┐
-╭───────────────────╮  │    ╔═══════╕│            ┌───┐
-│  ╔═══╗ Some Text  │  │╓───╫┐ ╔══╗ ││ ┌──┬───┐  ┌┴┬┐ │
-│  ╚═╦═╝ in the box │░ │║   ║│ ║  ║ ││ ╞══╡   │  ├─┼┼─┘
-╞═╤══╩══╤═══════════╡░ │║   ║│ ║  ║ ││ │  │   │  │ ││
-│ ├──┬──┤           │░ │╙───╫┘ ╚══╝ ││ └──┴───┘  └─┴┘
-│ └──┴──┘           │░ └────╫───────┼┘
-╰───────────────────╯░      ╙───────┘
+┌─┬┐  ╔═╦╗  ╓─╥╖  ╒═╤╕    +------------+----------------+
+│ ││  ║ ║║  ║ ║║  │ ││    | Column One | Column Two     |
+├─┼┤  ╠═╬╣  ╟─╫╢  ╞═╪╡    +============+================+
+└─┴┘  ╚═╩╝  ╙─╨╜  ╘═╧╛    |            |                |
+╭───────────────────╮     +------------+----------------+
+│  ╔═══╗ Some Text  │     |            |                |
+│  ╚═╦═╝ in the box │░    +------------+----------------+
+╞═╤══╩══╤═══════════╡░    |            |                |
+│ ├──┬──┤           │░    +------------+----------------+
+│ └──┴──┘           │░    |            |                |
+╰───────────────────╯░    +------------+----------------+
   ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒░
-
-+------------+----------------+--------------+
-| Column One | Column Two     | Column Three |
-+============+================+==============+
-|            |                |              |
-+------------+----------------+--------------+
-|            |                |              |
-+------------+----------------+--------------+
-|            |                |              |
-+------------+----------------+--------------+
-|            |                |              |
-+------------+----------------+--------------+
-
 ```
+
+
+
+![Demo: Drawing an ASCII Table](https://raw.githubusercontent.com/vwheeler63/BoxDrawing/master/demo.gif)
 
 
 
@@ -121,7 +120,7 @@ If you need to re-map any of the above key bindings, you can do so via:
 
 ## Menu Items
 
-BoxDrawing adds the following menu items to Sublime Text when installed:
+**BoxDrawing** adds the following menu items to Sublime Text when installed:
 
 - Tools >
     - BoxDrawing >
@@ -138,7 +137,7 @@ BoxDrawing adds the following menu items to Sublime Text when installed:
 
 ## Commands
 
-BoxDrawing adds the following Commands to Sublime Text when installed:
+**BoxDrawing** adds the following Commands to Sublime Text when installed:
 
 Action                           | Key Binding              | Command Palette
 -------------------------------- | ------------------------ | ------------------------------
