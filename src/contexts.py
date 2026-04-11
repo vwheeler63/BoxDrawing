@@ -4,7 +4,7 @@ ProComment Package Context Events
 from typing import Union
 import sublime
 import sublime_plugin
-from ..lib.debug import IntFlag, DebugBit, is_debugging
+from ..lib.debug import IntFlag, DebugBits, is_debugging
 from . import core
 
 
@@ -41,7 +41,7 @@ class BoxDrawingContextEventListener(sublime_plugin.ViewEventListener):
                   return ``None``.
         """
         result = None
-        debugging = is_debugging(DebugBit.QUERY_CONTEXT_EVENT)
+        debugging = is_debugging(DebugBits.QUERY_CONTEXT_EVENT)
 
         if debugging:
             print('In on_query_context()')

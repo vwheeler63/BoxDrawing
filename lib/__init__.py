@@ -1,7 +1,7 @@
 from ..boxdrawing import reload
-from .debug import IntFlag, DebugBit, is_debugging
+from .debug import IntFlag, DebugBits, is_debugging
 
-debugging = is_debugging(DebugBit.IMPORTING)
+debugging = is_debugging(DebugBits.IMPORTING)
 if debugging:
     print(f'{__package__}  >>> module execution')
 

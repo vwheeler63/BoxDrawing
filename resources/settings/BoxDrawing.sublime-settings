@@ -20,12 +20,12 @@
 	// Selectively turn on and off parts of debugging output in Console Panel.
 	//
 	// Valid values:
-	// - JSON Boolean (true or false, implying "DebugBit.ALL" and "DebugBit.NONE" respectively)
-	// - JSON Integer (containing necessary bits, e.g. 32 representing "DebugBit.COMMANDS")
-	// - String expressions of bit-wise OR-ed constants from the DebugBit class.
+	// - JSON Boolean (true or false, implying "DebugBits.ALL" and "DebugBits.NONE" respectively)
+	// - JSON Integer (containing necessary bits, e.g. 32 representing "DebugBits.COMMANDS")
+	// - String expressions of bit-wise OR-ed constants from the DebugBits class.
 	//   (See below.)
 	//
-	// class DebugBit:
+	// class DebugBits:
 	//     NONE                   = 0x0000
 	//     DEBUGGING              = 0x0001
 	//     LOAD_UNLOAD            = 0x0002
@@ -41,11 +41,11 @@
 	//     ANY                    = 0xFFFF
 	//
 	// Examples of valid strings:
-	// - "DebugBit.NONE"
-	// - "DebugBit.LOAD_UNLOAD"
-	// - "DebugBit.ALL"
-	// - "DebugBit.QUERY_CONTEXT_EVENT | DebugBit.COMMANDS | DebugBit.BOX_DRAWING"
-	// - "DebugBit.BOX_DRAWING | DebugBit.ON_OFF_STATE"
+	// - "DebugBits.NONE"
+	// - "DebugBits.LOAD_UNLOAD"
+	// - "DebugBits.ALL"
+	// - "DebugBits.QUERY_CONTEXT_EVENT | DebugBits.COMMANDS | DebugBits.BOX_DRAWING"
+	// - "DebugBits.BOX_DRAWING | DebugBits.ON_OFF_STATE"
 	//
 	// Note:  the spaces surrounding the '|' operator are optional,
 	//        but are recommended for readability.

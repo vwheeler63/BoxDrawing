@@ -1,6 +1,6 @@
 import sublime_plugin
 import sublime
-from ...lib.debug import IntFlag, DebugBit, is_debugging
+from ...lib.debug import IntFlag, DebugBits, is_debugging
 from .. import core
 from .. import character_set
 
@@ -23,7 +23,7 @@ class BoxDrawingChangeCharacterSetCommand(sublime_plugin.TextCommand):
         :param edit:  sublime.Edit connected to current View, needed to edit Buffer
         :return:  None
         """
-        debugging = is_debugging(DebugBit.COMMANDS | DebugBit.CHARACTER_SET)
+        debugging = is_debugging(DebugBits.COMMANDS | DebugBits.CHARACTER_SET)
         character_set.advance_to_next_character_set(debugging)
 
         # Confirm change was actually made.

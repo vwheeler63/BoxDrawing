@@ -74,7 +74,7 @@ import sublime_plugin
 import sublime
 from sublime import Region, View
 from sublime_types import Point
-from ...lib.debug import IntFlag, DebugBit, is_debugging
+from ...lib.debug import IntFlag, DebugBits, is_debugging
 from .. import core
 from ..core import State
 from .. import character_set
@@ -582,7 +582,7 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
         is turned OFF for a particular View, [Alt+Left] and [Alt+Right] still perform
         their default bindings:  move by sub-words.
         """
-        debugging = is_debugging(DebugBit.COMMANDS)
+        debugging = is_debugging(DebugBits.COMMANDS)
         return core.ok_to_do_box_drawing(self.view, debugging)
 
     def run(self, edit, line_count: int, direction: Direction):
@@ -689,7 +689,7 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
 
         Replace `cur_char` with computed character.
         """
-        debugging = is_debugging(DebugBit.COMMANDS | DebugBit.BOX_DRAWING)
+        debugging = is_debugging(DebugBits.COMMANDS | DebugBits.BOX_DRAWING)
         if debugging:
             print('In BoxDrawingDrawOneCharacterCommand()...')
             print(f'  {line_count=}')

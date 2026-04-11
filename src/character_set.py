@@ -150,7 +150,7 @@ Checklist to Add a New Character Set
 """
 from enum import IntFlag, IntEnum
 from typing import List, Dict
-from ..lib.debug import DebugBit, is_debugging
+from ..lib.debug import DebugBits, is_debugging
 
 
 # =========================================================================
@@ -923,7 +923,7 @@ def set_current_character_set(id: CharacterSetID, debugging: bool):
     """ Set current character set using `id`. """
     global _gi_current_char_set_id
     _gi_current_char_set_id = id
-    debugging = debugging or is_debugging(DebugBit.CHARACTER_SET)
+    debugging = debugging or is_debugging(DebugBits.CHARACTER_SET)
     if debugging:
         name = current_character_set_name()
         print('In set_current_character_set()')
@@ -998,7 +998,7 @@ def advance_to_next_character_set(debugging: bool):
 # gets called, reads the Package settings, and then calls this function
 # again setting the character set according to the user-configured
 # ``default_character_set_id`` setting.
-debugging = is_debugging(DebugBit.CHARACTER_SET)
+debugging = is_debugging(DebugBits.CHARACTER_SET)
 set_current_character_set(_cfg_initial_character_set_id, debugging)
 
 

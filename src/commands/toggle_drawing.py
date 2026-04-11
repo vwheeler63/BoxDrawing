@@ -1,5 +1,5 @@
 import sublime_plugin
-from ...lib.debug import IntFlag, DebugBit, is_debugging
+from ...lib.debug import IntFlag, DebugBits, is_debugging
 from .. import core
 
 
@@ -18,7 +18,7 @@ class BoxDrawingToggleDrawingCommand(sublime_plugin.TextCommand):
         :param edit:  sublime.Edit connected to current View, needed to edit Buffer
         :return:  None
         """
-        debugging = is_debugging(DebugBit.COMMANDS)
+        debugging = is_debugging(DebugBits.COMMANDS)
         if debugging:
             print('In BoxDrawingToggleDrawingCommand()...')
 

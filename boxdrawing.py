@@ -48,7 +48,7 @@ this_module_name = f'{package_name}.{submodule_name}'
 del _, module_path, submodule_name
 _reload_indent_level = -1
 
-# Can't use `debugging = is_debugging(DebugBit.IMPORTING)` here because
+# Can't use `debugging = is_debugging(DebugBits.IMPORTING)` here because
 # the import required to support it causes a circular import.
 debugging = False
 if debugging:

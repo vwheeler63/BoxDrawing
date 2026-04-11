@@ -97,7 +97,7 @@ import sublime
 from sublime import View, Region
 import sublime_plugin
 from enum import IntEnum, IntFlag
-from ..lib.debug import DebugBit, is_debugging, set_debugging_bits
+from ..lib.debug import DebugBits, is_debugging, set_debugging_bits
 from ..lib import utils
 from ..boxdrawing import package_name
 from . import character_set
@@ -258,7 +258,7 @@ def set_state_off(view: View):
     Set box-drawing state OFF in ``view``, but only if View is connected to a Sheet,
     i.e. not part of a Panel or Overlay.
     """
-    debugging = is_debugging(DebugBit.COMMANDS | DebugBit.ON_OFF_STATE)
+    debugging = is_debugging(DebugBits.COMMANDS | DebugBits.ON_OFF_STATE)
     if debugging:
         print('In set_state_on()...')
 
@@ -279,7 +279,7 @@ def set_state_on(view: View):
     Set box-drawing state ON in ``view``, but only if View is connected to a Sheet,
     i.e. not part of a Panel or Overlay.
     """
-    debugging = is_debugging(DebugBit.COMMANDS | DebugBit.ON_OFF_STATE)
+    debugging = is_debugging(DebugBits.COMMANDS | DebugBits.ON_OFF_STATE)
     if debugging:
         print('In set_state_on()...')
 
@@ -295,7 +295,7 @@ def set_state_on(view: View):
 
 
 def toggle_state(view: View):
-    if is_debugging(DebugBit.COMMANDS | DebugBit.ON_OFF_STATE):
+    if is_debugging(DebugBits.COMMANDS | DebugBits.ON_OFF_STATE):
         print('In toggle_state()...')
 
     if is_state_active(view):
@@ -320,7 +320,7 @@ def _on_pkg_settings_chgd():
     # Initialize debugging subsystem.
     temp = bd_setting(_cfg_stg_name__debugging)
     set_debugging_bits(temp)
-    debugging = is_debugging(DebugBit.SETTINGS_CHANGED_EVENT)
+    debugging = is_debugging(DebugBits.SETTINGS_CHANGED_EVENT)
     if debugging:
         print(f'In _on_pkg_settings_chgd()')
 
@@ -334,7 +334,7 @@ def on_plugin_loaded():
     # ``_on_pkg_settings_chgd()`` is called, since it is what loads
     # the Package settings.
     _on_pkg_settings_chgd()
-    debugging = is_debugging(DebugBit.LOAD_UNLOAD)
+    debugging = is_debugging(DebugBits.LOAD_UNLOAD)
     if debugging:
         print(f'In {__package__}.core.on_plugin_loaded()')
 
@@ -362,5 +362,5 @@ def on_plugin_unloaded():
         if bd_setting.obj:
             bd_setting.obj.clear_on_change(_cfg_on_settings_chgd_listener_id)
 
-    if is_debugging(DebugBit.LOAD_UNLOAD):
+    if is_debugging(DebugBits.LOAD_UNLOAD):
         print(f'{package_name}:  Plugin unloaded at {timestamp()}')
