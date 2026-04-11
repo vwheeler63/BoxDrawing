@@ -1,7 +1,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](https://github.com/vwheeler63/BoxDrawing/blob/master/LICENSE)
 [![Requires Sublime Text Build 4000 or later](https://img.shields.io/badge/Sublime_Text-4000+-orange?style=flat-square&logo=sublime-text)](https://www.sublimetext.com)
 [![Download BoxDrawing from Package Control](https://img.shields.io/packagecontrol/dt/BoxDrawing.svg?style=flat-square&logo=sublime-text)](https://packages.sublimetext.io/packages/BoxDrawing)
-[![Latest Tag](https://img.shields.io/badge/tag-1.0.2-darkblue?style=flat-square&logo=github)](https://github.com/vwheeler63/BoxDrawing/tags)
+[![Latest Tag](https://img.shields.io/badge/tag-1.0.3-darkblue?style=flat-square&logo=github)](https://github.com/vwheeler63/BoxDrawing/tags)
 [![GitHub Repository](https://img.shields.io/badge/github-repo-blue?style=flat-square&logo=github)](https://github.com/vwheeler63/BoxDrawing)
 
 ### Table of contents
@@ -92,7 +92,7 @@ If you instead clone **BoxDrawing's** repository into your `<data_path>/Packages
 
 5. Erase using the arrow keys while the <kbd>Alt-Shift-Ctrl</kbd> keys are held down.
 
-6. Change current character set using <kbd>Alt-Keypad *</kbd> or `Tools > BoxDrawing > Change Character Set (char_set)` or from the Command Palette `BoxDrawing: Change Character Set`.  (A temporary Status-Bar message "Box Drawing ON/OFF:  (char_set)" shows which character set is now current.)  The `Tools > BoxDrawing > Change Character Set (char_set)` menu item always shows the current character set in parentheses.
+6. Change current character set using <kbd>Alt-Keypad \*</kbd> or `Tools > BoxDrawing > Change Character Set (char_set)` or from the Command Palette `BoxDrawing: Change Character Set`.  (A temporary Status-Bar message "Box Drawing ON/OFF:  (char_set)" shows which character set is now current.)  The `Tools > BoxDrawing > Change Character Set (char_set)` menu item always shows the current character set in parentheses.
 
 7. When you are done drawing, turn Box-Drawing OFF again with <kbd>Alt-Keypad /</kbd> or `Tools > BoxDrawing > Enabled` or from the Command Palette `BoxDrawing: Toggle ON/OFF`.
 
@@ -119,7 +119,7 @@ Alt-(Left\|Right\|Up\|Down)            | Draw with single lines[^1]
 Alt-Shift-(Left\|Right\|Up\|Down)      | Draw with double lines[^1]
 Ctrl-Alt-Shift-(Left\|Right\|Up\|Down) | Erase[^1]
 
-When Box-Drawing is ON for a particular View, the Package temporarily overrides the normal key bindings for the arrow-key combinations for that View only.  When Box Drawing is turned OFF again, normal key bindings for the arrow keys are resumed.  <kbd>Alt-Keypad /</kbd> and <kbd>Alt-Keypad *</kbd> both remain bound to the `ON/OFF` and `switch character sets` Commands full time.
+When Box-Drawing is ON for a particular View, the Package temporarily overrides the normal key bindings for the arrow-key combinations for that View only.  When Box Drawing is turned OFF again, normal key bindings for the arrow keys are resumed.  <kbd>Alt-Keypad /</kbd> and <kbd>Alt-Keypad \*</kbd> both remain bound to the `ON/OFF` and `switch character sets` Commands full time.
 
 By default, <kbd>Alt-(Left|Right)</kbd> key combinations are mapped to "move left/right by sub-words" with "extending selection" behavior added when the <kbd>Shift</kbd> key is held down.
 
@@ -158,7 +158,7 @@ Open README                      | ---not bound---          | BoxDrawing: Open R
 Edit BoxDrawing Settings         | ---not bound---          | Preferences: BoxDrawing Settings
 Edit BoxDrawing Key Bindings     | ---not bound---          | Preferences: BoxDrawing Key Bindings
 Turn Box-Drawing ON or OFF       | Alt-Keypad /             | BoxDrawing: Toggle ON/OFF
-Toggle between ASCII and Unicode | Alt-Keypad *             | BoxDrawing: Toggle ASCII <==> Unicode
+Toggle between ASCII and Unicode | Alt-Keypad \*            | BoxDrawing: Toggle ASCII <==> Unicode
 DrawOneCharacter(up, single)     | Alt-Up[^1]               | BoxDrawing: Draw Single Line Up
 DrawOneCharacter(right, single)  | Alt-Right[^1]            | BoxDrawing: Draw Single Line Right
 DrawOneCharacter(down, single)   | Alt-Down[^1]             | BoxDrawing: Draw Single Line Down
