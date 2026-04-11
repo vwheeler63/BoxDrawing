@@ -1,0 +1,6 @@
+Version 1.0.3 (2026-04-11 06:00)
+--------------------------------
+
+- Minor code clean-up
+- Minor enhancements to documentation
+- Add demo.gif, badges and table of contents to README
