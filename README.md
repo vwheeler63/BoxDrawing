@@ -23,9 +23,9 @@
 
 **BoxDrawing** is a Sublime Text package enabling the user, with these arrow-key combinations:
 
-- `[Alt-Arrow]           `  (single line)
-- `[Alt-Shift-Arrow]     `  (double line), or
-- `[Ctrl-Alt-Shift-Arrow]`  (erase)
+- <kbd>Alt-Arrow</kbd>  (single line)
+- <kbd>Alt-Shift-Arrow</kbd>  (double line), or
+- <kbd>Ctrl-Alt-Shift-Arrow</kbd>  (erase)
 
 to draw lines and boxes like these:
 
@@ -84,17 +84,17 @@ If you instead clone **BoxDrawing's** repository into your `<data_path>/Packages
 
 1. In any type of document, ensure there is just 1 selection (caret) and that no text is selected.
 
-2. Turn Box-Drawing ON using `[Alt-Keypad /]` or `Tools > BoxDrawing > Enabled` or from the Command Palette `BoxDrawing: Toggle ON/OFF`.  (A temporary Status-Bar message "Box Drawing ON/OFF (<char_set>)" shows which mode the current View is in.)  The  `Tools > BoxDrawing > Enabled` menu item always shows the ON/OFF state for the current View by showing a checkmark (**✓**) next to that menu item when Box Drawing is enabled.
+2. Turn Box-Drawing ON using <kbd>Alt-Keypad /</kbd> or `Tools > BoxDrawing > Enabled` or from the Command Palette `BoxDrawing: Toggle ON/OFF`.  (A temporary Status-Bar message "Box Drawing ON/OFF (<char_set>)" shows which mode the current View is in.)  The  `Tools > BoxDrawing > Enabled` menu item always shows the ON/OFF state for the current View by showing a checkmark (**✓**) next to that menu item when Box Drawing is enabled.
 
-3. Draw using single lines using the arrow keys while the `[Alt]` key is held down.
+3. Draw using single lines using the arrow keys while the <kbd>Alt</kbd> key is held down.
 
-4. Draw using double lines using the arrow keys while the `[Alt-Shift]` keys are held down.
+4. Draw using double lines using the arrow keys while the <kbd>Alt-Shift</kbd> keys are held down.
 
-5. Erase using the arrow keys while the `[Alt-Shift-Ctrl]` keys are held down.
+5. Erase using the arrow keys while the <kbd>Alt-Shift-Ctrl</kbd> keys are held down.
 
-6. Change current character set using `[Alt-Keypad *]` or `Tools > BoxDrawing > Change Character Set (<char_set>)` or from the Command Palette `BoxDrawing: Change Character Set`.  (A temporary Status-Bar message "Box Drawing ON/OFF:  <char_set>" shows which character set is now current.)  The `Tools > BoxDrawing > Change Character Set (<char_set>)` menu item always shows the current character set in parentheses.
+6. Change current character set using <kbd>Alt-Keypad *</kbd> or `Tools > BoxDrawing > Change Character Set (char_set)` or from the Command Palette `BoxDrawing: Change Character Set`.  (A temporary Status-Bar message "Box Drawing ON/OFF:  (char_set)" shows which character set is now current.)  The `Tools > BoxDrawing > Change Character Set (char_set)` menu item always shows the current character set in parentheses.
 
-7. When you are done drawing, turn Box-Drawing OFF again with `[Alt-Keypad /]` or `Tools > BoxDrawing > Enabled` or from the Command Palette `BoxDrawing: Toggle ON/OFF`.
+7. When you are done drawing, turn Box-Drawing OFF again with <kbd>Alt-Keypad /</kbd> or `Tools > BoxDrawing > Enabled` or from the Command Palette `BoxDrawing: Toggle ON/OFF`.
 
 
 
@@ -119,11 +119,11 @@ Alt-(Left\|Right\|Up\|Down)            | Draw with single lines[^1]
 Alt-Shift-(Left\|Right\|Up\|Down)      | Draw with double lines[^1]
 Ctrl-Alt-Shift-(Left\|Right\|Up\|Down) | Erase[^1]
 
-When Box-Drawing is ON for a particular View, the Package temporarily overrides the normal key bindings for the arrow-key combinations for that View only.  When Box Drawing is turned OFF again, normal key bindings for the arrow keys are resumed.  `[Alt-Keypad /]` and `[Alt-Keypad *]` both remain bound to the `ON/OFF` and `switch character sets` Commands full time.
+When Box-Drawing is ON for a particular View, the Package temporarily overrides the normal key bindings for the arrow-key combinations for that View only.  When Box Drawing is turned OFF again, normal key bindings for the arrow keys are resumed.  <kbd>Alt-Keypad /</kbd> and <kbd>Alt-Keypad *</kbd> both remain bound to the `ON/OFF` and `switch character sets` Commands full time.
 
-By default, `[Alt-(Left|Right)]` key combinations are mapped to "move left/right by sub-words" with "extending selection" behavior added when the `[Shift]` key is held down.
+By default, <kbd>Alt-(Left|Right)</kbd> key combinations are mapped to "move left/right by sub-words" with "extending selection" behavior added when the <kbd>Shift</kbd> key is held down.
 
-And by default, `[Alt-(Up|Down)]` is mapped in the reStructuredText Package to "move up/down by 1 section", with a possible `[Shift]` modifier limiting the move to only the same level of section or higher.
+And by default, <kbd>Alt-(Up|Down)</kbd> is mapped in the reStructuredText Package to "move up/down by 1 section", with a possible <kbd>Shift</kbd> modifier limiting the move to only the same level of section or higher.
 
 If you need to re-map any of the above key bindings, you can do so via:
 
@@ -186,6 +186,6 @@ DrawOneCharacter(left, none)     | Ctrl-Alt-Shift-Left[^1]  | BoxDrawing: Draw E
 
 2.  While the Shadow Character Set is selected, there is no ERASE function.  Instead, the modifier key combinations select which shadow character is written to the Buffer:
 
-    - `[Alt]` => light shadow character
-    - `[Alt-Shift]` => medium shadow character
-    - `[Alt-Shift-Ctrl]` => dark shadow character
+    - <kbd>Alt</kbd> => light shadow character
+    - <kbd>Alt-Shift</kbd> => medium shadow character
+    - <kbd>Alt-Shift-Ctrl</kbd> => dark shadow character
