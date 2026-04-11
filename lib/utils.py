@@ -5,9 +5,6 @@ import os
 from typing import Iterable
 
 
-_cfg_compressed_pkg_ext = '.sublime-package'
-
-
 def largest_string_length(items: Iterable[str]) -> int:
     """
     Length of longest string in `items`

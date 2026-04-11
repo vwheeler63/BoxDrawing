@@ -52,14 +52,10 @@ from typing import Tuple
 # Data
 # =========================================================================
 
-_cfg_compressed_pkg_ext = '.sublime-package'
-
 # Use name of parent directory as `package_name`.
 module_path, _ = os.path.splitext(os.path.realpath(__file__))
 _, submodule_name = os.path.split(module_path)
 package_name = __package__
-if package_name.endswith(_cfg_compressed_pkg_ext):
-    package_name = package_name[:-len(_cfg_compressed_pkg_ext)]
 this_module_name = f'{package_name}.{submodule_name}'
 del _, module_path, submodule_name
 _reload_indent_level = -1
@@ -89,7 +85,7 @@ def reload(dotted_subpkg: str, submodules: Tuple[str, ...] = ()):
       reloads each loaded module, and the ``import`` statements then do
       nothing since each target module will already be in ``sys.modules``.
 
-    Note:  The below works on the basis◘ that ``<sublime_data>/Packages``
+    Note:  The below works on the basis that ``<sublime_data>/Packages``
            directory was placed in ``sys.path`` by Sublime Text.  So the
            module names being constructed below have to look like this:
 
