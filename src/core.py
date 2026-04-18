@@ -136,8 +136,10 @@ def bd_setting(setting_name: str):
 
     :param setting_name:  name of setting whose value will be returned
     """
-    assert bd_setting.default is not None, '`bd_setting.default` must exist before calling `bd_setting()`.'
-    assert bd_setting.obj is not None, '`bd_setting.obj` must exist before calling `bd_setting()`.'
+    if not hasattr(bd_setting, 'default') or bd_setting.default is None:
+        raise AssertionError('`bd_setting.default` must exist before calling `bd_setting()`.')
+    if not hasattr(bd_setting, 'obj') or bd_setting.obj is None:
+        raise AssertionError('`bd_setting.obj` must exist before calling `bd_setting()`.')
     default = bd_setting.default.get(setting_name, None)
     return bd_setting.obj.get(setting_name, default)
 
@@ -203,7 +205,7 @@ def ok_to_do_box_drawing(view: sublime.View, debugging: bool) -> bool:
 
 
 def timestamp() -> str:
-    """ Configured timestamp; used in some Package debug output. """
+    """ Universal timestamp; used in some Package debug output. """
     now = datetime.now()
     fmt = '%Y-%m-%d %H:%M'
     return now.strftime(fmt)
