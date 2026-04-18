@@ -138,7 +138,6 @@ class DebugBits(IntFlag):
         # ---------------------------------------------------------------------
         # Core Bits
         # ---------------------------------------------------------------------
-        NONE                   = 0x0000
         DEBUGGING              = 0x0001
         LOAD_UNLOAD            = 0x0002
         INITIALIZATION         = 0x0004
@@ -170,11 +169,18 @@ class DebugBits(IntFlag):
         # the time the bit gets set.  This is the only bit that is like that.
         # All the other ones get set after the cached Package settings have
         # been brought in.
+        #
+        # Turning on IMPORTING debugging in full is a 3-part process:
+        # - plugin.py:  debugging = True;
+        # - below:      _debugging: DebugBits = DebugBits.IMPORTING;
+        # - settings:   add DebugBits.IMPORTING to debugging setting string.
+        # ---------------------------------------------------------------------
         IMPORTING              = 0X2000
 
         # ---------------------------------------------------------------------
         # Utility Bits
         # ---------------------------------------------------------------------
+        NONE                   = 0x0000
         ALL                    = 0xFFFF
         ANY                    = 0xFFFF
 
@@ -189,7 +195,6 @@ class DebugBits(IntFlag):
     # ---------------------------------------------------------------------
     # Core Bits
     # ---------------------------------------------------------------------
-    NONE                   = 0x0000
     DEBUGGING              = 0x0001
     LOAD_UNLOAD            = 0x0002
     SETTINGS_CHANGED_EVENT = 0x0004
@@ -217,6 +222,7 @@ class DebugBits(IntFlag):
     # ---------------------------------------------------------------------
     # Utility Bits
     # ---------------------------------------------------------------------
+    NONE                   = 0x0000
     ALL                    = 0xFFFF
     ANY                    = 0xFFFF
 
@@ -316,7 +322,10 @@ def _securely_computed_bits_from_setting_input(
         if match:
             result = eval(selection_bits)
         else:
-            raise ValueError(f'Debug Module:  Error:  invalid string:  [{selection_bits}].')
+            raise ValueError(
+                    f'Debug Module:  Error:  invalid string:  [{selection_bits}]\n'
+                    f'  did not match [{_valid_debugging_string_re.pattern}].'
+                    )
     # ---------------------------------------------------------------------
     # Boolean
     # ---------------------------------------------------------------------
