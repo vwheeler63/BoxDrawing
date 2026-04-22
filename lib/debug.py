@@ -205,18 +205,19 @@ class DebugBits(IntFlag):
     CHARACTER_SET          = 0x0080
 
     # ---------------------------------------------------------------------
-    # Importing Bits
+    # Load/Reload/Import-Time Bits
     # ---------------------------------------------------------------------
-    # Note: because the Debug Module normally does not get initialized
-    # until after the Plugin is fully loaded and `plugin_loaded()` event
-    # gets fired, in order to use the Debug Module with the IMPORTING
-    # bit, the bit has to be set directly into the `_debugging` attribute
-    # in THIS module's module-level code, since execution of THAT code is
-    # when all the IMPORTING debug code gets executed.  Otherwise, the bit
+    # Note: because the Debug Module normally does not get initialized with
+    # values from user settings until after the Plugin is fully loaded and
+    # `plugin_loaded()` event gets fired, in order to use the Debug Module
+    # with these bits, the bit has to be set directly into the `_debugging`
+    # module attribute below, since execution of THAT code is when all the
+    # load/reload/import-time debug code gets executed.  Otherwise, the bit
     # won't be set yet, and all the importing code will have executed by
-    # the time the bit gets set.  This is the only bit that is like that.
-    # All the other ones get set after the cached Package settings have
+    # the time the bit gets set.  These are the only bits that are like
+    # that.  All other bits get set after the cached Package settings have
     # been brought in.
+    # ---------------------------------------------------------------------
     IMPORTING              = 0X8000
 
     # ---------------------------------------------------------------------
