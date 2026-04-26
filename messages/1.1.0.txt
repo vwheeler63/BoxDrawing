@@ -1,4 +1,4 @@
-Version 1.1.1 (2026-04-26 13:38)
+Version 1.1.0 (2026-04-26 13:38)
 --------------------------------
 
 - Fixed bug surfacing after a bug in enum.IntFlag behavior was fixed in jump from
