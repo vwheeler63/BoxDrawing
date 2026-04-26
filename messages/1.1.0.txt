@@ -1,0 +1,13 @@
+Version 1.1.1 (2026-04-26 13:38)
+--------------------------------
+
+- Fixed bug surfacing after a bug in enum.IntFlag behavior was fixed in jump from
+  Python 3.8 to 3.14.  This manifested as an exception message during
+  `plugin_loaded()` event if user was using string value "DebugBits.NONE" in a
+  local override for the "debugging" package setting.
+- Renamed string value prefix for "debugging" setting: "DebugBit" => "DebugBits".
+- Updated some internal documentation.
+- Removed unused "utils" module in `lib/` sub-package.
+- Replaced `assert` assertions that were being optimized away when running under
+  Sublime Text since it is effectively running Python with the "-O" option,
+  causing `assert` statements to be optimized away in byte code.
