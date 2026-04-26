@@ -98,7 +98,6 @@ from sublime import View, Region
 import sublime_plugin
 from enum import IntEnum, IntFlag
 from ..lib.debug import DebugBits, is_debugging, set_debugging_bits
-from ..lib import utils
 from ..boxdrawing import package_name
 from . import character_set
 

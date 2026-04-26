@@ -7,8 +7,6 @@ if debugging:
 
 reload(__package__, ('debug'))
 
-from . import utils
-
 __all__ = [
     'debug'
 ]
