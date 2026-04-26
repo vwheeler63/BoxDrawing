@@ -5,13 +5,10 @@ debugging = is_debugging(DebugBits.IMPORTING)
 if debugging:
     print(f'{__package__}  >>> module execution')
 
-reload(__package__, ('debug', 'utils'))
-
-from . import utils
+reload(__package__, ('debug'))
 
 __all__ = [
-    'debug',
-    'utils'
+    'debug'
 ]
 
 if debugging:

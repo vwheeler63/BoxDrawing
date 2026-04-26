@@ -26,7 +26,6 @@
 	//   (See below.)
 	//
 	// class DebugBits:
-	//     NONE                   = 0x0000
 	//     DEBUGGING              = 0x0001
 	//     LOAD_UNLOAD            = 0x0002
 	//     SETTINGS_CHANGED_EVENT = 0x0004
@@ -35,8 +34,9 @@
 	//     COMMANDS               = 0x0020
 	//     BOX_DRAWING            = 0x0040
 	//     CHARACTER_SET          = 0x0080
-	//     IMPORTING              = 0X8000
+	//     IMPORTING              = 0x8000
 	//
+	//     NONE                   = 0x0000
 	//     ALL                    = 0xFFFF
 	//     ANY                    = 0xFFFF
 	//

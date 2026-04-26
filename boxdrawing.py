@@ -84,7 +84,11 @@ def reload(dotted_subpkg: str, submodules: Tuple[str, ...] = ()):
     :param dotted_subpkg:  dotted directory portion of module names that
                              will be found in the keys of ``sys.modules``.
                              Example:  'MyPackage.src.commands'
-    :param submodules:     tuple of submodule names
+    :param submodules:     tuple of submodule names; CAUTION: if there
+                             is just one submodule, ('module_name') is NOT
+                             NOT A TUPLE and will cause that module to NOT
+                             be reloaded!  It must be ('module_name',) with
+                             a comma to make it a tuple.
     """
     global _reload_indent_level
     _reload_indent_level += 1
