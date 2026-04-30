@@ -1,7 +1,6 @@
 """ -----------------------------------------------------------------------
 ProComment Package Context Events
 ----------------------------------------------------------------------- """
-from typing import Union
 import sublime
 import sublime_plugin
 from ..lib.debug import IntFlag, DebugBits, is_debugging
@@ -16,7 +15,7 @@ class BoxDrawingContextEventListener(sublime_plugin.ViewEventListener):
             self,
             key      : str,
             operator : sublime.QueryOperator,
-            operand  : Union[bool, str, int],
+            operand  : bool | str | int,
             match_all: bool
             ):
         """
