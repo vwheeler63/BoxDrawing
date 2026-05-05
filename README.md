@@ -4,19 +4,6 @@
 [![Latest Tag](https://img.shields.io/badge/tag-1.0.3-royalblue?style=flat-square&logo=github)](https://github.com/vwheeler63/BoxDrawing/tags)
 [![GitHub Repository](https://img.shields.io/badge/github-repo-blue?style=flat-square&logo=github)](https://github.com/vwheeler63/BoxDrawing)
 
-### Table of contents
-
-* [Features](#features)
-* [Installation](#installation)
-* [Usage](#usage)
-* [Settings](#settings)
-* [Key Bindings](#key-bindings)
-* [Menu Items](#menu-items)
-* [Commands](#commands)
-* [Notes](#notes)
-
----
-
 <div id="readme"></div>
 
 # BoxDrawing
@@ -45,8 +32,22 @@ to draw lines and boxes like these:
 ```
 
 
-
 ![Demo: Drawing an ASCII Table](https://raw.githubusercontent.com/vwheeler63/BoxDrawing/master/demo.gif)
+
+
+
+#### Table of contents
+
+* [Features](#features)
+* [Installation](#installation)
+* [Usage](#usage)
+* [Settings](#settings)
+* [Key Bindings](#key-bindings)
+* [Menu Items](#menu-items)
+* [Commands](#commands)
+* [Notes](#notes)
+
+---
 
 
 
