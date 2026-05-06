@@ -1,4 +1,4 @@
-[![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](https://github.com/vwheeler63/BoxDrawing/blob/master/LICENSE)
+S[![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](https://github.com/vwheeler63/BoxDrawing/blob/master/LICENSE)
 [![Requires Sublime Text Build 4000 or later](https://img.shields.io/badge/Sublime_Text-4000+-ca875a?style=flat-square&logo=sublimetext)](https://www.sublimetext.com)
 [![Download BoxDrawing from Package Control](https://img.shields.io/packagecontrol/dt/BoxDrawing.svg?style=flat-square&logo=sublime-text)](https://packages.sublimetext.io/packages/BoxDrawing)
 [![Latest Tag](https://img.shields.io/badge/tag-1.0.3-royalblue?style=flat-square&logo=github)](https://github.com/vwheeler63/BoxDrawing/tags)
@@ -16,20 +16,8 @@
 
 to draw lines and boxes like these:
 
-```
-┌─┬┐  ╔═╦╗  ╓─╥╖  ╒═╤╕    +------------+----------------+
-│ ││  ║ ║║  ║ ║║  │ ││    | Column One | Column Two     |
-├─┼┤  ╠═╬╣  ╟─╫╢  ╞═╪╡    +============+================+
-└─┴┘  ╚═╩╝  ╙─╨╜  ╘═╧╛    |            |                |
-╭───────────────────╮     +------------+----------------+
-│  ╔═══╗ Some Text  │     |            |                |
-│  ╚═╦═╝ in the box │░    +------------+----------------+
-╞═╤══╩══╤═══════════╡░    |            |                |
-│ ├──┬──┤           │░    +------------+----------------+
-│ └──┴──┘           │░    |            |                |
-╰───────────────────╯░    +------------+----------------+
-  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒░
-```
+![Example of BoxDrawing Lines and Boxes](https://raw.githubusercontent.com/vwheeler63/BoxDrawing/master/demo.png)
+
 
 
 ![Demo: Drawing an ASCII Table](https://raw.githubusercontent.com/vwheeler63/BoxDrawing/master/demo.gif)
