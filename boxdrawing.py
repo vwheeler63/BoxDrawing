@@ -1,6 +1,6 @@
 """ ***********************************************************************
 Box Drawing
-===========================================================================
+***************************************************************************
 
 BoxDrawing is a Sublime Text package enabling the user, normally with
 these arrow-key combinations:
@@ -33,32 +33,38 @@ See `README.md` and `src/core.py` for more details.
 import importlib
 import sys
 import os
+from datetime import datetime
 
 
-# =========================================================================
+
+# *************************************************************************
 # Data
-# =========================================================================
+# *************************************************************************
 
-# Use name of parent directory as `package_name`.
 module_path, _ = os.path.splitext(os.path.realpath(__file__))
 _, submodule_name = os.path.split(module_path)
-package_name = __package__
+if isinstance(__package__, str):
+    package_name = __package__
+else:
+    package_name = 'Unknown'
 this_module_name = f'{package_name}.{submodule_name}'
 del _, module_path, submodule_name
 _reload_indent_level = -1
 
 # Can't use `debugging = is_debugging(DebugBits.IMPORTING)` here because
 # the import required to support it causes a circular import.
+t0 = datetime.now()
+
 debugging = False
 if debugging:
     print(f'{this_module_name}  >>> module execution')
 
 
-# =========================================================================
+# *************************************************************************
 # Load / Reload
-# =========================================================================
+# *************************************************************************
 
-def reload(dotted_subpkg: str, submodules: tuple[str, ...] = ()):
+def reload(dotted_subpkg: str | None, submodules: tuple[str, ...] = ()):
     """
     Reload each module in `submodules` only if previously loaded.  This is a
     precondition of calling ``importlib.reload()`` but is also for efficiency:
@@ -97,21 +103,22 @@ def reload(dotted_subpkg: str, submodules: tuple[str, ...] = ()):
             print('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv')
         print(f'{indent}reload():  >>> {dotted_subpkg=} {submodules=}')
 
-    if not submodules:
-        # Called from top-level Plugin.
-        module_name = dotted_subpkg
-        if module_name in sys.modules:
-            if debugging:
-                print(f'{indent}Reloading({module_name})')
-            importlib.reload(sys.modules[module_name])
-    else:
-        # Called from subpackage.
-        for submodule in submodules:
-            module_name = f'{dotted_subpkg}.{submodule}'
+    if dotted_subpkg:
+        if not submodules:
+            # Called from top-level Plugin.
+            module_name = dotted_subpkg
             if module_name in sys.modules:
                 if debugging:
                     print(f'{indent}Reloading({module_name})')
                 importlib.reload(sys.modules[module_name])
+        else:
+            # Called from subpackage.
+            for submodule in submodules:
+                module_name = f'{dotted_subpkg}.{submodule}'
+                if module_name in sys.modules:
+                    if debugging:
+                        print(f'{indent}Reloading({module_name})')
+                    importlib.reload(sys.modules[module_name])
 
     if debugging:
         print(f'{indent}reload():  <<<')
@@ -124,13 +131,17 @@ def reload(dotted_subpkg: str, submodules: tuple[str, ...] = ()):
 reload(package_name + '.lib')  # Recurse into .lib/ subpackage.
 reload(package_name + '.src')  # Recurse into .src/ subpackage.
 
-from .lib import *
-from .src import *
+# This needs to be BELOW the `reload()` definition above because the modules
+# imported here require `reload()` to already be defined because they both
+# import it and call it.
+from .lib import *     # noqa: E402, F403
+from .src import *     # noqa: E402, F403
 
 
-# =========================================================================
+
+# *************************************************************************
 # Events
-# =========================================================================
+# *************************************************************************
 
 def plugin_loaded():
     core.on_plugin_loaded()
@@ -142,3 +153,5 @@ def plugin_unloaded():
 
 if debugging:
     print(f'{this_module_name}  <<<')
+    t1 = datetime.now()
+    print(f'Time to load/reload {this_module_name}: {t1 - t0}.')
