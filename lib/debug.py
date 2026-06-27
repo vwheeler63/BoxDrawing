@@ -43,16 +43,16 @@ Usage
 
 .. code-block:: py
 
-    from .lib.debug import IntFlag, DebugBits, is_debugging, set_debugging_bits
+    from .lib.debug import DebugBits, is_debugging
 
-    def bd_setting():
+    def pc_setting():
         # ...function used to store and retrieve cached Package settings.
         # ...
 
     def plugin_loaded():
-        bd_setting.obj = sublime.load_settings('my_package.sublime-settings')
-        temp = bd_setting('debugging')
-        set_debugging_bits(temp)
+        pc_setting.obj = sublime.load_settings('my_package.sublime-settings')
+        temp = pc_setting('debugging')
+        replace_bits(temp)
         # Other Plugin initialization here.
 
     # Then later in Plugin code:
@@ -81,13 +81,13 @@ Usage
 Public API
 ==========
 
-    def set_debugging_bits(setting_value: int | str | bool):
+    def replace_bits(setting_value: Union[int, str, bool]):
         # Set Debug Module setting to ``selection_bits``.
 
-    def add_debugging_bits(setting_value: int | str | bool):
+    def set_bits(setting_value: Union[int, str, bool]):
         # Add 1 bits in ``selection_bits`` to Debug Module setting.
 
-    def subtract_debugging_bits(setting_value: int | str | bool):
+    def clear_bits(setting_value: Union[int, str, bool]):
         # Subtract 1 bits in ``selection_bits`` from Debug Module setting.
 
     def is_debugging(selection_bits: DebugBits = DebugBits.ANY) -> int:
@@ -104,14 +104,19 @@ Public API
         #            were found.
         #
         #            If ``True``, at least one of the bits was found.
+
+
+
+@version  1.1  27-Jun-2026 07:50 vw  - Refactor:  renamed
+                                       - set_bits                => replace_bits
+                                       - add_debugging_bits      => set_bits
+                                       - subtract_debugging_bits => clear_bits
+@version  1.0  20-Feb-2026 00:58 vw  - Created
 *************************************************************************** """
-# Accept forward references as is done in the default assignment
-# to ``_debugging`` below.
-# from __future__ import annotations
-import re
+from typing import Union, List
 from enum import IntFlag
-from typing import List
-from sublime import View, Region, RegionFlags
+import re
+import sublime
 
 
 class DebugBits(IntFlag):
@@ -138,51 +143,53 @@ class DebugBits(IntFlag):
         # ---------------------------------------------------------------------
         # Core Bits
         # ---------------------------------------------------------------------
-        DEBUGGING              = 0x0001
-        LOAD_UNLOAD            = 0x0002
-        INITIALIZATION         = 0x0004
-        SETTINGS_CHANGED_EVENT = 0x0008
-        QUERY_CONTEXT_EVENT    = 0x0010
-        COMMENT_SPECIFIER      = 0x0020
-        BASIC_COMMENT_BLOCKS   = 0x0040
-        HEADER_COMMENT_BLOCKS  = 0x0080
+        DEBUGGING              = 0x00000001
+        LOAD_UNLOAD            = 0x00000002
+        INITIALIZATION         = 0x00000004
+        SETTINGS_CHANGED_EVENT = 0x00000008
+        QUERY_CONTEXT_EVENT    = 0x00000010
+        COMMENT_SPECIFIER      = 0x00000020
+        BASIC_COMMENT_BLOCKS   = 0x00000040
+        HEADER_COMMENT_BLOCKS  = 0x00000080
 
         # ---------------------------------------------------------------------
         # Snippet (Header) Postprocessing (SPP) Bits
         # ---------------------------------------------------------------------
-        POSTPROCESSING         = 0x0100
-        BLOCK_COMMENTS         = 0x0200
-        PARAMETERS             = 0x0400
-        PRECONDITIONS          = 0x0800
-        POSTCONDITIONS         = 0x1000
+        POSTPROCESSING         = 0x00000100
+        BLOCK_COMMENTS         = 0x00000200
+        PARAMETERS             = 0x00000400
+        PRECONDITIONS          = 0x00000800
+        POSTCONDITIONS         = 0x00001000
 
         # ---------------------------------------------------------------------
         # Importing Bits
         # ---------------------------------------------------------------------
-        # Note: because the Debug Module normally does not get initialized
-        # until after the Plugin is fully loaded and `plugin_loaded()` event
-        # gets fired, in order to use the Debug Module with the IMPORTING
-        # bit, the bit has to be set directly into the `_debugging` attribute
-        # in THIS module's module-level code, since execution of THAT code is
-        # when all the IMPORTING debug code gets executed.  Otherwise, the bit
-        # won't be set yet, and all the importing code will have executed by
-        # the time the bit gets set.  This is the only bit that is like that.
-        # All the other ones get set after the cached Package settings have
-        # been brought in.
+        # Note: because the `_debugging` value below normally does not get
+        # initialized with values from user settings until after the Plugin is
+        # fully loaded and `plugin_loaded()` event gets fired, if you need to
+        # debug with the bits below, they have to be assigned directly to the
+        # `_debugging` attribute below so that they will be available to the
+        # logic involved with the below bits, typically during IMPORTING and
+        # sometimes other bits are present that matter before the Package is
+        # completely loaded and initialized.  Otherwise, the bit(s) won't be
+        # set yet, and all the loading/importing code will have executed by the
+        # time the bit(s) gets set.  These are the only bits that are like
+        # that.  All other bits get set after the cached Package settings have
+        # been brought into the Package.
         #
         # Turning on IMPORTING debugging in full is a 3-part process:
-        # - plugin.py:  debugging = True;
-        # - below:      _debugging: DebugBits = DebugBits.IMPORTING;
-        # - settings:   add DebugBits.IMPORTING to debugging setting string.
+        # - plugin.py:  debugging = True in top-level plugin;
+        # - below    :  _debugging: DebugBits = DebugBits.IMPORTING;
+        # - settings :  add DebugBits.IMPORTING to debugging setting string.
         # ---------------------------------------------------------------------
-        IMPORTING              = 0X2000
+        IMPORTING              = 0x80000000
 
         # ---------------------------------------------------------------------
         # Utility Bits
         # ---------------------------------------------------------------------
-        NONE                   = 0x0000
-        ALL                    = 0xFFFF
-        ANY                    = 0xFFFF
+        NONE                   = 0x00000000
+        ALL                    = 0xFFFFFFFF
+        ANY                    = 0xFFFFFFFF
 
     The number of bits used shown above is 16, but it can be raised or
     lowered in the range [1-32] (the limit of the ``IntFlag`` class and
@@ -195,59 +202,68 @@ class DebugBits(IntFlag):
     # ---------------------------------------------------------------------
     # Core Bits
     # ---------------------------------------------------------------------
-    DEBUGGING              = 0x0001
-    LOAD_UNLOAD            = 0x0002
-    SETTINGS_CHANGED_EVENT = 0x0004
-    QUERY_CONTEXT_EVENT    = 0x0008
-    ON_OFF_STATE           = 0x0010
-    COMMANDS               = 0x0020
-    BOX_DRAWING            = 0x0040
-    CHARACTER_SET          = 0x0080
+    DEBUGGING              = 0x00000001
+    LOAD_UNLOAD            = 0x00000002
+    SETTINGS_CHANGED_EVENT = 0x00000004
+    QUERY_CONTEXT_EVENT    = 0x00000008
+    ON_OFF_STATE           = 0x00000010
+    COMMANDS               = 0x00000020
+    BOX_DRAWING            = 0x00000040
+    CHARACTER_SET          = 0x00000080
 
     # ---------------------------------------------------------------------
     # Load/Reload/Import-Time Bits
     # ---------------------------------------------------------------------
-    # Note: because the Debug Module normally does not get initialized with
-    # values from user settings until after the Plugin is fully loaded and
-    # `plugin_loaded()` event gets fired, in order to use the Debug Module
-    # with these bits, the bit has to be set directly into the `_debugging`
-    # module attribute below, since execution of THAT code is when all the
-    # load/reload/import-time debug code gets executed.  Otherwise, the bit
-    # won't be set yet, and all the importing code will have executed by
-    # the time the bit gets set.  These are the only bits that are like
+    # Note: because the `_debugging` value below normally does not get
+    # initialized with values from user settings until after the Plugin is
+    # fully loaded and `plugin_loaded()` event gets fired, if you need to
+    # debug with the bits below, they have to be assigned directly to the
+    # `_debugging` attribute below so that they will be available to the
+    # logic involved with the below bits, typically during IMPORTING and
+    # sometimes other bits are present that matter before the Package is
+    # completely loaded and initialized.  Otherwise, the bit(s) won't be
+    # set yet, and all the loading/importing code will have executed by the
+    # time the bit(s) gets set.  These are the only bits that are like
     # that.  All other bits get set after the cached Package settings have
-    # been brought in.
+    # been brought into the Package.
+    #
+    # Turning on IMPORTING debugging in full is a 3-part process:
+    # - plugin.py:  debugging = True in top-level plugin;
+    # - below    :  _debugging: DebugBits = DebugBits.IMPORTING;
+    # - settings :  add DebugBits.IMPORTING to debugging setting string.
     # ---------------------------------------------------------------------
-    IMPORTING              = 0X8000
+    IMPORTING                = 0x80000000
 
     # ---------------------------------------------------------------------
     # Utility Bits
     # ---------------------------------------------------------------------
-    NONE                   = 0x0000
-    ALL                    = 0xFFFF
-    ANY                    = 0xFFFF
+    NONE                     = 0x00000000
+    ALL                      = 0xFFFFFFFF
+    ANY                      = 0xFFFFFFFF
 
 
-# =========================================================================
+
+# *************************************************************************
 # Data
 #
 # `_debugging` is a bit vector (int) used to do fast bit tests.
 # This allows us to selectively turn on and off parts of debugging
 # output, getting away from the profuse "all at once" debug output.
-# =========================================================================
+# *************************************************************************
 
 _debugging: DebugBits = DebugBits.NONE
 _valid_debugging_string_re = None
-_cfg_debugging_print_format = '04X'
+_cfg_debugging_print_format = '08X'
 
 
-# =========================================================================
+
+# *************************************************************************
 # Module Definitions
-# =========================================================================
+# *************************************************************************
 
 def debug_show_regions(
-        view    : View,
-        regions : List[Region],
+        view    : sublime.View,
+        regions : List[sublime.Region],
         key     : str,
         comment : str,
         pkg_name: str = ''
@@ -258,7 +274,7 @@ def debug_show_regions(
         regions,
         "region.orangish",
         "bookmark",
-        flags=RegionFlags.DRAW_EMPTY | RegionFlags.DRAW_NO_FILL
+        flags=sublime.RegionFlags.DRAW_EMPTY | sublime.RegionFlags.DRAW_NO_FILL
     )
 
     # Delay so user can look at regions highlighted in View before they are erased.
@@ -281,7 +297,7 @@ def _debugging_string_validator_regex():
     """
     bit_class = DebugBits
     attr_list = dir(bit_class)
-    bit_names = ['NONE']     # Otherwise this doesn't get included because 0 not power of 2.
+    bit_names = ['NONE']     # Otherwise this doesn't get included because 0 is not a power of 2.
 
     for attr in attr_list:
         if attr[0] == '_':
@@ -296,9 +312,11 @@ def _debugging_string_validator_regex():
     return re.compile(final_re)
 
 
-def _securely_computed_bits_from_setting_input(selection_bits: int | str | bool | DebugBits) -> DebugBits:
+def _securely_computed_bits_from_setting_input(
+        selection_bits: Union[int,str,bool,DebugBits]
+        ) -> DebugBits:
     """
-    Accept any of int | str | bool | DebugBits, and securely compute the
+    Accept any of Union[int, str, bool] | DebugBits, and securely compute the
     applicable Debug Module bits in an int:  ``result``.
     """
     global _valid_debugging_string_re
@@ -325,6 +343,7 @@ def _securely_computed_bits_from_setting_input(selection_bits: int | str | bool 
                     f'Debug Module:  Error:  invalid string:  [{selection_bits}]\n'
                     f'  did not match [{_valid_debugging_string_re.pattern}].'
                     )
+
     # ---------------------------------------------------------------------
     # Boolean
     # ---------------------------------------------------------------------
@@ -333,11 +352,13 @@ def _securely_computed_bits_from_setting_input(selection_bits: int | str | bool 
             result = DebugBits.ALL
         else:
             result = DebugBits.NONE
+
     # ---------------------------------------------------------------------
     # Integer
     # ---------------------------------------------------------------------
     elif isinstance(selection_bits, int):
         result = selection_bits
+
     # ---------------------------------------------------------------------
     # Unknown
     # ---------------------------------------------------------------------
@@ -376,40 +397,40 @@ def _report_debugging_setting():
                             )
 
 
-def _set_debugging_bits(selection_bits: int):
+def _replace_bits(selection_bits: DebugBits):
     global _debugging
     _debugging = selection_bits
     _report_debugging_setting()
 
 
-def _add_debugging_bits(selection_bits: int):
+def _set_bits(selection_bits: DebugBits):
     global _debugging
     _debugging |= selection_bits
     _report_debugging_setting()
 
 
-def _subtract_debugging_bits(selection_bits: int):
+def _clear_bits(selection_bits: DebugBits):
     global _debugging
     _debugging &= ~(selection_bits)
     _report_debugging_setting()
 
 
-def set_debugging_bits(setting_value: int | str | bool | DebugBits):
+def replace_bits(setting_value: Union[int,str,bool,DebugBits]):
     """ Set Debug Module setting to ``selection_bits``. """
     bits = _securely_computed_bits_from_setting_input(setting_value)
-    _set_debugging_bits(bits)
+    _replace_bits(bits)
 
 
-def add_debugging_bits(setting_value: int | str | bool | DebugBits):
+def set_bits(setting_value: Union[int,str,bool,DebugBits]):
     """ Add '1' bits in ``selection_bits`` to Debug Module setting.  """
     bits = _securely_computed_bits_from_setting_input(setting_value)
-    _add_debugging_bits(bits)
+    _set_bits(bits)
 
 
-def subtract_debugging_bits(setting_value: int | str | bool | DebugBits):
+def clear_bits(setting_value: Union[int,str,bool,DebugBits]):
     """ Subtract '1' bits in ``selection_bits`` from Debug Module setting.  """
     bits = _securely_computed_bits_from_setting_input(setting_value)
-    _subtract_debugging_bits(bits)
+    _clear_bits(bits)
 
 
 def is_debugging(selection_bits: DebugBits = DebugBits.ANY) -> int:

@@ -97,7 +97,7 @@ import sublime
 from sublime import View, Region
 import sublime_plugin
 from enum import IntEnum, IntFlag
-from ..lib.debug import DebugBits, is_debugging, set_debugging_bits
+from ..lib.debug import DebugBits, is_debugging, replace_bits
 from ..boxdrawing import package_name
 from . import character_set
 
@@ -320,7 +320,7 @@ def _on_pkg_settings_chgd():
 
     # Initialize debugging subsystem.
     temp = bd_setting(_cfg_stg_name__debugging)
-    set_debugging_bits(temp)
+    replace_bits(temp)
     debugging = is_debugging(DebugBits.SETTINGS_CHANGED_EVENT)
     if debugging:
         print(f'In _on_pkg_settings_chgd()')
@@ -337,7 +337,7 @@ def on_plugin_loaded():
     _on_pkg_settings_chgd()
     debugging = is_debugging(DebugBits.LOAD_UNLOAD)
     if debugging:
-        print(f'In {__package__}.core.on_plugin_loaded()')
+        print(f'In {__spec__.parent}.core.on_plugin_loaded()')
 
     # Establish event hook for "settings changed" event. This allows the user
     # to change the lists that partake in the content of the RegEx that detects
