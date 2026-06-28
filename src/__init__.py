@@ -1,16 +1,10 @@
-from ..boxdrawing import reload
-from ..lib.debug import IntFlag, DebugBits, is_debugging
-
-debugging = is_debugging(DebugBits.IMPORTING)
+debugging = True
 if debugging:
-    print(f'{__package__}  >>> module execution')
+    print(f'{__name__}  >>> module execution....')
 
-reload(__package__, ('core','contexts', 'character_set'))
-reload(__package__ + '.commands')  # Recurse into .commands/ subpackage.
-
-from . import core
-from .contexts import *
-from .commands import *
+from . import core       # noqa: E402
+from .contexts import *  # noqa: E402
+from .commands import *  # noqa: E402
 
 __all__ = [
     'core',
@@ -25,4 +19,4 @@ __all__ = [
 ]
 
 if debugging:
-    print(f'{__package__}  <<<')
+    print(f'{__name__}  <<<')

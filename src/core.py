@@ -1,6 +1,18 @@
-r""" ***********************************************************************
+r""" **********************************************************************
+Box Drawing Core
+***************************************************************************
+
+This module provides:
+
+- Package settings + response to when those settings change,
+- other package-specific utilities, and
+- plugin_loaded/plugin_unloaded event catching.
+
+
+
+***************************************************************************
 Box Drawing
-===========================================================================
+***************************************************************************
 
 Box Drawing is Sublime Text package enabling the user to use
 
@@ -86,25 +98,25 @@ the move to only the same level of section or higher.
 When Box Drawing is OFF for the current View, ``contexts.on_query_context()``
 returns ``False`` or ``None`` as appropriate, and Sublime Text uses the
 normal bindings for these keys.
+
+
+
+@version  1.0  30-Mar-2026 17:55 vw  - Created
 *********************************************************************** """
-from datetime import datetime, timezone
-from typing import List
-import pprint  # For human-readable data dumps when debugging.
-import re
-import os
-import sys
+from datetime import datetime
 import sublime
-from sublime import View, Region
-import sublime_plugin
-from enum import IntEnum, IntFlag
+from sublime import View
+from enum import IntEnum
 from ..lib.debug import DebugBits, is_debugging, replace_bits
-from ..boxdrawing import package_name
 from . import character_set
 
 
 # =========================================================================
 # Configuration
 # =========================================================================
+
+# Package Name
+package_name, _, _ = __spec__.parent.rpartition('.')
 
 # Use name of parent directory as `package_name`.
 _cfg_pkg_settings_file                   = package_name + '.sublime-settings'
@@ -169,7 +181,7 @@ class State(IntEnum):
 # Utilities
 # =========================================================================
 
-def ok_to_do_box_drawing(view: sublime.View, debugging: bool) -> bool:
+def ok_to_do_box_drawing(view: sublime.View, debugging: int) -> bool:
     if debugging:
         print('In ok_to_do_box_drawing()...')
 
@@ -323,7 +335,7 @@ def _on_pkg_settings_chgd():
     replace_bits(temp)
     debugging = is_debugging(DebugBits.SETTINGS_CHANGED_EVENT)
     if debugging:
-        print(f'In _on_pkg_settings_chgd()')
+        print('In _on_pkg_settings_chgd()')
 
 
 def on_plugin_loaded():
