@@ -21,7 +21,7 @@ reloaded periodically:
                         same order they were originally loaded in.
 
 :Package updates:       The Package Control Package itself updates other
-                      Packages at run time without re-starting the
+                        Packages at run time without re-starting the
                         Python interpreter.  When Sublime Text Packages
                         are complex enough to require sub-packages, then
                         care must be taken on these updates that no
@@ -39,7 +39,6 @@ module, which in turn reloads the other modules of the Package.
 @version  1.1  26-Jun-2026 11:06 vw  - Replaced reloader
 @version  1.0  11-Apr-2026 18:21 vw  - Created
 *********************************************************************** """
-
 from datetime import datetime
 import importlib.abc
 import importlib.machinery
@@ -58,7 +57,7 @@ from types import ModuleType
 # the import required to support it causes a circular import.
 t0 = datetime.now()
 
-debugging = True
+debugging = False
 if debugging:
     print(f'{__name__}  >>> module execution....')
 
