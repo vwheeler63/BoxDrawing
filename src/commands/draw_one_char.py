@@ -73,7 +73,7 @@ from typing import List
 import sublime_plugin
 import sublime
 from sublime import Region, View
-from sublime_types import Point
+# from sublime_types import Point
 from ...lib.debug import IntFlag, DebugBits, is_debugging
 from .. import core
 from ..core import State
