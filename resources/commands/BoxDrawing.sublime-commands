@@ -127,4 +127,71 @@
 			"direction": 3,
 		}
 	},
+	{
+		"caption": "BoxDrawing: Fill Brush — None (return to line drawing)",
+		"command": "box_drawing_select_fill_brush",
+		"args": {
+			"brush_id": 0,
+		}
+	},
+	{
+		"caption": "BoxDrawing: Fill Brush — ░ Light Shade",
+		"command": "box_drawing_select_fill_brush",
+		"args": {
+			"brush_id": 1,
+		}
+	},
+	{
+		"caption": "BoxDrawing: Fill Brush — ▒ Medium Shade",
+		"command": "box_drawing_select_fill_brush",
+		"args": {
+			"brush_id": 2,
+		}
+	},
+	{
+		"caption": "BoxDrawing: Fill Brush — ▓ Dark Shade",
+		"command": "box_drawing_select_fill_brush",
+		"args": {
+			"brush_id": 3,
+		}
+	},
+	{
+		"caption": "BoxDrawing: Fill Brush — █ Full Block",
+		"command": "box_drawing_select_fill_brush",
+		"args": {
+			"brush_id": 4,
+		}
+	},
+	{
+		"caption": "BoxDrawing: Fill Brush — ▀ Upper Half Block",
+		"command": "box_drawing_select_fill_brush",
+		"args": {
+			"brush_id": 5,
+		}
+	},
+	{
+		"caption": "BoxDrawing: Fill Brush — ▄ Lower Half Block",
+		"command": "box_drawing_select_fill_brush",
+		"args": {
+			"brush_id": 6,
+		}
+	},
+	{
+		"caption": "BoxDrawing: Fill Brush — ▌ Left Half Block",
+		"command": "box_drawing_select_fill_brush",
+		"args": {
+			"brush_id": 7,
+		}
+	},
+	{
+		"caption": "BoxDrawing: Fill Brush — ▐ Right Half Block",
+		"command": "box_drawing_select_fill_brush",
+		"args": {
+			"brush_id": 8,
+		}
+	},
+	{
+		"caption": "BoxDrawing: Flood Fill",
+		"command": "box_drawing_flood_fill"
+	},
 ]

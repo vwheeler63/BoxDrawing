@@ -210,6 +210,7 @@ class DebugBits(IntFlag):
     COMMANDS               = 0x00000020
     BOX_DRAWING            = 0x00000040
     CHARACTER_SET          = 0x00000080
+    FILL_BRUSH             = 0x00000100
 
     # ---------------------------------------------------------------------
     # Load/Reload/Import-Time Bits

@@ -16,6 +16,83 @@
 						// "caption": "fulfilled by change_char_set.description().",
 						"command": "box_drawing_change_character_set",
 					},
+					{ "caption": "-" },
+					{
+						// Greyed-out label:  these key combinations have no
+						// single command to bind a menu item to, since each
+						// direction is a separate invocation.
+						"caption": "Draw Single Line  (Alt+Arrow)",
+						"command": "box_drawing_menu_label",
+					},
+					{
+						"caption": "Draw Double Line  (Alt+Shift+Arrow)",
+						"command": "box_drawing_menu_label",
+					},
+					{ "caption": "-" },
+					{
+						"caption": "Fill Brush",
+						"children":
+						[
+							{
+								"caption": "None",
+								"command": "box_drawing_select_fill_brush",
+								"args": { "brush_id": 0 },
+								"checkbox": true
+							},
+							{
+								"caption": "░ Light Shade",
+								"command": "box_drawing_select_fill_brush",
+								"args": { "brush_id": 1 },
+								"checkbox": true
+							},
+							{
+								"caption": "▒ Medium Shade",
+								"command": "box_drawing_select_fill_brush",
+								"args": { "brush_id": 2 },
+								"checkbox": true
+							},
+							{
+								"caption": "▓ Dark Shade",
+								"command": "box_drawing_select_fill_brush",
+								"args": { "brush_id": 3 },
+								"checkbox": true
+							},
+							{
+								"caption": "█ Full Block",
+								"command": "box_drawing_select_fill_brush",
+								"args": { "brush_id": 4 },
+								"checkbox": true
+							},
+							{
+								"caption": "▀ Upper Half Block",
+								"command": "box_drawing_select_fill_brush",
+								"args": { "brush_id": 5 },
+								"checkbox": true
+							},
+							{
+								"caption": "▄ Lower Half Block",
+								"command": "box_drawing_select_fill_brush",
+								"args": { "brush_id": 6 },
+								"checkbox": true
+							},
+							{
+								"caption": "▌ Left Half Block",
+								"command": "box_drawing_select_fill_brush",
+								"args": { "brush_id": 7 },
+								"checkbox": true
+							},
+							{
+								"caption": "▐ Right Half Block",
+								"command": "box_drawing_select_fill_brush",
+								"args": { "brush_id": 8 },
+								"checkbox": true
+							},
+						]
+					},
+					{
+						// "caption": "fulfilled by flood_fill.description().",
+						"command": "box_drawing_flood_fill",
+					},
 				]
 			},
 		]

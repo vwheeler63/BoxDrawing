@@ -15,6 +15,47 @@
 	//     ASCII                  = 6
 	"default_character_set_id": 6,
 
+	// Integer.  Fill Brush ID selected at startup.
+	// -------------------------------------------
+	// One of the values from this enumeration class:
+	//
+	// class FillBrushID(IntEnum):
+	//     NONE         = 0    (no brush:  ordinary line-drawing mode)
+	//     LIGHT_SHADE  = 1    ░
+	//     MEDIUM_SHADE = 2    ▒
+	//     DARK_SHADE   = 3    ▓
+	//     FULL_BLOCK   = 4    █
+	//     UPPER_HALF   = 5    ▀
+	//     LOWER_HALF   = 6    ▄
+	//     LEFT_HALF    = 7    ▌
+	//     RIGHT_HALF   = 8    ▐
+	//
+	// The ID is deliberately the same as the digit the brush is bound to,
+	// i.e. [Ctrl-Alt-3] selects brush 3.
+	//
+	// The selected brush is global (remembered within the loaded Package)
+	// and applies to all Views at the same time, exactly like the character
+	// set.  It is not written back to this file when it changes;  it
+	// returns to the value below at the start of each Sublime Text session.
+	"default_fill_brush_id": 0,
+
+	// List of 8 single-character strings.
+	// -----------------------------------
+	// Overrides the fill brushes bound to [Ctrl-Alt-1] through
+	// [Ctrl-Alt-8], in that order.  A list that is not exactly 8 entries
+	// long, or that contains an entry that is not exactly one character,
+	// is reported in the Console and ignored in favor of the built-in
+	// brushes below.
+	"fill_brush_characters": ["░", "▒", "▓", "█", "▀", "▄", "▌", "▐"],
+
+	// Integer.  Safety limit on flood fill.
+	// -------------------------------------
+	// Flood fill spreads through real space characters only;  line ends
+	// and the edges of the document stop it, so a region is always finite.
+	// A region larger than this is abandoned entirely, with a status
+	// message, and the Buffer is left untouched.
+	"max_flood_cells": 100000,
+
 	// String | Integer | Boolean
 	//
 	// Selectively turn on and off parts of debugging output in Console Panel.
@@ -34,6 +75,7 @@
 	//     COMMANDS               = 0x0020
 	//     BOX_DRAWING            = 0x0040
 	//     CHARACTER_SET          = 0x0080
+	//     FILL_BRUSH             = 0x0100
 	//     IMPORTING              = 0x8000
 	//
 	//     NONE                   = 0x0000
