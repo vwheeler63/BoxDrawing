@@ -1,0 +1,73 @@
+Version 1.2.0 (2026-08-20)
+--------------------------
+
+Fill Brushes
+============
+
+BoxDrawing now paints as well as draws.
+
+While Box Drawing is ON, select one of eight fill brushes and the arrow keys
+paint that character instead of drawing lines:
+
+    Ctrl-Alt-0    Put the brush down;  return to line drawing
+    Ctrl-Alt-1    ░ light shade          Ctrl-Alt-5    ▀ upper half block
+    Ctrl-Alt-2    ▒ medium shade         Ctrl-Alt-6    ▄ lower half block
+    Ctrl-Alt-3    ▓ dark shade           Ctrl-Alt-7    ▌ left half block
+    Ctrl-Alt-4    █ full block           Ctrl-Alt-8    ▐ right half block
+
+With a brush selected:
+
+    Alt-Arrow                Paint the brush, then move in that direction
+    Alt-Shift-Arrow          Paint the brush without moving
+    Ctrl-Alt-Shift-Arrow     Erase (unchanged)
+
+Whenever Box Drawing is ON, brush or no brush:
+
+    Alt-Shift-Space          Flood fill, re-shade or clear
+
+Ctrl-Alt-0 changes drawing mode only.  It never modifies the document.
+
+Flood fill takes the connected run of whatever character is under the caret and
+replaces it with your brush -- or with spaces when no brush is selected:
+
+    caret on a space, brush ▓    ->  fill the empty area
+    caret on ▒, brush ▓          ->  re-shade the filled area
+    caret on ▓, no brush         ->  clear it back to spaces
+
+A fill can only start on a space or on a brush character, so it can never eat a
+box border or a word.  It never lengthens a line, never adds trailing
+whitespace, never extends the document, and is a single undo step.
+
+The fill brush is independent of the box-drawing character set:  switching
+character sets never changes your brush, and vice versa.  With no brush
+selected, line drawing behaves exactly as it did in 1.1.0;  the one addition
+in that mode is Alt-Shift-Space, which clears a filled region.
+
+
+Also in this release
+====================
+
+- While Box Drawing is ON, the status bar now shows the current mode
+  continuously rather than only for a few seconds after a change, e.g.
+  "Box Drawing ON (Unicode [Round Corners]) | Fill: ▐".  The field is cleared
+  entirely when Box Drawing is turned OFF.
+
+- New settings:  "default_fill_brush_id", "fill_brush_characters" and
+  "max_flood_cells".  See:
+  Preferences > Package Settings > BoxDrawing > Settings
+
+- New menu items under Tools > BoxDrawing:  a "Fill Brush" sub-menu and
+  "Flood Fill", plus greyed-out labels showing the "Draw Single Line" and
+  "Draw Double Line" key combinations, which have no single command of their
+  own to hang a menu item on.
+
+- The "Flood Fill" menu item says why it is unavailable rather than just
+  greying out:  "Flood Fill  (turn Box Drawing ON first)", or "Flood Fill
+  (needs one caret, with nothing selected)".
+
+- New DebugBits value:  "DebugBits.FILL_BRUSH" (0x0100).
+
+- Note for non-US keyboard layouts:  Ctrl-Alt is AltGr on Windows and Linux.
+  The brush key bindings are active only while Box Drawing is ON for the
+  current View, and can be re-mapped via:
+  Preferences > Package Settings > BoxDrawing > Key Bindings

@@ -73,12 +73,13 @@ from typing import List
 import sublime_plugin
 import sublime
 from sublime import Region, View
-from sublime_types import Point
+# from sublime_types import Point
 from ...lib.debug import IntFlag, DebugBits, is_debugging
 from .. import core
 from ..core import State
 from .. import character_set
 from ..character_set import Direction
+from .. import fill_brush
 
 
 def _append_spaces_if_needed(view: View, edit, row: int, col: int, debugging: bool):
@@ -253,6 +254,47 @@ def _insert_or_replace(
         if debugging:
             print(f'  Replacing {repr(cur_char)} with {repr(c)}.')
         view.replace(edit, dest_char_rgn, c)
+
+def _paint_one_char(
+        view     : View,
+        edit     : sublime.Edit,
+        row      : int,
+        col      : int,
+        direction: Direction,
+        move     : bool,
+        debugging: bool
+        ):
+    """ Stamp the current fill brush at (`row`,`col`), optionally moving on.
+
+    Stamp-then-move deliberately mirrors the ERASE path rather than the
+    line-drawing path:  the character under the caret is the one the user
+    just committed, and the caret has moved past it.  Line drawing works the
+    other way around because it has to look at where it is going before it
+    can decide what character to write;  painting does not care what is
+    there.
+
+    :param view:       current View
+    :param edit:       sublime.Edit required to modify Buffer
+    :param row:        target row
+    :param col:        target column
+    :param direction:  direction to move after stamping
+    :param move:       move after stamping?  ([Alt-Arrow] yes, [Alt-Shift-Arrow] no)
+    :param debugging:  Are we debugging?
+    """
+    c = fill_brush.current_brush_char()
+
+    if debugging:
+        print('In _paint_one_char()')
+        print(f'  {row=}')
+        print(f'  {col=}')
+        print(f'  {c=}')
+        print(f'  {move=}')
+
+    _insert_or_replace(view, edit, c, row, col, debugging)
+
+    if move:
+        _move_caret(view, edit, row, col, direction, debugging)
+
 
 def _compute_and_place_drawing_char(
         view          : View,
@@ -702,6 +744,30 @@ class BoxDrawingDrawOneCharacterCommand(sublime_plugin.TextCommand):
         src_char_pt   = src_caret_rgn.b
         src_char_rgn  = Region(src_char_pt, src_char_pt + 1)
         row, col      = view.rowcol(src_char_pt)
+
+        # ---------------------------------------------------------------------
+        # Paint Mode.
+        #
+        # A selected fill brush supersedes line drawing entirely, including
+        # the Shadow character set.  The existing `line_count` argument
+        # already carries the modifier the user pressed, and it maps onto
+        # painting without any new key bindings being needed:
+        #
+        # - [Alt-Arrow]             line_count 1  stamp brush, then move
+        # - [Alt-Shift-Arrow]       line_count 2  stamp brush, stay put
+        # - [Ctrl-Alt-Shift-Arrow]  line_count 0  ERASE, unchanged
+        #
+        # ERASE is deliberately left alone:  it remains reachable while a
+        # brush is selected, so the user does not have to clear the brush
+        # just to rub something out.
+        #
+        # Last direction is reset on every stamp so that returning to line
+        # drawing with [Ctrl-Alt-0] always starts a fresh run.
+        # ---------------------------------------------------------------------
+        if fill_brush.is_brush_active() and line_count != 0:
+            _paint_one_char(view, edit, row, col, direction, (line_count == 1), debugging)
+            core.set_last_direction(view, Direction.NONE)
+            return
 
         # Draw something.
         if debugging:

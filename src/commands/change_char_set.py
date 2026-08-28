@@ -1,5 +1,4 @@
 import sublime_plugin
-import sublime
 from ...lib.debug import IntFlag, DebugBits, is_debugging
 from .. import core
 from .. import character_set
@@ -26,12 +25,6 @@ class BoxDrawingChangeCharacterSetCommand(sublime_plugin.TextCommand):
         debugging = is_debugging(DebugBits.COMMANDS | DebugBits.CHARACTER_SET)
         character_set.advance_to_next_character_set(debugging)
 
-        # Confirm change was actually made.
-        name = character_set.current_character_set_name()
-
-        if core.is_state_active(self.view):
-            state = 'ON'
-        else:
-            state = 'OFF'
-
-        sublime.status_message(f'Box Drawing {state} ({name})')
+        # Report the change:  refresh the persistent status bar field and
+        # flash a transient message.
+        core.notify_status(self.view)

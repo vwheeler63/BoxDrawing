@@ -158,4 +158,128 @@
 			{ "key": "box_drawing.ok_to_draw", "match_all": true },
 		]
 	},
+
+	// --------------------------------------------------------------------
+	// Fill Brushes
+	//
+	// Gated on "box_drawing.is_on" rather than "box_drawing.ok_to_draw":
+	// selecting a brush edits nothing, so it need not care whether there
+	// is a selection.  When box drawing is OFF these bindings are not
+	// consumed by this Package at all, which matters because [Ctrl-Alt]
+	// is [AltGr] on many keyboard layouts.
+	// --------------------------------------------------------------------
+	// no brush (return to line drawing)
+	{
+		"keys": ["ctrl+alt+0"],
+		"command": "box_drawing_select_fill_brush",
+		"args": {
+			"brush_id": 0,
+		},
+		"context": [
+			{ "key": "box_drawing.is_on", "match_all": true },
+		]
+	},
+	// ░ Light Shade
+	{
+		"keys": ["ctrl+alt+1"],
+		"command": "box_drawing_select_fill_brush",
+		"args": {
+			"brush_id": 1,
+		},
+		"context": [
+			{ "key": "box_drawing.is_on", "match_all": true },
+		]
+	},
+	// ▒ Medium Shade
+	{
+		"keys": ["ctrl+alt+2"],
+		"command": "box_drawing_select_fill_brush",
+		"args": {
+			"brush_id": 2,
+		},
+		"context": [
+			{ "key": "box_drawing.is_on", "match_all": true },
+		]
+	},
+	// ▓ Dark Shade
+	{
+		"keys": ["ctrl+alt+3"],
+		"command": "box_drawing_select_fill_brush",
+		"args": {
+			"brush_id": 3,
+		},
+		"context": [
+			{ "key": "box_drawing.is_on", "match_all": true },
+		]
+	},
+	// █ Full Block
+	{
+		"keys": ["ctrl+alt+4"],
+		"command": "box_drawing_select_fill_brush",
+		"args": {
+			"brush_id": 4,
+		},
+		"context": [
+			{ "key": "box_drawing.is_on", "match_all": true },
+		]
+	},
+	// ▀ Upper Half Block
+	{
+		"keys": ["ctrl+alt+5"],
+		"command": "box_drawing_select_fill_brush",
+		"args": {
+			"brush_id": 5,
+		},
+		"context": [
+			{ "key": "box_drawing.is_on", "match_all": true },
+		]
+	},
+	// ▄ Lower Half Block
+	{
+		"keys": ["ctrl+alt+6"],
+		"command": "box_drawing_select_fill_brush",
+		"args": {
+			"brush_id": 6,
+		},
+		"context": [
+			{ "key": "box_drawing.is_on", "match_all": true },
+		]
+	},
+	// ▌ Left Half Block
+	{
+		"keys": ["ctrl+alt+7"],
+		"command": "box_drawing_select_fill_brush",
+		"args": {
+			"brush_id": 7,
+		},
+		"context": [
+			{ "key": "box_drawing.is_on", "match_all": true },
+		]
+	},
+	// ▐ Right Half Block
+	{
+		"keys": ["ctrl+alt+8"],
+		"command": "box_drawing_select_fill_brush",
+		"args": {
+			"brush_id": 8,
+		},
+		"context": [
+			{ "key": "box_drawing.is_on", "match_all": true },
+		]
+	},
+
+	// --------------------------------------------------------------------
+	// Flood Fill
+	//
+	// Gated on "box_drawing.ok_to_draw", NOT "box_drawing.ok_to_paint":
+	// with no brush selected this command clears a filled region back to
+	// spaces, so it has to be reachable in line-drawing mode too.
+	// --------------------------------------------------------------------
+	{
+		"keys": ["alt+shift+space"],
+		"command": "box_drawing_flood_fill",
+		"context": [
+			{ "key": "box_drawing.ok_to_draw", "match_all": true },
+		]
+	},
 ]

@@ -109,6 +109,7 @@ from sublime import View
 from enum import IntEnum
 from ..lib.debug import DebugBits, is_debugging, replace_bits
 from . import character_set
+from . import fill_brush
 
 
 # =========================================================================
@@ -126,11 +127,20 @@ _cfg_on_settings_chgd_listener_id        = '_bd_settings_changed_tag'
 
 # Package Settings Names (most are used multiple times throughout this Plugin)
 _cfg_stg_name__default_character_set_id  = 'default_character_set_id'
+_cfg_stg_name__default_fill_brush_id     = 'default_fill_brush_id'
+_cfg_stg_name__fill_brush_characters     = 'fill_brush_characters'
+_cfg_stg_name__max_flood_cells           = 'max_flood_cells'
 _cfg_stg_name__debugging                 = 'debugging'
 
 # View settings keys (accessed by multiple external modules).
 _cfg_view_box_drawing_state_key          = '_box_drawing_state'
 _cfg_view_box_drawing_last_direction_key = '_box_drawing_last_direction'
+
+# Status bar field key.  One field, owned by this Package, per View.
+_cfg_view_status_key                     = 'box_drawing'
+
+# Fallback used when the ``max_flood_cells`` setting is unusable.
+_cfg_max_flood_cells_floor               = 1
 
 
 # =========================================================================
@@ -161,6 +171,9 @@ def bd_setting(setting_name: str):
 
 bd_setting.default = {
     _cfg_stg_name__default_character_set_id: character_set.CharacterSetID.ASCII,
+    _cfg_stg_name__default_fill_brush_id: fill_brush.FillBrushID.NONE,
+    _cfg_stg_name__fill_brush_characters: None,
+    _cfg_stg_name__max_flood_cells: 100000,
     _cfg_stg_name__debugging: False
 }
 
@@ -211,6 +224,30 @@ def ok_to_do_box_drawing(view: sublime.View, debugging: int) -> bool:
 
     if debugging:
         print(f'  {result=}')
+
+    return result
+
+
+def max_flood_cells() -> int:
+    """
+    Safety limit on how many cells a single flood fill may touch.
+
+    An unusable setting value falls back to the built-in default rather
+    than raising:  this is reachable from a hand-edited settings file.
+    """
+    result = bd_setting(_cfg_stg_name__max_flood_cells)
+
+    if (
+            isinstance(result, bool)
+        or not isinstance(result, int)
+        or result < _cfg_max_flood_cells_floor
+        ):
+        default = bd_setting.default[_cfg_stg_name__max_flood_cells]
+        print(
+            f'BoxDrawing:  "{_cfg_stg_name__max_flood_cells}" setting must be '
+            f'an integer >= {_cfg_max_flood_cells_floor}.  Using {default}.'
+            )
+        result = default
 
     return result
 
@@ -266,6 +303,14 @@ def is_state_active(view: View) -> bool:
     return ((drawing_state(view) == State.ON))
 
 
+def is_state_active_in_sheet(view: View) -> bool:
+    """
+    Is box drawing ON in `view`, and is `view` connected to a Sheet, i.e.
+    not part of a Panel or Overlay?
+    """
+    return ((view.sheet_id() != 0 and is_state_active(view)))
+
+
 def set_state_off(view: View):
     """
     Set box-drawing state OFF in ``view``, but only if View is connected to a Sheet,
@@ -278,8 +323,7 @@ def set_state_off(view: View):
     if view.sheet_id() != 0:
         set_drawing_state(view, State.OFF)
         set_last_direction(view, character_set.Direction.NONE)
-        name = character_set.current_character_set_name()
-        sublime.status_message(f'Box Drawing OFF ({name})')
+        notify_status(view)
         if debugging:
             print(f'  {is_state_active(view)=}')
     else:
@@ -298,8 +342,7 @@ def set_state_on(view: View):
 
     if view.sheet_id() != 0:
         set_drawing_state(view, State.ON)
-        name = character_set.current_character_set_name()
-        sublime.status_message(f'Box Drawing ON ({name})')
+        notify_status(view)
         if debugging:
             print(f'  {is_state_active(view)=}')
     else:
@@ -315,6 +358,84 @@ def toggle_state(view: View):
         set_state_off(view)
     else:
         set_state_on(view)
+
+
+# =========================================================================
+# Status Bar
+#
+# Two functions, deliberately kept separate, because they answer to two
+# different kinds of event:
+#
+# - ``refresh_status()`` is silent and idempotent.  It is safe to call on
+#   any event, including passive ones such as View activation.
+#
+# - ``notify_status()`` refreshes the field AND flashes a transient
+#   message.  It is for the moments when the user has just done something.
+#
+# Flashing a message on a passive event would be noise, and would stomp on
+# whatever message the status line was already showing.
+# =========================================================================
+
+def _state_text(view: View) -> str:
+    """
+    Full description of `view`'s box-drawing state, e.g.:
+
+        Box Drawing OFF (ASCII)
+        Box Drawing ON (Unicode [Round Corners])
+        Box Drawing ON (Unicode [Round Corners]) | Fill: ▐
+
+    The ``| Fill:`` segment is present whenever a fill brush is selected,
+    whether box drawing is ON or OFF, so that selecting a brush while box
+    drawing is OFF still reports what it did.
+    """
+    state  = 'ON' if is_state_active(view) else 'OFF'
+    name   = character_set.current_character_set_name()
+    result = f'Box Drawing {state} ({name})'
+
+    if fill_brush.is_brush_active():
+        result += f' | Fill: {fill_brush.current_brush_char()}'
+
+    return result
+
+
+def status_text(view: View) -> str:
+    """
+    Text for the persistent status bar field;  '' when box drawing is OFF.
+
+    Single source of truth for what that field says.
+    """
+    if not is_state_active(view):
+        return ''
+
+    return _state_text(view)
+
+
+def refresh_status(view: View):
+    """
+    Bring `view`'s persistent status bar field in line with current state.
+
+    Silent and idempotent.  When box drawing is OFF the field is erased
+    entirely rather than left showing ``Box Drawing OFF``, so that the
+    Package occupies no status bar real estate when it is not in use.
+    """
+    if view.sheet_id() == 0:
+        return
+
+    text = status_text(view)
+
+    if text:
+        view.set_status(_cfg_view_status_key, text)
+    else:
+        view.erase_status(_cfg_view_status_key)
+
+
+def notify_status(view: View):
+    """
+    Refresh `view`'s persistent status bar field, then flash a transient
+    message.  For use when the user has just changed something.
+    """
+    refresh_status(view)
+    sublime.status_message(_state_text(view))
 
 
 # =========================================================================
@@ -336,6 +457,13 @@ def _on_pkg_settings_chgd():
     debugging = is_debugging(DebugBits.SETTINGS_CHANGED_EVENT)
     if debugging:
         print('In _on_pkg_settings_chgd()')
+
+    # Apply the user-overridable fill brush character table.  An invalid
+    # setting is reported and ignored in favor of the built-in brushes.
+    fill_brush.set_brush_characters(
+            bd_setting(_cfg_stg_name__fill_brush_characters),
+            debugging
+            )
 
 
 def on_plugin_loaded():
@@ -361,6 +489,10 @@ def on_plugin_loaded():
     # Set initial box-drawing character set.
     def_char_set_id = bd_setting(_cfg_stg_name__default_character_set_id)
     character_set.set_current_character_set(def_char_set_id, debugging)
+
+    # Set initial fill brush.
+    def_brush_id = bd_setting(_cfg_stg_name__default_fill_brush_id)
+    fill_brush.set_current_brush(def_brush_id, debugging)
 
     # Report.
     if debugging:
